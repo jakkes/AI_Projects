@@ -4,7 +4,7 @@ import numpy as np
 from scipy.signal import convolve
 
 from rl.utils.np_utils import cross_diag
-from .simulator import Simulator, States, State
+from .simulator import Simulator
 
 
 class ConnectFour(Simulator):
@@ -24,32 +24,32 @@ class ConnectFour(Simulator):
     `-1`."""
 
     @classmethod
-    def reset_bulk(self, n: int) -> Tuple[States, np.ndarray]:
+    def reset_bulk(self, n: int) -> Tuple[np.ndarray, np.ndarray]:
         states = np.zeros((n, 7 * 6 + 1))
         states[:, -1] = 1.0
-        return (states,), np.ones((n, 7), dtype=np.bool_)
+        return states, np.ones((n, 7), dtype=np.bool_)
 
     @classmethod
-    def _compute_rewards(cls, states: States, players: np.ndarray) -> np.ndarray:
+    def _compute_rewards(cls, states: np.ndarray, players: np.ndarray) -> np.ndarray:
 
         players = 4 * players.reshape((-1, 1, 1))
 
         win_horisontal = (
-            convolve(states[0], np.ones((1, 1, 4)), mode="valid") == players
+            convolve(states, np.ones((1, 1, 4)), mode="valid") == players
         )
         win_horisontal = np.any(np.any(win_horisontal, axis=2), axis=1)
 
-        win_vertical = convolve(states[0], np.ones((1, 4, 1)), mode="valid") == players
+        win_vertical = convolve(states, np.ones((1, 4, 1)), mode="valid") == players
         win_vertical = np.any(np.any(win_vertical, axis=2), axis=1)
 
         win_diagonal = (
-            convolve(states[0], np.diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, np.diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == players
         )
         win_diagonal = np.any(np.any(win_diagonal, axis=2), axis=1)
 
         win_xdiagonal = (
-            convolve(states[0], cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == players
         )
         win_xdiagonal = np.any(np.any(win_xdiagonal, axis=2), axis=1)
@@ -57,30 +57,30 @@ class ConnectFour(Simulator):
         win = win_horisontal | win_vertical | win_diagonal | win_xdiagonal
 
         loss_horisontal = (
-            convolve(states[0], np.ones((1, 1, 4)), mode="valid") == -players
+            convolve(states, np.ones((1, 1, 4)), mode="valid") == -players
         )
         loss_horisontal = np.any(np.any(loss_horisontal, axis=2), axis=1)
 
         loss_vertical = (
-            convolve(states[0], np.ones((1, 4, 1)), mode="valid") == -players
+            convolve(states, np.ones((1, 4, 1)), mode="valid") == -players
         )
         loss_vertical = np.any(np.any(loss_vertical, axis=2), axis=1)
 
         loss_diagonal = (
-            convolve(states[0], np.diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, np.diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == -players
         )
         loss_diagonal = np.any(np.any(loss_diagonal, axis=2), axis=1)
 
         loss_xdiagonal = (
-            convolve(states[0], cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == -players
         )
         loss_xdiagonal = np.any(np.any(loss_xdiagonal, axis=2), axis=1)
 
         loss = loss_horisontal | loss_vertical | loss_diagonal | loss_xdiagonal
 
-        rewards = np.zeros(states[0].shape[0])
+        rewards = np.zeros(states.shape[0])
         rewards[win] = 1.0
         rewards[loss] = -1.0
 
@@ -88,10 +88,10 @@ class ConnectFour(Simulator):
 
     @classmethod
     def step_bulk(
-        cls, states: States, actions: np.ndarray
-    ) -> Tuple[States, np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
+        cls, states: np.ndarray, actions: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
 
-        next_states = states[0].copy()
+        next_states = states.copy()
         batchvec = np.arange(next_states.shape[0])
         players = next_states[:, -1]
 
@@ -113,7 +113,7 @@ class ConnectFour(Simulator):
         next_states = np.concatenate((next_states, -players.reshape((-1, 1))), axis=1)
 
         return (
-            (next_states,),
+            next_states,
             next_masks,
             rewards,
             terminals,
@@ -121,12 +121,12 @@ class ConnectFour(Simulator):
         )
 
     @classmethod
-    def render(cls, state: State, output_fn: Callable[[str]] = print):
+    def render(cls, state: np.ndarray, output_fn: Callable[[str]] = print):
         """Renders the game board to a string and then outputs it to the given
         output function.
 
         Args:
-            state (State): State to render
+            state (np.ndarray): State to render
             output_fn (Callable[[str]], optional): Output function, accepting one string
             argument. Defaults to `print`.
         """
@@ -141,7 +141,7 @@ class ConnectFour(Simulator):
                 raise ValueError(f"Unexpected value {value}")
 
         def print_line(i: int):
-            output_fn(" | ".join(tile(state[0][7 * i + j]) for j in range(7)))
+            output_fn(" | ".join(tile(state[7 * i + j]) for j in range(7)))
 
         output_fn(" | ".join(str(x) for x in range(7)))
         for i in range(6):

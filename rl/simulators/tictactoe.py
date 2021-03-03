@@ -1,7 +1,7 @@
 from typing import Callable, Tuple, List, Dict
 import numpy as np
 
-from .simulator import Simulator, State, States
+from .simulator import Simulator
 
 
 _DIAG_INDICES = np.array([0, 4, 8]).astype(np.int32)
@@ -26,10 +26,10 @@ class TicTacToe(Simulator):
     `-1`."""
 
     @classmethod
-    def reset_bulk(cls, n: int) -> Tuple[States, np.ndarray]:
+    def reset_bulk(cls, n: int) -> Tuple[np.ndarray, np.ndarray]:
         states = np.zeros((n, 10))
         states[:, -1] = 1.0
-        return (states,), np.ones((n, 9), dtype=np.bool_)
+        return states, np.ones((n, 9), dtype=np.bool_)
 
     @classmethod
     def _check_win(cls, states: np.ndarray) -> np.ndarray:
@@ -62,9 +62,9 @@ class TicTacToe(Simulator):
 
     @classmethod
     def step_bulk(
-        cls, states: States, actions: np.ndarray
-    ) -> Tuple[States, np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
-        states = states[0]
+        cls, states: np.ndarray, actions: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
+        states = states
 
         if np.any(cls._check_loss(states)) or np.any(cls._check_win(states)):
             raise ValueError("Cannot step from a state already in a win condition.")
@@ -88,7 +88,7 @@ class TicTacToe(Simulator):
         next_states[batchvec, -1] = -states[batchvec, -1]
 
         return (
-            (next_states, ),
+            next_states,
             next_states[:, :9] == 0,
             rewards,
             terminals,
@@ -96,12 +96,12 @@ class TicTacToe(Simulator):
         )
 
     @classmethod
-    def render(cls, state: State, output_fn: Callable[[str]] = print):
+    def render(cls, state: np.ndarray, output_fn: Callable[[str]] = print):
         """Renders the game board and action index map to a string that is then output
         through the given output function.
 
         Args:
-            state (State): State to render
+            state (np.ndarray): State to render
             output_fn (Callable[[str]], optional): Output function, called with the
             generated string. Defaults to `print`.
         """
