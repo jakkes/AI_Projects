@@ -6,7 +6,6 @@ from torch import nn
 
 import numpy as np
 from rl.simulators import Simulator
-from rl.utils.random import choice
 
 from .config import AlphaZeroConfig
 
@@ -40,7 +39,7 @@ class Node:
         self._children: List[Node] = None
         self._expanded: bool = False
 
-        if np.all(self._action_mask == False) and not self._terminal:
+        if not np.any(self._action_mask) and not self._terminal:
             print("Stop")
 
     @property

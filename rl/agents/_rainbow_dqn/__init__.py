@@ -1,3 +1,5 @@
+"""WIP"""
+
 from typing import List, Dict, Any
 
 import torch
@@ -220,20 +222,20 @@ class RainbowAgent:
         ).clamp_(self.config.Vmin, self.config.Vmax)
         b = (projection - self.config.Vmin) / self.dz
 
-        l = b.floor().to(torch.long)
-        u = b.ceil().to(torch.long)
-        l[(u > 0) * (l == u)] -= 1
-        u[(l < (self.config.no_atoms - 1)) * (l == u)] += 1
+        lower = b.floor().to(torch.long)
+        upper = b.ceil().to(torch.long)
+        lower[(upper > 0) * (lower == upper)] -= 1
+        upper[(lower < (self.config.no_atoms - 1)) * (lower == upper)] += 1
 
         for batch in range(self.config.batchsize):
             m[batch].put_(
-                l[batch],
-                next_distribution[batch] * (u[batch] - b[batch]),
+                lower[batch],
+                next_distribution[batch] * (upper[batch] - b[batch]),
                 accumulate=True,
             )
             m[batch].put_(
-                u[batch],
-                next_distribution[batch] * (b[batch] - l[batch]),
+                upper[batch],
+                next_distribution[batch] * (b[batch] - lower[batch]),
                 accumulate=True,
             )
 

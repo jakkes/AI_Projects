@@ -10,10 +10,10 @@ from rl.simulators import TicTacToe, Simulator
 from .config import AlphaZeroConfig
 from .learner_worker import LearnerWorker
 from .self_play_worker import SelfPlayWorker
-from .network import Network
 from .loggers import LearnerLogger, SelfPlayLogger
 from .mcts import mcts
 from .node import Node
+from .networks import TicTacToeNetwork
 
 
 parser = ArgumentParser()
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.play:
-        net = Network()
+        net = TicTacToeNetwork()
         train(
             4,
             TicTacToe,

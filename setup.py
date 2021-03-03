@@ -17,10 +17,10 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ),
-    install_requires=["torch~=1.7.1", "scipy~=1.6.1"],
-    python_requires=">=3.7",
+    install_requires=["torch~=1.7.1", "scipy~=1.6.1", "tensorboard~=2.4.1"],
+    python_requires=">=3.9",
 )
 
-### Publish
-### python3 setup.py sdist bdist_wheel
-### twine upload dist/*
+# Publish
+# python3 setup.py sdist bdist_wheel
+# twine upload dist/*
