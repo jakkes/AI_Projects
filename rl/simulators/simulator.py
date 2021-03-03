@@ -12,32 +12,9 @@ class Simulator(ABC):
     classes are rarely (if ever) initialized.
 
     States are given as `np.ndarray`s. Actions are, for now, only discrete and given by
-    their action index.
+    their action index. States are always returned with a corresponding action mask,
+    indicating which actions are legal in the given state.
     """
-
-    @abstractclassmethod
-    def action_mask_bulk(cls, states: np.ndarray) -> np.ndarray:
-        """Computes the legal actions of the given states.
-
-        Args:
-            states (np.ndarray): States in batch format.
-
-        Returns:
-            np.ndarray: Boolean mask of legal actions.
-        """
-        raise NotImplementedError
-
-    @classmethod
-    def action_mask(cls, state: np.ndarray) -> np.ndarray:
-        """Computes the legal actions of the given state.
-
-        Args:
-            state (np.ndarray): State
-
-        Returns:
-            np.ndarray: Boolean mask of legal actions
-        """
-        return cls.action_mask_bulk(np.expand_dims(state, 0))[0]
 
     @classmethod
     def step(
