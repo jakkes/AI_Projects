@@ -9,11 +9,16 @@ from torch.multiprocessing import Process, Queue
 
 from rl.simulators import Simulator
 
-from .mcts import mcts
-from .config import AlphaZeroConfig
+from .mcts import mcts, MCTSConfig
 
 
 logger = logging.getLogger(__name__)
+
+
+class SelfPlayConfig(MCTSConfig):
+    """Configuration for the self play worker."""
+    def __init__(self):
+        pass
 
 
 class SelfPlayWorker(Process):
@@ -21,11 +26,11 @@ class SelfPlayWorker(Process):
         self,
         simulator: Simulator,
         network: nn.Module,
-        config: AlphaZeroConfig,
+        config: SelfPlayConfig,
         sample_queue: Queue,
         episode_logging_queue: Queue = None,
     ):
-        super().__init__()
+        super().__init__(daemon=True)
         self.simulator = simulator
         self.network = network
         self.config = config
@@ -57,7 +62,6 @@ class SelfPlayWorker(Process):
                 self.network,
                 self.config,
                 root_node=root,
-                simulations=self.config.simulations,
             )
 
             action_policy = root.action_policy

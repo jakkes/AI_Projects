@@ -1,7 +1,7 @@
 from typing import Callable, Dict
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 
 
 @torch.jit.script

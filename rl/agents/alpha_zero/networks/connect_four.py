@@ -2,7 +2,9 @@ from torch import nn
 
 
 class ConnectFourNetwork(nn.Module):
+    """Example network for the Connect Four simulator."""
     def __init__(self):
+        """"""
         super().__init__()
         self.body = nn.Sequential(
             nn.Conv2d(1, 256, 4, padding=(0, 3)),

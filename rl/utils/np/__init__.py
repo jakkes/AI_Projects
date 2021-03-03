@@ -1,3 +1,5 @@
 """Numpy specific utility methods."""
 
-from .cross_diag import cross_diag
+from ._cross_diag import cross_diag
+
+__all__ = ["cross_diag"]

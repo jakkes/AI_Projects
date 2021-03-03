@@ -1,10 +1,15 @@
 from typing import Any
 from torch.multiprocessing import Queue
-from .summary_writer_server import SummaryWriterServer
+from rl.utils.logging import SummaryWriterServer
 
 
 class LearnerLogger(SummaryWriterServer):
+    """Logging server for the `LearnerWorker`."""
     def __init__(self, data_queue: Queue):
+        """
+        Args:
+            data_queue (Queue): Queue from which logging items are gathered.
+        """
         super().__init__("Learner", data_queue)
         self.step = 0
 
@@ -14,7 +19,12 @@ class LearnerLogger(SummaryWriterServer):
 
 
 class SelfPlayLogger(SummaryWriterServer):
+    """Logging server for the `SelfPlayWorker`."""
     def __init__(self, data_queue: Queue):
+        """
+        Args:
+            data_queue (Queue): Queue from which logging items are gathered.
+        """
         super().__init__("SelfPlay", data_queue)
         self.step = 0
 

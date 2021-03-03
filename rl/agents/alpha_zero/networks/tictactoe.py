@@ -2,7 +2,9 @@ from torch import nn
 
 
 class TicTacToeNetwork(nn.Module):
+    """Example implementation of a network for the TicTacToe simulator."""
     def __init__(self):
+        """"""
         super().__init__()
         self.body = nn.Sequential(
             nn.Conv2d(1, 64, 2),

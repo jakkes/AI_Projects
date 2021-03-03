@@ -7,7 +7,12 @@ import torch
 from torch import nn, optim, Tensor, jit
 from torch.multiprocessing import Process, Queue
 
-from .config import AlphaZeroConfig
+
+class LearnerConfig:
+    """Configuration of the Learner process."""
+    def __init__(self) -> None:
+        self.batchsize = 32
+        """Batch size used during training."""
 
 
 class LearnerWorker(Process):
@@ -15,18 +20,20 @@ class LearnerWorker(Process):
         self,
         network: nn.Module,
         optimizer: optim.Optimizer,
-        config: AlphaZeroConfig,
+        config: LearnerConfig,
         sample_queue: Queue,
         learner_logging_queue: Queue = None,
         save_path: str = None,
+        save_period: int = -1,
     ):
-        super().__init__()
+        super().__init__(daemon=True)
         self.network = network
         self.optimizer = optimizer
         self.config = config
         self.sample_queue = sample_queue
         self.learner_logging_queue = learner_logging_queue
         self.save_path = save_path
+        self.save_period = save_period
 
         self.last_save_time = None
 
@@ -44,7 +51,10 @@ class LearnerWorker(Process):
         if self.learner_logging_queue is not None:
             self.learner_logging_queue.put_nowait(loss.detach())
 
-        if perf_counter() - self.last_save_time > 600:
+        if (
+            self.save_period > 0
+            and perf_counter() - self.last_save_time > self.save_period
+        ):
             self.save(states, masks)
             self.last_save_time = perf_counter()
 
@@ -60,7 +70,6 @@ class LearnerWorker(Process):
         L = 0
         self.last_save_time = perf_counter()
         while True:
-
             try:
                 states, masks, policies, z = self.sample_queue.get(timeout=5)
                 N = states.shape[0]

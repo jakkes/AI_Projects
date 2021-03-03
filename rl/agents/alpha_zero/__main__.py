@@ -7,7 +7,7 @@ from torch import nn, optim, jit
 from torch.multiprocessing import Queue
 
 from rl.simulators import TicTacToe, Simulator
-from .config import AlphaZeroConfig
+from .config import Config
 from .learner_worker import LearnerWorker
 from .self_play_worker import SelfPlayWorker
 from .loggers import LearnerLogger, SelfPlayLogger
@@ -16,59 +16,8 @@ from .node import Node
 from .networks import TicTacToeNetwork
 
 
-parser = ArgumentParser()
-parser.add_argument("--save-path", type=str, default=None)
-parser.add_argument("--play", action="store_true", default=False)
 
-
-def train(
-    self_play_workers: int,
-    simulator: Simulator,
-    network: nn.Module,
-    optimizer: optim.Optimizer,
-    config: AlphaZeroConfig,
-    save_path: str = None,
-):
-
-    network.share_memory()
-
-    sample_queue = Queue(maxsize=2000)
-    episode_logging_queue = Queue(maxsize=2000)
-    learner_logging_queue = Queue(maxsize=2000)
-
-    self_play_workers = [
-        SelfPlayWorker(
-            simulator,
-            network,
-            config,
-            sample_queue,
-            episode_logging_queue=episode_logging_queue,
-        )
-        for _ in range(self_play_workers)
-    ]
-    learner_worker = LearnerWorker(
-        network,
-        optimizer,
-        config,
-        sample_queue,
-        learner_logging_queue=learner_logging_queue,
-        save_path="./models",
-    )
-
-    learner_logger = LearnerLogger(learner_logging_queue)
-    self_play_logger = SelfPlayLogger(episode_logging_queue)
-
-    learner_logger.start()
-    self_play_logger.start()
-    learner_worker.start()
-    for worker in self_play_workers:
-        worker.start()
-
-    while True:
-        sleep(10)
-
-
-def play(simulator: Simulator, network: nn.Module, config: AlphaZeroConfig):
+def play(simulator: Simulator, network: nn.Module, config: Config):
     step = randrange(2)
 
     state, mask = simulator.reset()
@@ -110,10 +59,10 @@ if __name__ == "__main__":
             TicTacToe,
             net,
             optim.SGD(net.parameters(), lr=1e-4, weight_decay=1e-5),
-            AlphaZeroConfig(),
+            Config(),
             args.save_path,
         )
 
     else:
         net = jit.load(args.save_path)
-        play(TicTacToe, net, AlphaZeroConfig())
+        play(TicTacToe, net, Config())
