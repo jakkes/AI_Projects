@@ -1,3 +1,6 @@
+"""Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search."""
+
+
 from multiprocessing import set_start_method, get_start_method
 
 try:
