@@ -1,16 +1,16 @@
 from typing import Callable, List, Dict
 
-import gym
 import torch
 from torch.multiprocessing import Queue
 
+from rl.environments import Environment
 from .worker import Worker
 
 
 class A3Cconfig:
     def __init__(
         self,
-        env_gen: Callable[[], gym.Env] = None,
+        env_gen: Callable[[], Environment] = None,
         value_net_gen: Callable[[], torch.nn.Module] = None,
         policy_net_gen: Callable[[], torch.nn.Module] = None,
         optimizer: torch.optim.Optimizer = None,
@@ -20,7 +20,7 @@ class A3Cconfig:
         action_repeats: int = None,
         discount: float = None,
     ):
-        self.env_gen: Callable[[], gym.Env] = env_gen
+        self.env_gen: Callable[[], Environment] = env_gen
         self.value_net_gen: Callable[[], torch.nn.Module] = value_net_gen
         self.policy_net_gen: Callable[[], torch.nn.Module] = policy_net_gen
         self.optimizer: torch.optim.Optimizer = optimizer

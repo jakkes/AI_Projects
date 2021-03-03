@@ -2,7 +2,7 @@ from math import log2
 from typing import Union
 from abc import abstractmethod
 
-import rl.rainbow_dqn as rainbow
+import rl.agents.rainbow_dqn as rainbow
 
 import torch
 from torch import Tensor

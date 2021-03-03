@@ -1,5 +1,5 @@
 import numpy as np
-from rl.utils.np_utils import cross_diag
+from rl.utils.np import cross_diag
 
 
 def test_cross_diag():

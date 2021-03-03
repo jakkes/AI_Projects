@@ -1,11 +1,10 @@
 from math import sqrt
-from typing import List
 
 import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-import rl.rainbow_dqn as rainbow
+import rl.agents.rainbow_dqn as rainbow
 
 
 class NoisyLinear(nn.Linear):

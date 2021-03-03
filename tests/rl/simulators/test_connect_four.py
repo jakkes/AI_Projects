@@ -50,11 +50,5 @@ def test_compute_reward():
 
     players = np.array([1.0, 1.0, -1.0, -1.0, 1.0])
 
-    rewards = ConnectFour.compute_rewards(states, players)
+    rewards = ConnectFour._compute_rewards(states, players)
     assert np.array_equal(rewards, np.array([1.0, 1.0, 1.0, -1.0, 0.0]))
-
-
-def test_connect_four():
-    state, mask = ConnectFour.reset()
-
-    actions = [0, 1, 2, 3]

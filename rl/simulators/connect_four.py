@@ -3,7 +3,7 @@ from typing import Callable, Tuple, List, Dict
 import numpy as np
 from scipy.signal import convolve
 
-from rl.utils.np_utils import cross_diag
+from rl.utils.np import cross_diag
 from .simulator import Simulator
 
 
@@ -115,13 +115,13 @@ class ConnectFour(Simulator):
         )
 
     @classmethod
-    def render(cls, state: np.ndarray, output_fn: Callable[[str]] = print):
+    def render(cls, state: np.ndarray, output_fn: Callable[[str], None] = print):
         """Renders the game board to a string and then outputs it to the given
         output function.
 
         Args:
             state (np.ndarray): State to render
-            output_fn (Callable[[str]], optional): Output function, accepting one string
+            output_fn (Callable[[str], None], optional): Output function, accepting one string
             argument. Defaults to `print`.
         """
 

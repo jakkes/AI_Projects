@@ -96,13 +96,13 @@ class TicTacToe(Simulator):
         )
 
     @classmethod
-    def render(cls, state: np.ndarray, output_fn: Callable[[str]] = print):
+    def render(cls, state: np.ndarray, output_fn: Callable[[str], None] = print):
         """Renders the game board and action index map to a string that is then output
         through the given output function.
 
         Args:
             state (np.ndarray): State to render
-            output_fn (Callable[[str]], optional): Output function, called with the
+            output_fn (Callable[[str], None], optional): Output function, called with the
             generated string. Defaults to `print`.
         """
 
