@@ -62,8 +62,11 @@ class LearnerWorker(Process):
         if self.save_path is None:
             return
 
+        save_dir = os.path.join(self.save_path, str(int(time())))
+        os.makedirs(save_dir, exist_ok=False)
+
         model = jit.trace(self.network, (states, masks))
-        jit.save(model, os.path.join(self.save_path, str(int(time()))))
+        jit.save(model, os.path.join(save_dir, "network.pt"))
 
     def run(self):
         batch_states, batch_masks, batch_policies, batch_z = [], [], [], []
