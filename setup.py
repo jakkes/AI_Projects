@@ -19,7 +19,8 @@ setuptools.setup(
     ),
     install_requires=[
         "torch==1.7.1"
-    ]
+    ],
+    python_requires=">=3.7"
 )
 
 ### Publish
