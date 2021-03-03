@@ -186,8 +186,12 @@ class MCTSNode:
 
         if self.is_terminal:
             self.parent._backpropagate(self._action, self._reward)
-        else:
+        elif self._config.zero_sum_game:
             self.parent._backpropagate(self._action, -self._V)
+        else:
+            self.parent._backpropagate(
+                self.action, self._reward + self._config.discount_factor * self._V
+            )
 
     def _backpropagate(self, action: int, value: float):
         self._N[action] += 1

@@ -30,10 +30,10 @@ class SummaryWriterServer(ABC):
         raise NotImplementedError
 
     def _runner(self):
-        summary_writer = SummaryWriter(comment=self.filename_suffix)
+        summary_writer = SummaryWriter(comment=self._filename_suffix)
         while not self._stop_signal.is_set():
             try:
-                data = self.data_queue.get(timeout=5)
+                data = self._data_queue.get(timeout=5)
             except Empty:
                 continue
             self.log(summary_writer, data)

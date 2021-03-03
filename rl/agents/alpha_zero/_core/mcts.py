@@ -26,6 +26,13 @@ class MCTSConfig:
         self.simulations = 200
         """Number of MCTS steps to run per state evaluation."""
 
+        self.zero_sum_game: bool = True
+        """If True, the simulator is assumed to be a zero sum game where players
+        alternate moves. Rewards are zero until reaching a terminal state."""
+
+        self.discount_factor: float = 0.99
+        """Discount factor, used only if `zero_sum_game` is False."""
+
 
 def mcts(
     state: np.ndarray,
@@ -57,9 +64,9 @@ def mcts(
         if root_node is None
         else root_node
     )
-    if not np.array_equal(state, root_node.state):
+    if not np.array_equal(state, root.state):
         raise ValueError("Given state and state of the root node differ.")
-    if not np.array_equal(state, root_node.action_mask):
+    if not np.array_equal(action_mask, root.action_mask):
         raise ValueError("Given action mask and action mask of the root node differ.")
     root.rootify()
 

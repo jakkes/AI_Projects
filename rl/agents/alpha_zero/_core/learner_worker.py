@@ -11,7 +11,7 @@ from torch.multiprocessing import Process, Queue
 class LearnerConfig:
     """Configuration of the Learner process."""
     def __init__(self) -> None:
-        self.batchsize = 32
+        self.batch_size = 32
         """Batch size used during training."""
 
 

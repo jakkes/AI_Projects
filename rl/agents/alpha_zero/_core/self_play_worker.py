@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class SelfPlayConfig(MCTSConfig):
     """Configuration for the self play worker."""
     def __init__(self):
-        pass
+        super().__init__()
 
 
 class SelfPlayWorker(Process):
