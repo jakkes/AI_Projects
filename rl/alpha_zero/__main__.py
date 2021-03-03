@@ -21,7 +21,14 @@ parser.add_argument("--save-path", type=str, default=None)
 parser.add_argument("--play", action="store_true", default=False)
 
 
-def train(self_play_workers: int, simulator: Simulator, network: nn.Module, optimizer: optim.Optimizer, config: AlphaZeroConfig, save_path: str=None):
+def train(
+    self_play_workers: int,
+    simulator: Simulator,
+    network: nn.Module,
+    optimizer: optim.Optimizer,
+    config: AlphaZeroConfig,
+    save_path: str = None,
+):
 
     network.share_memory()
 
@@ -29,9 +36,24 @@ def train(self_play_workers: int, simulator: Simulator, network: nn.Module, opti
     episode_logging_queue = Queue(maxsize=2000)
     learner_logging_queue = Queue(maxsize=2000)
 
-    self_play_workers = [SelfPlayWorker(simulator, network, config, sample_queue,
-                                        episode_logging_queue=episode_logging_queue) for _ in range(self_play_workers)]
-    learner_worker = LearnerWorker(network, optimizer, config, sample_queue, learner_logging_queue=learner_logging_queue, save_path="./models")
+    self_play_workers = [
+        SelfPlayWorker(
+            simulator,
+            network,
+            config,
+            sample_queue,
+            episode_logging_queue=episode_logging_queue,
+        )
+        for _ in range(self_play_workers)
+    ]
+    learner_worker = LearnerWorker(
+        network,
+        optimizer,
+        config,
+        sample_queue,
+        learner_logging_queue=learner_logging_queue,
+        save_path="./models",
+    )
 
     learner_logger = LearnerLogger(learner_logging_queue)
     self_play_logger = SelfPlayLogger(episode_logging_queue)
@@ -60,8 +82,15 @@ def play(simulator: Simulator, network: nn.Module, config: AlphaZeroConfig):
         if step % 2 == 0:
             action = int(input("Action: "))
         else:
-            root = mcts(state, mask, simulator,
-                        network, config, root_node=root, simulations=config.simulations)
+            root = mcts(
+                state,
+                mask,
+                simulator,
+                network,
+                config,
+                root_node=root,
+                simulations=config.simulations,
+            )
             action = np.random.choice(mask.shape[0], p=root.action_policy)
 
         state, mask, reward, terminal, _ = simulator.step(state, action)
@@ -76,7 +105,14 @@ if __name__ == "__main__":
 
     if not args.play:
         net = Network()
-        train(4, TicTacToe, net, optim.SGD(net.parameters(), lr=1e-4, weight_decay=1e-5), AlphaZeroConfig(), args.save_path)
+        train(
+            4,
+            TicTacToe,
+            net,
+            optim.SGD(net.parameters(), lr=1e-4, weight_decay=1e-5),
+            AlphaZeroConfig(),
+            args.save_path,
+        )
 
     else:
         net = jit.load(args.save_path)

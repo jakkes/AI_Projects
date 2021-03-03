@@ -34,9 +34,7 @@ class ConnectFour(Simulator):
 
         players = 4 * players.reshape((-1, 1, 1))
 
-        win_horisontal = (
-            convolve(states, np.ones((1, 1, 4)), mode="valid") == players
-        )
+        win_horisontal = convolve(states, np.ones((1, 1, 4)), mode="valid") == players
         win_horisontal = np.any(np.any(win_horisontal, axis=2), axis=1)
 
         win_vertical = convolve(states, np.ones((1, 4, 1)), mode="valid") == players
@@ -56,14 +54,10 @@ class ConnectFour(Simulator):
 
         win = win_horisontal | win_vertical | win_diagonal | win_xdiagonal
 
-        loss_horisontal = (
-            convolve(states, np.ones((1, 1, 4)), mode="valid") == -players
-        )
+        loss_horisontal = convolve(states, np.ones((1, 1, 4)), mode="valid") == -players
         loss_horisontal = np.any(np.any(loss_horisontal, axis=2), axis=1)
 
-        loss_vertical = (
-            convolve(states, np.ones((1, 4, 1)), mode="valid") == -players
-        )
+        loss_vertical = convolve(states, np.ones((1, 4, 1)), mode="valid") == -players
         loss_vertical = np.any(np.any(loss_vertical, axis=2), axis=1)
 
         loss_diagonal = (
@@ -130,6 +124,7 @@ class ConnectFour(Simulator):
             output_fn (Callable[[str]], optional): Output function, accepting one string
             argument. Defaults to `print`.
         """
+
         def tile(value) -> str:
             if value == 0:
                 return " "

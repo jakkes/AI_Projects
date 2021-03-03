@@ -105,6 +105,7 @@ class TicTacToe(Simulator):
             output_fn (Callable[[str]], optional): Output function, called with the
             generated string. Defaults to `print`.
         """
+
         def tile(value) -> str:
             if value == 0:
                 return " "

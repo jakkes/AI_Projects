@@ -22,6 +22,12 @@ class SelfPlayLogger(SummaryWriterServer):
         self.step += 1
         reward, start_value, kl_div, first_action = data
         self.summary_writer.add_scalar("Episode/Reward", reward, global_step=self.step)
-        self.summary_writer.add_scalar("Episode/Start value", start_value, global_step=self.step)
-        self.summary_writer.add_scalar("Episode/Start KL Div", kl_div, global_step=self.step)
-        self.summary_writer.add_scalar("Episode/First action", first_action, global_step=self.step)
+        self.summary_writer.add_scalar(
+            "Episode/Start value", start_value, global_step=self.step
+        )
+        self.summary_writer.add_scalar(
+            "Episode/Start KL Div", kl_div, global_step=self.step
+        )
+        self.summary_writer.add_scalar(
+            "Episode/First action", first_action, global_step=self.step
+        )

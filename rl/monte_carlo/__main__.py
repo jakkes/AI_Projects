@@ -13,7 +13,9 @@ def main():
     while True:
         TicTacToe.render(state)
         if steps % 2 == 0:
-            state, action_mask, reward, done, _ = TicTacToe.step(state, mc.act(state, action_mask))
+            state, action_mask, reward, done, _ = TicTacToe.step(
+                state, mc.act(state, action_mask)
+            )
             if done:
                 TicTacToe.render(state)
                 print("Loss" if reward > 0 else "Draw")

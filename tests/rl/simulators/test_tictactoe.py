@@ -23,9 +23,15 @@ def test_steps():
 
 
 def test_diag_win():
-    states = np.array([[1.0, 0.0, -1.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 1.0],
-    [1.0, 0.0, -1.0, 0.0, -1.0, 1.0, 0.0, 0.0, 0.0, -1.0]])
-    states, action_masks, rewards, terminals, _ = TicTacToe.step_bulk(states, np.array([8, 6], dtype=np.int32))
+    states = np.array(
+        [
+            [1.0, 0.0, -1.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 1.0],
+            [1.0, 0.0, -1.0, 0.0, -1.0, 1.0, 0.0, 0.0, 0.0, -1.0],
+        ]
+    )
+    states, action_masks, rewards, terminals, _ = TicTacToe.step_bulk(
+        states, np.array([8, 6], dtype=np.int32)
+    )
 
     assert all(terminals)
     assert np.all(rewards == 1.0)

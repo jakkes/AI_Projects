@@ -28,8 +28,15 @@ def play(simulator: Simulator, network: nn.Module, config: AlphaZeroConfig):
         if step % 2 == 0:
             action = int(input("Action: "))
         else:
-            root = mcts(state, mask, simulator,
-                        network, config, root_node=root, simulations=config.simulations)
+            root = mcts(
+                state,
+                mask,
+                simulator,
+                network,
+                config,
+                root_node=root,
+                simulations=config.simulations,
+            )
             action = np.random.choice(mask.shape[0], p=root.action_policy)
 
         state, mask, _, terminal, _ = simulator.step(state, action)

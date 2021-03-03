@@ -6,17 +6,19 @@ from torch.multiprocessing import Queue
 
 from .worker import Worker
 
+
 class A3Cconfig:
-    def __init__(self,
-        env_gen: Callable[[], gym.Env]=None,
-        value_net_gen: Callable[[], torch.nn.Module]=None,
-        policy_net_gen: Callable[[], torch.nn.Module]=None,
-        optimizer: torch.optim.Optimizer=None,
-        optimizer_params: Dict=None,
-        actors: int=None,
-        batchsize: int=None,
-        action_repeats: int=None,
-        discount: float=None
+    def __init__(
+        self,
+        env_gen: Callable[[], gym.Env] = None,
+        value_net_gen: Callable[[], torch.nn.Module] = None,
+        policy_net_gen: Callable[[], torch.nn.Module] = None,
+        optimizer: torch.optim.Optimizer = None,
+        optimizer_params: Dict = None,
+        actors: int = None,
+        batchsize: int = None,
+        action_repeats: int = None,
+        discount: float = None,
     ):
         self.env_gen: Callable[[], gym.Env] = env_gen
         self.value_net_gen: Callable[[], torch.nn.Module] = value_net_gen
@@ -28,12 +30,15 @@ class A3Cconfig:
         self.action_repeats: int = action_repeats
         self.discount: float = discount
 
+
 class A3Cagent:
     def __init__(self, config: A3Cconfig):
         self.config: A3Cconfig = config
 
-        self.policy = self.config.policy_net_gen(); self.policy.share_memory()
-        self.value = self.config.value_net_gen(); self.value.share_memory()
+        self.policy = self.config.policy_net_gen()
+        self.policy.share_memory()
+        self.value = self.config.value_net_gen()
+        self.value.share_memory()
 
         self._queues: List[Queue] = None
         self._workers: List[Worker] = None
@@ -62,10 +67,12 @@ class A3Cagent:
             worker.terminate()
             worker.join()
         self._workers = None
-    
+
     def get_actions(self, states):
         with torch.no_grad():
-            return torch.sum(self.policy(states).cumsum(1) < torch.rand((states.shape[0], 1)))
+            return torch.sum(
+                self.policy(states).cumsum(1) < torch.rand((states.shape[0], 1))
+            )
 
     def get_values(self, states):
         with torch.no_grad():

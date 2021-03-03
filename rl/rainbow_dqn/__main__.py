@@ -8,12 +8,14 @@ from . import RainbowAgent, RainbowConfig
 
 if __name__ == "__main__":
     config = RainbowConfig(
-        state_dim=8, action_dim=4, device="cpu",
+        state_dim=8,
+        action_dim=4,
+        device="cpu",
         n_steps=3,
-        replay_capacity=4*8192,
+        replay_capacity=4 * 8192,
         batchsize=32,
-        optimizer=Adam, 
-        optimizer_params={'lr': 1e-4},
+        optimizer=Adam,
+        optimizer_params={"lr": 1e-4},
         discount=0.99,
         target_update_freq=10,
         use_distributional=True,
@@ -32,7 +34,7 @@ if __name__ == "__main__":
         beta_start=0.4,
         beta_end=1.0,
         beta_t_start=0,
-        beta_t_end=400
+        beta_t_end=400,
     )
     agent = RainbowAgent(config)
     rewards = []
@@ -54,7 +56,7 @@ if __name__ == "__main__":
                     action = agent.get_actions(state.unsqueeze(0)).item()
             else:
                 action = randrange(config.action_dim)
-            
+
             if episode % 10 == 0:
                 env.render()
             next_state, reward, done, _ = env.step(action)
@@ -71,13 +73,12 @@ if __name__ == "__main__":
         rewards.append(tot_reward)
 
         if episode % 10 == 0:
-            print("""
+            print(
+                """
             Episode - {}
             Reward - {}
             """.format(
-                episode, sum(rewards) / 10
-            ))
+                    episode, sum(rewards) / 10
+                )
+            )
             rewards = []
-
-
-

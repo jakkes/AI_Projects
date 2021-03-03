@@ -5,6 +5,7 @@ from gym import Env
 import torch
 import numpy as np
 
+
 def repeat_action(env: Env, action: int, repeats: int):
     reward = 0.0
     for _ in range(repeats):
@@ -16,7 +17,9 @@ def repeat_action(env: Env, action: int, repeats: int):
 
 
 class ParallelEnv:
-    def __init__(self, env_gen_fn: Callable[[], Env], no_envs: int, no_repeats: int=1):
+    def __init__(
+        self, env_gen_fn: Callable[[], Env], no_envs: int, no_repeats: int = 1
+    ):
         self.envs = np.array([env_gen_fn() for _ in range(no_envs)])
         self.no_repeats = no_repeats
 
@@ -26,12 +29,21 @@ class ParallelEnv:
         states, rewards, dones = [], [], []
 
         for action, env in zip(actions, self.envs):
-            next_state, reward, done, _ = repeat_action(env, int(action), self.no_repeats)
-            states.append(next_state); rewards.append(reward); dones.append(done)
+            next_state, reward, done, _ = repeat_action(
+                env, int(action), self.no_repeats
+            )
+            states.append(next_state)
+            rewards.append(reward)
+            dones.append(done)
 
-        return torch.as_tensor(np.stack(states), dtype=torch.float), torch.tensor(rewards), torch.tensor(dones), {}
+        return (
+            torch.as_tensor(np.stack(states), dtype=torch.float),
+            torch.tensor(rewards),
+            torch.tensor(dones),
+            {},
+        )
 
-    def reset(self, mask: Iterable[bool]=None):
+    def reset(self, mask: Iterable[bool] = None):
         envs = self.envs if mask is None else self.envs[mask.numpy()]
 
         states = []

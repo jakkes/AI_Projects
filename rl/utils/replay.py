@@ -7,8 +7,8 @@ from torch import Tensor, Size
 
 import numpy as np
 
-class Replay:
 
+class Replay:
     @abstractmethod
     def get_all(self):
         pass
@@ -27,26 +27,28 @@ class Replay:
 
 
 class UniformReplayBuffer(Replay):
-    def __init__(self, state_shape: Union[Size, Tuple], capacity: int, device: str="cpu"):
+    def __init__(
+        self, state_shape: Union[Size, Tuple], capacity: int, device: str = "cpu"
+    ):
         self.capacity: int = capacity
         self.device: str = device
 
         self._pos = 0
         self._full = False
-        
-        self._states = torch.zeros((self.capacity, ) + state_shape, device=device)
+
+        self._states = torch.zeros((self.capacity,) + state_shape, device=device)
         self._rewards = torch.zeros(self.capacity, device=device)
         self._actions = torch.zeros(self.capacity, dtype=torch.long, device=device)
         self._not_dones = torch.zeros(self.capacity, dtype=torch.bool, device=device)
-        self._next_states = torch.zeros((self.capacity, ) + state_shape, device=device)
+        self._next_states = torch.zeros((self.capacity,) + state_shape, device=device)
 
     def get_all(self):
         return (
-            self._states[:self.get_size()],
-            self._actions[:self.get_size()],
-            self._rewards[:self.get_size()],
-            self._not_dones[:self.get_size()],
-            self._next_states[:self.get_size()]
+            self._states[: self.get_size()],
+            self._actions[: self.get_size()],
+            self._rewards[: self.get_size()],
+            self._not_dones[: self.get_size()],
+            self._next_states[: self.get_size()],
         )
 
     def get_size(self):
@@ -59,7 +61,7 @@ class UniformReplayBuffer(Replay):
         self._not_dones[self._pos] = not_done
         self._next_states[self._pos] = next_state.to(self.device)
 
-        self._pos += 1 
+        self._pos += 1
         if self._pos >= self.capacity:
             self._full = True
             self._pos = 0
@@ -68,14 +70,14 @@ class UniformReplayBuffer(Replay):
         return
 
     def sample(self, n: int):
-        self._indices = torch.randint(self.get_size(), (n, ))
+        self._indices = torch.randint(self.get_size(), (n,))
         return (
             self._states[self._indices],
             self._actions[self._indices],
             self._rewards[self._indices],
             self._not_dones[self._indices],
             self._next_states[self._indices],
-            torch.tensor([1.0 / self.get_size()]).expand(self._indices.shape[0])
+            torch.tensor([1.0 / self.get_size()]).expand(self._indices.shape[0]),
         )
 
 
@@ -87,7 +89,7 @@ class UniformSequenceBuffer(Replay):
         self._capacity = capacity
 
     def get_all(self):
-        return self._data[:self.get_size()]
+        return self._data[: self.get_size()]
 
     def get_size(self):
         return self._capacity if self._filled else self._pos

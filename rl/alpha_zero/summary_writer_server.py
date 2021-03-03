@@ -18,7 +18,9 @@ class SummaryWriterServer(Process):
 
     def run(self):
 
-        self.summary_writer = SummaryWriter(comment=self.filename_suffix,)
+        self.summary_writer = SummaryWriter(
+            comment=self.filename_suffix,
+        )
 
         while True:
             try:

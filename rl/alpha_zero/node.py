@@ -12,9 +12,18 @@ from .config import AlphaZeroConfig
 
 
 class Node:
-    def __init__(self, state: np.ndarray, action_mask: np.ndarray, simulator: Simulator, network: nn.Module,
-                 parent: Node = None, config: AlphaZeroConfig = None, action: int = None,
-                 reward: float = None, terminal: bool = None):
+    def __init__(
+        self,
+        state: np.ndarray,
+        action_mask: np.ndarray,
+        simulator: Simulator,
+        network: nn.Module,
+        parent: Node = None,
+        config: AlphaZeroConfig = None,
+        action: int = None,
+        reward: float = None,
+        terminal: bool = None,
+    ):
         self._state = state
         self._action_mask = action_mask
         self._action = action
@@ -102,13 +111,24 @@ class Node:
             states = np.expand_dims(self._state, 0)
             states = np.repeat(states, actions.shape[0], axis=0)
             next_states, next_masks, rewards, terminals, _ = self._simulator.step_bulk(
-                states, actions)
+                states, actions
+            )
 
             self._children = [None] * self._action_mask.shape[0]
-            for next_state, next_mask, reward, terminal, action in zip(next_states, next_masks, rewards, terminals, actions):
-                self._children[action] = Node(next_state, next_mask,
-                                            self._simulator, self._network, parent=self,
-                                            config=self._config, action=action, reward=reward, terminal=terminal)
+            for next_state, next_mask, reward, terminal, action in zip(
+                next_states, next_masks, rewards, terminals, actions
+            ):
+                self._children[action] = Node(
+                    next_state,
+                    next_mask,
+                    self._simulator,
+                    self._network,
+                    parent=self,
+                    config=self._config,
+                    action=action,
+                    reward=reward,
+                    terminal=terminal,
+                )
 
             self._N = np.zeros(self._action_mask.shape[0])
             self._W = np.zeros(self._action_mask.shape[0])
@@ -135,8 +155,7 @@ class Node:
         with torch.no_grad():
             p, v = self._network(
                 torch.as_tensor(self._state, dtype=torch.float).unsqueeze_(0),
-                torch.as_tensor(self._action_mask,
-                                dtype=torch.bool).unsqueeze_(0)
+                torch.as_tensor(self._action_mask, dtype=torch.bool).unsqueeze_(0),
             )
         self._P = torch.softmax(p, dim=1).squeeze_(0).numpy()
         self._V = v[0, 0].numpy()
@@ -145,8 +164,12 @@ class Node:
             self.add_noise()
 
     def add_noise(self):
-        d = np.random.dirichlet(self._config.alpha * np.ones(self._action_mask.shape[0])[self._action_mask])
-        self._P[self._action_mask] = (1 - self._config.epsilon) * self._P[self._action_mask] + self._config.epsilon * d
+        d = np.random.dirichlet(
+            self._config.alpha * np.ones(self._action_mask.shape[0])[self._action_mask]
+        )
+        self._P[self._action_mask] = (1 - self._config.epsilon) * self._P[
+            self._action_mask
+        ] + self._config.epsilon * d
 
     def rootify(self):
 
