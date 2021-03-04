@@ -1,5 +1,5 @@
-from ._action_space import ActionSpace
-from ._discrete_action_space import DiscreteActionSpace
+from ._base import Base
+from ._discrete import Discrete
 
 
-__all__ = ["ActionSpace", "DiscreteActionSpace"]
+__all__ = ["Base", "Discrete"]

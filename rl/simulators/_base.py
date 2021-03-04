@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 
-class Simulator(ABC):
+class Base(ABC):
     """Simulator base class.
 
     A simulator, as opposed to an environment, executes actions based on a

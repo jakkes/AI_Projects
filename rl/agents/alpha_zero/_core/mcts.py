@@ -1,8 +1,7 @@
 from torch import nn
 import numpy as np
 
-from rl.simulators import Simulator
-
+import rl.simulators as simulators
 from .mcts_node import MCTSNode
 
 
@@ -37,7 +36,7 @@ class MCTSConfig:
 def mcts(
     state: np.ndarray,
     action_mask: np.ndarray,
-    simulator: Simulator,
+    simulator: simulators.Base,
     network: nn.Module,
     config: MCTSConfig,
     root_node: MCTSNode = None,

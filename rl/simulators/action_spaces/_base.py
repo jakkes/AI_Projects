@@ -1,14 +1,16 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractclassmethod
 from typing import Any, TypeVar
 
-import rl.environments.action_spaces as action_spaces
+import rl
 
 T = TypeVar("T")
 
 
-class ActionSpace(ABC):
+class Base(ABC):
+    """Base action space."""
 
-    def as_type(self, t: T) -> T:
+    @classmethod
+    def as_type(cls, t: T) -> T:
         """Casts the action space to the specific type.
 
         Args:
@@ -18,18 +20,18 @@ class ActionSpace(ABC):
             RuntimeError: If the object is not castable to the requested type.
 
         Returns:
-            T: The same object.
+            T: Casted version of the class.
         """
-        if not isinstance(self, t):
-            raise RuntimeError(f"Failed casting {self} to {t}")
-        return self
+        if not isinstance(cls, t):
+            raise RuntimeError(f"Failed casting {cls} to {t}")
+        return cls
 
-    def as_discrete(self) -> action_spaces.DiscreteActionSpace:
+    def as_discrete(self) -> "rl.simulators.action_spaces.Discrete":
         """Casts this object to a discrete action space. This operation is equivalent
         to `as_type(DiscreteActionSpace)`."""
-        return self.as_type(action_spaces.DiscreteActionSpace)
+        return self.as_type(rl.simulators.action_spaces.Discrete)
 
-    @abstractmethod
+    @abstractclassmethod
     def sample(self) -> Any:
         """Samples an action from the action space.
 
@@ -38,7 +40,7 @@ class ActionSpace(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @abstractclassmethod
     def contains(self, action: Any) -> bool:
         """Determines if the given action is in the action space or not.
 

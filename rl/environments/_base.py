@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
-class Environment(ABC):
+class Base(ABC):
 
     """Environment base class.
 

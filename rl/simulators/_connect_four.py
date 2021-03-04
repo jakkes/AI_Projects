@@ -4,10 +4,10 @@ import numpy as np
 from scipy.signal import convolve
 
 from rl.utils.np import cross_diag
-from .simulator import Simulator
+from ._base import Base
 
 
-class ConnectFour(Simulator):
+class ConnectFour(Base):
     """Connect four (four in a row) game simulator.
 
     States are given by a single `np.ndarray` of shape `(43, )`. The first 42 elements
@@ -121,8 +121,8 @@ class ConnectFour(Simulator):
 
         Args:
             state (np.ndarray): State to render
-            output_fn (Callable[[str], None], optional): Output function, accepting one string
-            argument. Defaults to `print`.
+            output_fn (Callable[[str], None], optional): Output function, accepting one
+            string argument. Defaults to `print`.
         """
 
         def tile(value) -> str:

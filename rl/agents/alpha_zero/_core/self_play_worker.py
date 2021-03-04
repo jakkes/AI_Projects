@@ -7,7 +7,7 @@ import torch
 from torch import nn
 from torch.multiprocessing import Process, Queue
 
-from rl.simulators import Simulator
+import rl.simulators as simulators
 
 from .mcts import mcts, MCTSConfig
 
@@ -24,7 +24,7 @@ class SelfPlayConfig(MCTSConfig):
 class SelfPlayWorker(Process):
     def __init__(
         self,
-        simulator: Simulator,
+        simulator: simulators.Base,
         network: nn.Module,
         config: SelfPlayConfig,
         sample_queue: Queue,

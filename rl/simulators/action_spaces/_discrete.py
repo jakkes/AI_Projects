@@ -2,12 +2,17 @@ from abc import abstractmethod
 
 import numpy as np
 
-from ._action_space import ActionSpace
+from ._base import Base
 
 
-class DiscreteActionSpace(ActionSpace):
+class Discrete(Base):
+    """Discrete action space."""
 
     def __init__(self, size: int) -> None:
+        """
+        Args:
+            size (int): Number of discrete actions in the action space.
+        """
         super().__init__()
         self._size = size
 

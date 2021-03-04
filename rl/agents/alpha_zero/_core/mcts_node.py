@@ -5,8 +5,8 @@ import torch
 from torch import nn
 
 import numpy as np
-from rl.simulators import Simulator
 
+import rl.simulators as simulators
 import rl.agents.alpha_zero._core.mcts as mcts
 
 
@@ -17,7 +17,7 @@ class MCTSNode:
         self,
         state: np.ndarray,
         action_mask: np.ndarray,
-        simulator: Simulator,
+        simulator: simulators.Base,
         network: nn.Module,
         parent: MCTSNode = None,
         config: mcts.MCTSConfig = None,

@@ -2,9 +2,10 @@
 implementations of it."""
 
 
-from .tictactoe import TicTacToe
-from .simulator import Simulator
-from .connect_four import ConnectFour
+from ._tictactoe import TicTacToe
+from ._base import Base
+from ._connect_four import ConnectFour
+from . import action_spaces
 
 
-__all__ = ["TicTacToe", "Simulator", "ConnectFour"]
+__all__ = ["TicTacToe", "Base", "ConnectFour", "action_spaces"]

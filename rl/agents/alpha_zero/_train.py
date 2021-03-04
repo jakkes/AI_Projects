@@ -3,7 +3,7 @@ from time import perf_counter, sleep
 from torch import nn, optim
 from torch.multiprocessing import Queue
 
-from rl.simulators import Simulator
+import rl.simulators as simulators
 from . import (
     LearnerConfig,
     LearnerWorker,
@@ -15,7 +15,7 @@ from . import (
 
 
 def train(
-    simulator: Simulator,
+    simulator: simulators.Base,
     self_play_workers: int,
     learner_config: LearnerConfig,
     self_play_config: SelfPlayConfig,

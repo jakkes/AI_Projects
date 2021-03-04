@@ -2,17 +2,17 @@ from typing import Tuple, Dict
 
 import numpy as np
 
-from rl.simulators import Simulator
-from .environment import Environment
+import rl.simulators as simulators
+import rl.environments as environments
 
 
-class SimulatorWrapper(Environment):
+class SimulatorWrapper(environments.Base):
     """Environment that wraps a simulator, exposing it as an environment."""
 
-    def __init__(self, simulator: Simulator):
+    def __init__(self, simulator: simulators.Base):
         """
         Args:
-            simulator (Simulator): Simulator class to wrap into an environment.
+            simulator (simulators.Base): Simulator class to wrap into an environment.
         """
         super().__init__()
         self._simulator = simulator

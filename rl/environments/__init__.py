@@ -2,8 +2,8 @@
 implementations of it."""
 
 from . import action_spaces
-from .environment import Environment
-from .simulator_wrapper import SimulatorWrapper
+from ._base import Base
+from ._simulator_wrapper import SimulatorWrapper
 
 
-__all__ = ["Environment", "SimulatorWrapper", "action_spaces"]
+__all__ = ["Base", "SimulatorWrapper", "action_spaces"]

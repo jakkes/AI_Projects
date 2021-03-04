@@ -1,14 +1,14 @@
 from typing import Callable, Tuple, List, Dict
 import numpy as np
 
-from .simulator import Simulator
+from ._base import Base
 
 
 _DIAG_INDICES = np.array([0, 4, 8]).astype(np.int32)
 _CROSS_DIAG_INDICES = np.array([2, 4, 6]).astype(np.int32)
 
 
-class TicTacToe(Simulator):
+class TicTacToe(Base):
 
     """TicTacToe (connect three, or three in a row) simulator.
 
@@ -102,8 +102,8 @@ class TicTacToe(Simulator):
 
         Args:
             state (np.ndarray): State to render
-            output_fn (Callable[[str], None], optional): Output function, called with the
-            generated string. Defaults to `print`.
+            output_fn (Callable[[str], None], optional): Output function, called with
+            the generated string. Defaults to `print`.
         """
 
         def tile(value) -> str:
