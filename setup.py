@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="rl-projects",
+    name="ai-projects",
     version="0.0.1",
     author="Jakob Stigenberg",
     description="Some RL stuff",

@@ -2,8 +2,8 @@ from argparse import ArgumentParser
 
 from torch import optim
 
-from rl.simulators import ConnectFour
-from rl.agents.alpha_zero import networks, train, LearnerConfig, SelfPlayConfig
+from ai.simulators import ConnectFour
+from ai.agents.alpha_zero import networks, train, LearnerConfig, SelfPlayConfig
 
 
 parser = ArgumentParser()

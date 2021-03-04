@@ -5,8 +5,8 @@ from random import randrange
 import numpy as np
 from torch import nn, jit
 
-import rl.simulators as simulators
-import rl.agents.alpha_zero as alpha_zero
+import ai.simulators as simulators
+import ai.agents.alpha_zero as alpha_zero
 
 
 parser = ArgumentParser()

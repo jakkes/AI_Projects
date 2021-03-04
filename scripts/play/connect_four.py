@@ -1,4 +1,4 @@
-from rl.simulators import ConnectFour
+from ai.simulators import ConnectFour
 
 
 if __name__ == "__main__":
