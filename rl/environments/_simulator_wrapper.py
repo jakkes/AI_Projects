@@ -18,15 +18,14 @@ class SimulatorWrapper(environments.Base):
         self._simulator = simulator
         self._ready = False
         self._state: np.ndarray = None
-        self._action_mask: np.ndarray = None
 
-    def step(self, action: int) -> Tuple[np.ndarray, np.ndarray, float, bool, Dict]:
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict]:
         if not self._ready:
             raise ValueError(
                 "Must call 'reset()' after having received a terminal state"
             )
 
-        self._state, self._action_mask, reward, terminal, debug = self._simulator.step(
+        self._state, reward, terminal, debug = self._simulator.step(
             self._state, action
         )
         if terminal:

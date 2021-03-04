@@ -4,6 +4,7 @@ from ._discrete import Discrete
 
 
 class ConnectFour(Discrete):
+    """Action space of the ConnectFour simulator."""
 
     @classmethod
     def size(cls) -> int:

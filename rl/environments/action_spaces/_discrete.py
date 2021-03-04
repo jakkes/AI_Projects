@@ -6,15 +6,18 @@ from ._base import Base
 
 
 class Discrete(Base):
+    """Discrete action space.
 
-    def __init__(self, size: int) -> None:
-        super().__init__()
-        self._size = size
+    Discrete action spaces identify actions using the an integer and have a fixed size.
+    Moreover, all action are not necessarily legal in every state. Legal actions are
+    given by the action mask, a boolean vector whose elements at legal action indices
+    are `True` and illegal action indices `False`."""
 
     @property
-    def size(self):
+    @abstractmethod
+    def size(self) -> int:
         """The size of the discrete action space."""
-        return self._size
+        raise NotImplementedError
 
     @property
     @abstractmethod

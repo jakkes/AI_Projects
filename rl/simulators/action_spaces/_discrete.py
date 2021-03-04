@@ -43,9 +43,11 @@ class Discrete(Base):
         """
         raise NotImplementedError
 
+    @classmethod
     def sample(cls, state: np.ndarray) -> int:
         return np.random.choice(np.arange(cls.size())[cls.action_mask(state)])
 
+    @classmethod
     def contains(cls, state: np.ndarray, action: int) -> bool:
         if not isinstance(action, (int, np.integer)):
             return False

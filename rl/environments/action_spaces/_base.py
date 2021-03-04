@@ -7,6 +7,7 @@ T = TypeVar("T")
 
 
 class Base(ABC):
+    """Base environment action space."""
 
     def as_type(self, t: T) -> T:
         """Casts the action space to the specific type.
@@ -26,7 +27,7 @@ class Base(ABC):
 
     def as_discrete(self) -> "rl.environments.action_spaces.Discrete":
         """Casts this object to a discrete action space. This operation is equivalent
-        to `as_type(DiscreteActionSpace)`."""
+        to `as_type(action_spaces.Discrete)`."""
         return self.as_type(rl.environments.action_spaces.Discrete)
 
     @abstractmethod

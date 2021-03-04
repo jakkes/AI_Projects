@@ -8,7 +8,7 @@ T = TypeVar("T")
 
 
 class Base(ABC):
-    """Base action space."""
+    """Base simulator action space."""
 
     @classmethod
     def as_type(cls, t: T) -> T:
@@ -23,10 +23,11 @@ class Base(ABC):
         Returns:
             T: Casted version of the class.
         """
-        if not isinstance(cls, t):
+        if not issubclass(cls, t):
             raise RuntimeError(f"Failed casting {cls} to {t}")
         return cls
 
+    @classmethod
     def as_discrete(cls) -> "rl.simulators.action_spaces.Discrete":
         """Casts this object to a discrete action space. This operation is equivalent
         to `as_type(DiscreteActionSpace)`."""
@@ -57,5 +58,6 @@ class Base(ABC):
         """
         raise NotImplementedError
 
+    @classmethod
     def __contains__(cls, state_action: Tuple[np.ndarray, Any]) -> bool:
         return cls.contains(*state_action)

@@ -1,23 +1,25 @@
+import os
 from argparse import ArgumentParser
 from random import randrange
 
 import numpy as np
 from torch import nn, jit
 
-from rl.simulators import ConnectFour, Simulator
-from rl.agents.alpha_zero import MCTSConfig, mcts, MCTSNode
+import rl.simulators as simulators
+import rl.agents.alpha_zero as alpha_zero
 
 
 parser = ArgumentParser()
 parser.add_argument("--save-path", type=str, default=None)
 
 
-def play(simulator: Simulator, network: nn.Module, config: MCTSConfig):
+def play(simulator: simulators.Base, network: nn.Module, config: alpha_zero.MCTSConfig):
     step = randrange(2)
 
-    state, mask = simulator.reset()
+    state = simulator.reset()
+    mask = simulator.action_space().as_discrete().action_mask(state)
     terminal = False
-    root: MCTSNode = None
+    root: alpha_zero.MCTSNode = None
 
     while not terminal:
         step += 1
@@ -27,7 +29,7 @@ def play(simulator: Simulator, network: nn.Module, config: MCTSConfig):
         if step % 2 == 0:
             action = int(input("Action: "))
         else:
-            root = mcts(
+            root = alpha_zero.mcts(
                 state,
                 mask,
                 simulator,
@@ -37,7 +39,8 @@ def play(simulator: Simulator, network: nn.Module, config: MCTSConfig):
             )
             action = np.random.choice(mask.shape[0], p=root.action_policy)
 
-        state, mask, _, terminal, _ = simulator.step(state, action)
+        state, _, terminal, _ = simulator.step(state, action)
+        mask = simulator.action_space().as_discrete().action_mask(state)
         if root is not None:
             root = root.children[action]
 
@@ -47,5 +50,5 @@ def play(simulator: Simulator, network: nn.Module, config: MCTSConfig):
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    net = jit.load(args.save_path)
-    play(ConnectFour, net, MCTSConfig())
+    net = jit.load(os.path.join(args.save_path, "network.pt"))
+    play(simulators.ConnectFour, net, alpha_zero.MCTSConfig())
