@@ -15,7 +15,7 @@ from . import (
 
 
 def train(
-    simulator: simulators.Base,
+    simulator: simulators.Factory,
     self_play_workers: int,
     learner_config: LearnerConfig,
     self_play_config: SelfPlayConfig,
@@ -28,7 +28,8 @@ def train(
     """Starts training an AlphaZero model.
 
     Args:
-        simulator (simulators.Base): Simulator instance used by the model.
+        simulator (simulators.Factory): Simulator factory spawning simulators
+        on which to train the model.
         self_play_workers (int): Number of self play workers to spawn.
         learner_config (LearnerConfig): Configuration for the learner worker.
         self_play_config (SelfPlayConfig): Configuration for the self play worker.

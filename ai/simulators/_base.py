@@ -1,7 +1,8 @@
-from abc import abstractmethod, ABC
+from abc import abstractmethod, ABC, abstractclassmethod
 from typing import Dict, List, Tuple
 
 import numpy as np
+import ai
 from . import action_spaces
 
 
@@ -70,3 +71,8 @@ class Base(ABC):
             np.ndarray: Initial state
         """
         return self.reset_bulk(1)[0]
+
+    @abstractclassmethod
+    def get_factory(cls, *args, **kwargs) -> "ai.simulators.Factory":
+        """Creates and returns a factory object that spawns simulators when called."""
+        raise NotImplementedError

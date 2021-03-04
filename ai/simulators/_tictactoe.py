@@ -3,6 +3,7 @@ import numpy as np
 
 from . import action_spaces
 from ._base import Base
+from ._factory import Factory
 
 
 _DIAG_INDICES = np.array([0, 4, 8]).astype(np.int32)
@@ -130,3 +131,12 @@ class TicTacToe(Base):
 | --- | --- | --- |         | --- | --- | --- |
         """
         )
+
+    @classmethod
+    def get_factory(cls) -> "_Factory":
+        return _Factory()
+
+
+class _Factory(Factory):
+    def __call__(self) -> TicTacToe:
+        return TicTacToe()

@@ -13,8 +13,11 @@ parser = ArgumentParser()
 parser.add_argument("--save-path", type=str, default=None)
 
 
-def play(simulator: simulators.Base, network: nn.Module, config: alpha_zero.MCTSConfig):
+def play(
+    simulator: simulators.Factory, network: nn.Module, config: alpha_zero.MCTSConfig
+):
     step = randrange(2)
+    simulator = simulator()
 
     state = simulator.reset()
     mask = simulator.action_space.as_discrete.action_mask(state)
@@ -30,12 +33,7 @@ def play(simulator: simulators.Base, network: nn.Module, config: alpha_zero.MCTS
             action = int(input("Action: "))
         else:
             root = alpha_zero.mcts(
-                state,
-                mask,
-                simulator,
-                network,
-                config,
-                root_node=root
+                state, mask, simulator, network, config, root_node=root
             )
             action = np.random.choice(mask.shape[0], p=root.action_policy)
 

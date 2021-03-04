@@ -6,6 +6,7 @@ from scipy.signal import convolve
 from ai.utils.np import cross_diag
 from . import action_spaces
 from ._base import Base
+from ._factory import Factory
 
 
 class ConnectFour(Base):
@@ -144,3 +145,12 @@ class ConnectFour(Base):
         output_fn(" | ".join(str(x) for x in range(7)))
         for i in range(6):
             print_line(i)
+
+    @classmethod
+    def get_factory(cls) -> "_Factory":
+        return _Factory()
+
+
+class _Factory(Factory):
+    def __call__(self) -> ConnectFour:
+        return ConnectFour()

@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     net = networks.ConnectFourNetwork()
     train(
-        ConnectFour(),
+        ConnectFour.get_factory(),
         8,
         LearnerConfig(),
         SelfPlayConfig(),

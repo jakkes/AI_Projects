@@ -25,14 +25,14 @@ class SelfPlayConfig(MCTSConfig):
 class SelfPlayWorker(Process):
     def __init__(
         self,
-        simulator: simulators.Base,
+        simulator: simulators.Factory,
         network: nn.Module,
         config: SelfPlayConfig,
         sample_queue: Queue,
         episode_logging_queue: Queue = None,
     ):
         super().__init__(daemon=True)
-        self.simulator = simulator
+        self.simulator = simulator()
         self.network = network
         self.config = config
         self.sample_queue = sample_queue
