@@ -4,6 +4,7 @@ import numpy as np
 from scipy.signal import convolve
 
 from rl.utils.np import cross_diag
+from . import action_spaces
 from ._base import Base
 
 
@@ -24,10 +25,14 @@ class ConnectFour(Base):
     `-1`."""
 
     @classmethod
-    def reset_bulk(self, n: int) -> Tuple[np.ndarray, np.ndarray]:
+    def reset_bulk(self, n: int) -> np.ndarray:
         states = np.zeros((n, 7 * 6 + 1))
         states[:, -1] = 1.0
-        return states, np.ones((n, 7), dtype=np.bool_)
+        return states
+
+    @classmethod
+    def action_space(cls) -> action_spaces.ConnectFour:
+        return action_spaces.ConnectFour
 
     @classmethod
     def _compute_rewards(cls, states: np.ndarray, players: np.ndarray) -> np.ndarray:
@@ -83,7 +88,7 @@ class ConnectFour(Base):
     @classmethod
     def step_bulk(
         cls, states: np.ndarray, actions: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
 
         next_states = states.copy()
         batchvec = np.arange(next_states.shape[0])
@@ -102,13 +107,11 @@ class ConnectFour(Base):
         rewards = cls._compute_rewards(next_states, players)
         terminals = (rewards != 0) | np.all(heights == 6, axis=1)
 
-        next_masks = heights < 6
         next_states = next_states.reshape((-1, 6 * 7))
         next_states = np.concatenate((next_states, -players.reshape((-1, 1))), axis=1)
 
         return (
             next_states,
-            next_masks,
             rewards,
             terminals,
             [{} for _ in range(next_states.shape[0])],

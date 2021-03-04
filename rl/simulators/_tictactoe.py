@@ -1,6 +1,7 @@
 from typing import Callable, Tuple, List, Dict
 import numpy as np
 
+from . import action_spaces
 from ._base import Base
 
 
@@ -26,10 +27,14 @@ class TicTacToe(Base):
     `-1`."""
 
     @classmethod
-    def reset_bulk(cls, n: int) -> Tuple[np.ndarray, np.ndarray]:
+    def action_space(cls) -> action_spaces.TicTacToe:
+        return action_spaces.TicTacToe
+
+    @classmethod
+    def reset_bulk(cls, n: int) -> np.ndarray:
         states = np.zeros((n, 10))
         states[:, -1] = 1.0
-        return states, np.ones((n, 9), dtype=np.bool_)
+        return states
 
     @classmethod
     def _check_win(cls, states: np.ndarray) -> np.ndarray:
@@ -63,7 +68,7 @@ class TicTacToe(Base):
     @classmethod
     def step_bulk(
         cls, states: np.ndarray, actions: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
         states = states
 
         if np.any(cls._check_loss(states)) or np.any(cls._check_win(states)):
@@ -89,7 +94,6 @@ class TicTacToe(Base):
 
         return (
             next_states,
-            next_states[:, :9] == 0,
             rewards,
             terminals,
             [{} for _ in range(next_states.shape[0])],

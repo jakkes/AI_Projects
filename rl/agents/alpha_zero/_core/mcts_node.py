@@ -154,8 +154,13 @@ class MCTSNode:
             actions = np.arange(self._action_mask.shape[0])[self._action_mask]
             states = np.expand_dims(self._state, 0)
             states = np.repeat(states, actions.shape[0], axis=0)
-            next_states, next_masks, rewards, terminals, _ = self._simulator.step_bulk(
+            next_states, rewards, terminals, _ = self._simulator.step_bulk(
                 states, actions
+            )
+            next_masks = (
+                self._simulator.action_space()
+                .as_discrete()
+                .action_mask_bulk(next_states)
             )
 
             self._children = [None] * self._action_mask.shape[0]

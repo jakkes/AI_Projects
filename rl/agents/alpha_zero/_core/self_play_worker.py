@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class SelfPlayConfig(MCTSConfig):
     """Configuration for the self play worker."""
+
     def __init__(self):
         super().__init__()
 
@@ -41,7 +42,8 @@ class SelfPlayWorker(Process):
         states, action_masks, action_policies = [], [], []
         terminal = False
         reward = 0
-        state, action_mask = self.simulator.reset()
+        state = self.simulator.reset()
+        action_mask = self.simulator.action_space().as_discrete().action_mask(state)
 
         with torch.no_grad():
             start_prior, start_value = self.network(
@@ -72,11 +74,14 @@ class SelfPlayWorker(Process):
             action_masks.append(action_mask)
             action_policies.append(torch.as_tensor(action_policy, dtype=torch.float))
 
-            action = np.random.choice(action_mask.shape[0], p=action_policy)
+            action = np.random.choice(
+                self.simulator.action_space().as_discrete().size(), p=action_policy
+            )
             if first_action is None:
                 first_action = action
 
-            state, action_mask, reward, terminal, _ = self.simulator.step(state, action)
+            state, reward, terminal, _ = self.simulator.step(state, action)
+            action_mask = self.simulator.action_space().as_discrete().action_mask(state)
             root = root.children[action]
 
         if self.episode_logging_queue is not None:

@@ -7,14 +7,14 @@ def test_steps():
 
     actions = [4, 0, 2, 6, 3, 8, 5]
 
-    state, _ = TicTacToe.reset()
+    state = TicTacToe.reset()
     terminal = False
     reward = 0.0
     player = 1.0
     for action in actions:
         assert reward == 0.0
         assert not terminal
-        state, _, reward, terminal, _ = TicTacToe.step(state, action)
+        state, reward, terminal, _ = TicTacToe.step(state, action)
         assert state[action] == player
         player = -player
 
@@ -29,7 +29,7 @@ def test_diag_win():
             [1.0, 0.0, -1.0, 0.0, -1.0, 1.0, 0.0, 0.0, 0.0, -1.0],
         ]
     )
-    states, action_masks, rewards, terminals, _ = TicTacToe.step_bulk(
+    states, rewards, terminals, _ = TicTacToe.step_bulk(
         states, np.array([8, 6], dtype=np.int32)
     )
 
