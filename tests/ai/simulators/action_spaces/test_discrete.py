@@ -3,10 +3,10 @@ import ai.simulators.action_spaces as action_spaces
 
 
 def test_casting():
-    space = action_spaces.Discrete
+    space = action_spaces.TicTacToe()
 
-    space.as_discrete()
-    space.as_type(action_spaces.Discrete)
+    space = space.as_discrete
+    space.cast_to(action_spaces.Discrete)
 
     with pytest.raises(RuntimeError):
-        space.as_type(action_spaces.ConnectFour)
+        space.cast_to(action_spaces.ConnectFour)

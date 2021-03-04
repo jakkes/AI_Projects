@@ -17,7 +17,7 @@ def play(simulator: simulators.Base, network: nn.Module, config: alpha_zero.MCTS
     step = randrange(2)
 
     state = simulator.reset()
-    mask = simulator.action_space().as_discrete().action_mask(state)
+    mask = simulator.action_space.as_discrete.action_mask(state)
     terminal = False
     root: alpha_zero.MCTSNode = None
 
@@ -40,7 +40,7 @@ def play(simulator: simulators.Base, network: nn.Module, config: alpha_zero.MCTS
             action = np.random.choice(mask.shape[0], p=root.action_policy)
 
         state, _, terminal, _ = simulator.step(state, action)
-        mask = simulator.action_space().as_discrete().action_mask(state)
+        mask = simulator.action_space.as_discrete.action_mask(state)
         if root is not None:
             root = root.children[action]
 
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     net = jit.load(os.path.join(args.save_path, "network.pt"))
-    play(simulators.ConnectFour, net, alpha_zero.MCTSConfig())
+    play(simulators.ConnectFour(), net, alpha_zero.MCTSConfig())

@@ -24,18 +24,20 @@ class ConnectFour(Base):
     Then, if a winning action is rewarded with `+1` and a losing action is rewarded with
     `-1`."""
 
-    @classmethod
+    def __init__(self) -> None:
+        super().__init__()
+        self._action_space = action_spaces.ConnectFour()
+
     def reset_bulk(self, n: int) -> np.ndarray:
         states = np.zeros((n, 7 * 6 + 1))
         states[:, -1] = 1.0
         return states
 
-    @classmethod
-    def action_space(cls) -> action_spaces.ConnectFour:
-        return action_spaces.ConnectFour
+    @property
+    def action_space(self) -> action_spaces.ConnectFour:
+        return self._action_space
 
-    @classmethod
-    def _compute_rewards(cls, states: np.ndarray, players: np.ndarray) -> np.ndarray:
+    def _compute_rewards(self, states: np.ndarray, players: np.ndarray) -> np.ndarray:
 
         players = 4 * players.reshape((-1, 1, 1))
 
@@ -85,9 +87,8 @@ class ConnectFour(Base):
 
         return rewards
 
-    @classmethod
     def step_bulk(
-        cls, states: np.ndarray, actions: np.ndarray
+        self, states: np.ndarray, actions: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
 
         next_states = states.copy()
@@ -104,7 +105,7 @@ class ConnectFour(Base):
             batchvec
         ]
         heights[batchvec, actions] += 1
-        rewards = cls._compute_rewards(next_states, players)
+        rewards = self._compute_rewards(next_states, players)
         terminals = (rewards != 0) | np.all(heights == 6, axis=1)
 
         next_states = next_states.reshape((-1, 6 * 7))
@@ -117,8 +118,7 @@ class ConnectFour(Base):
             [{} for _ in range(next_states.shape[0])],
         )
 
-    @classmethod
-    def render(cls, state: np.ndarray, output_fn: Callable[[str], None] = print):
+    def render(self, state: np.ndarray, output_fn: Callable[[str], None] = print):
         """Renders the game board to a string and then outputs it to the given
         output function.
 

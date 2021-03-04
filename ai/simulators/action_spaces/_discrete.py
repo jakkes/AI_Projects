@@ -1,4 +1,4 @@
-from abc import abstractclassmethod
+from abc import abstractmethod
 
 import numpy as np
 
@@ -13,13 +13,13 @@ class Discrete(Base):
     given by the action mask, a boolean vector whose elements at legal action indices
     are `True` and illegal action indices `False`."""
 
-    @abstractclassmethod
-    def size(cls) -> int:
+    @property
+    @abstractmethod
+    def size(self) -> int:
         """The size of the discrete action space."""
         raise NotImplementedError
 
-    @classmethod
-    def action_mask(cls, state: np.ndarray) -> np.ndarray:
+    def action_mask(self, state: np.ndarray) -> np.ndarray:
         """Computes the action mask, indicating legal actions in the given state.
 
         Args:
@@ -28,10 +28,10 @@ class Discrete(Base):
         Returns:
             np.ndarray: Action mask
         """
-        return cls.action_mask_bulk(np.expand_dims(state, 0))[0]
+        return self.action_mask_bulk(np.expand_dims(state, 0))[0]
 
-    @abstractclassmethod
-    def action_mask_bulk(cls, states: np.ndarray) -> np.ndarray:
+    @abstractmethod
+    def action_mask_bulk(self, states: np.ndarray) -> np.ndarray:
         """Computes the action masks for the given states.
 
         Args:
@@ -43,12 +43,10 @@ class Discrete(Base):
         """
         raise NotImplementedError
 
-    @classmethod
-    def sample(cls, state: np.ndarray) -> int:
-        return np.random.choice(np.arange(cls.size())[cls.action_mask(state)])
+    def sample(self, state: np.ndarray) -> int:
+        return np.random.choice(np.arange(self.size())[self.action_mask(state)])
 
-    @classmethod
-    def contains(cls, state: np.ndarray, action: int) -> bool:
+    def contains(self, state: np.ndarray, action: int) -> bool:
         if not isinstance(action, (int, np.integer)):
             return False
-        return cls.action_mask(state)[action]
+        return self.action_mask(state)[action]

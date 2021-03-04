@@ -1,4 +1,4 @@
-from abc import ABC, abstractclassmethod
+from abc import ABC, abstractmethod
 from typing import Any, TypeVar, Tuple
 
 import numpy as np
@@ -10,30 +10,29 @@ T = TypeVar("T")
 class Base(ABC):
     """Base simulator action space."""
 
-    @classmethod
-    def as_type(cls, t: T) -> T:
+    def cast_to(self, t: T) -> T:
         """Casts the action space to the specific type.
 
         Args:
             t (T): Type to which the space should be cast
 
         Raises:
-            RuntimeError: If the class is not castable to the requested type.
+            RuntimeError: If the object is not castable to the requested type.
 
         Returns:
-            T: Casted version of the class.
+            T: Casted version of the object.
         """
-        if not issubclass(cls, t):
-            raise RuntimeError(f"Failed casting {cls} to {t}")
-        return cls
+        if not isinstance(self, t):
+            raise RuntimeError(f"Failed casting {self} to {t}")
+        return self
 
-    @classmethod
-    def as_discrete(cls) -> "ai.simulators.action_spaces.Discrete":
-        """Casts this object to a discrete action space. This operation is equivalent
-        to `as_type(DiscreteActionSpace)`."""
-        return cls.as_type(ai.simulators.action_spaces.Discrete)
+    @property
+    def as_discrete(self) -> "ai.simulators.action_spaces.Discrete":
+        """This object cast to a discrete action space. Equivalent to calling
+        `cast_to(Discrete)`."""
+        return self.cast_to(ai.simulators.action_spaces.Discrete)
 
-    @abstractclassmethod
+    @abstractmethod
     def sample(self, state: np.ndarray) -> Any:
         """Samples an action from the action space.
 
@@ -45,8 +44,8 @@ class Base(ABC):
         """
         raise NotImplementedError
 
-    @abstractclassmethod
-    def contains(cls, state: np.ndarray, action: Any) -> bool:
+    @abstractmethod
+    def contains(self, state: np.ndarray, action: Any) -> bool:
         """Determines if the given action is in the action space or not.
 
         Args:
@@ -58,6 +57,5 @@ class Base(ABC):
         """
         raise NotImplementedError
 
-    @classmethod
-    def __contains__(cls, state_action: Tuple[np.ndarray, Any]) -> bool:
-        return cls.contains(*state_action)
+    def __contains__(self, state_action: Tuple[np.ndarray, Any]) -> bool:
+        return self.contains(*state_action)

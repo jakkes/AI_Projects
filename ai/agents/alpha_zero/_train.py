@@ -28,7 +28,7 @@ def train(
     """Starts training an AlphaZero model.
 
     Args:
-        simulator (Simulator): The simulator used by the model.
+        simulator (simulators.Base): Simulator instance used by the model.
         self_play_workers (int): Number of self play workers to spawn.
         learner_config (LearnerConfig): Configuration for the learner worker.
         self_play_config (SelfPlayConfig): Configuration for the self play worker.

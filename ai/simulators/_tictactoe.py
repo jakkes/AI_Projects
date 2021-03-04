@@ -26,18 +26,20 @@ class TicTacToe(Base):
     Then, if a winning action is rewarded with `+1` and a losing action is rewarded with
     `-1`."""
 
-    @classmethod
-    def action_space(cls) -> action_spaces.TicTacToe:
-        return action_spaces.TicTacToe
+    def __init__(self) -> None:
+        super().__init__()
+        self._action_space = action_spaces.TicTacToe()
 
-    @classmethod
-    def reset_bulk(cls, n: int) -> np.ndarray:
+    @property
+    def action_space(self) -> action_spaces.TicTacToe:
+        return self._action_space
+
+    def reset_bulk(self, n: int) -> np.ndarray:
         states = np.zeros((n, 10))
         states[:, -1] = 1.0
         return states
 
-    @classmethod
-    def _check_win(cls, states: np.ndarray) -> np.ndarray:
+    def _check_win(self, states: np.ndarray) -> np.ndarray:
         batchvec = np.arange(states.shape[0])
         repeated_batchvec = np.repeat(batchvec, 3)
         tiled_diag_indices = np.tile(_DIAG_INDICES, batchvec.shape[0])
@@ -59,19 +61,17 @@ class TicTacToe(Base):
 
         return row_win | col_win | diagwin | crossdiagwin
 
-    @classmethod
-    def _check_loss(cls, states: np.ndarray) -> np.ndarray:
+    def _check_loss(self, states: np.ndarray) -> np.ndarray:
         states = states.copy()
         states[:, -1] = -states[:, -1]
-        return cls._check_win(states)
+        return self._check_win(states)
 
-    @classmethod
     def step_bulk(
-        cls, states: np.ndarray, actions: np.ndarray
+        self, states: np.ndarray, actions: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
         states = states
 
-        if np.any(cls._check_loss(states)) or np.any(cls._check_win(states)):
+        if np.any(self._check_loss(states)) or np.any(self._check_win(states)):
             raise ValueError("Cannot step from a state already in a win condition.")
 
         next_states = states.copy()
@@ -83,9 +83,9 @@ class TicTacToe(Base):
         next_states[batchvec, actions] = next_states[batchvec, -1]
 
         rewards = np.zeros(next_states.shape[0])
-        win = cls._check_win(next_states)
+        win = self._check_win(next_states)
         rewards[win] = 1.0
-        loss = cls._check_loss(next_states)
+        loss = self._check_loss(next_states)
         rewards[loss] = -1.0
 
         terminals = win | loss | np.all(next_states != 0, axis=1)
@@ -99,8 +99,7 @@ class TicTacToe(Base):
             [{} for _ in range(next_states.shape[0])],
         )
 
-    @classmethod
-    def render(cls, state: np.ndarray, output_fn: Callable[[str], None] = print):
+    def render(self, state: np.ndarray, output_fn: Callable[[str], None] = print):
         """Renders the game board and action index map to a string that is then output
         through the given output function.
 

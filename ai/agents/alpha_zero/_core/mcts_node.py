@@ -158,8 +158,8 @@ class MCTSNode:
                 states, actions
             )
             next_masks = (
-                self._simulator.action_space()
-                .as_discrete()
+                self._simulator.action_space
+                .as_discrete
                 .action_mask_bulk(next_states)
             )
 

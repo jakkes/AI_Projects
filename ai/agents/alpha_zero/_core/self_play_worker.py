@@ -43,7 +43,7 @@ class SelfPlayWorker(Process):
         terminal = False
         reward = 0
         state = self.simulator.reset()
-        action_mask = self.simulator.action_space().as_discrete().action_mask(state)
+        action_mask = self.simulator.action_space.as_discrete.action_mask(state)
 
         with torch.no_grad():
             start_prior, start_value = self.network(
@@ -75,13 +75,13 @@ class SelfPlayWorker(Process):
             action_policies.append(torch.as_tensor(action_policy, dtype=torch.float))
 
             action = np.random.choice(
-                self.simulator.action_space().as_discrete().size(), p=action_policy
+                self.simulator.action_space.as_discrete.size, p=action_policy
             )
             if first_action is None:
                 first_action = action
 
             state, reward, terminal, _ = self.simulator.step(state, action)
-            action_mask = self.simulator.action_space().as_discrete().action_mask(state)
+            action_mask = self.simulator.action_space.as_discrete.action_mask(state)
             root = root.children[action]
 
         if self.episode_logging_queue is not None:

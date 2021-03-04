@@ -6,10 +6,9 @@ from ._discrete import Discrete
 class TicTacToe(Discrete):
     """Action space for the TicTacToe simulator."""
 
-    @classmethod
+    @property
     def size(cls) -> int:
         return 9
 
-    @classmethod
-    def action_mask_bulk(cls, states: np.ndarray) -> np.ndarray:
+    def action_mask_bulk(self, states: np.ndarray) -> np.ndarray:
         return states[:, :-1] == 0

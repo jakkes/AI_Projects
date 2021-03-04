@@ -1,4 +1,4 @@
-from abc import abstractclassmethod, ABC
+from abc import abstractmethod, ABC
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -9,12 +9,10 @@ class Base(ABC):
     """Simulator base class.
 
     A simulator, as opposed to an environment, executes actions based on a
-    given state, rather than the interally tracked state. Thus, simulator
-    classes are rarely (if ever) initialized. States are given as `np.ndarray`s."""
+    given state, rather than a interally tracked state."""
 
-    @classmethod
     def step(
-        cls, state: np.ndarray, action: int
+        self, state: np.ndarray, action: int
     ) -> Tuple[np.ndarray, float, bool, Dict]:
         """Executes one step in the environment.
 
@@ -26,19 +24,20 @@ class Base(ABC):
             Tuple[np.ndarray, float, bool, Dict]: Tuple of next state, reward, terminal
             flag, and debugging dictionary.
         """
-        next_states, rewards, terminals, infos = cls.step_bulk(
+        next_states, rewards, terminals, infos = self.step_bulk(
             np.expand_dims(state, 0), np.array([action])
         )
         return next_states[0], rewards[0], terminals[0], infos[0]
 
-    @abstractclassmethod
-    def action_space(cls) -> action_spaces.Base:
+    @property
+    @abstractmethod
+    def action_space(self) -> action_spaces.Base:
         """The action space class used by this simulator."""
         raise NotImplementedError
 
-    @abstractclassmethod
+    @abstractmethod
     def step_bulk(
-        cls, states: np.ndarray, actions: np.ndarray
+        self, states: np.ndarray, actions: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
         """Executes a bulk of actions in multiple states.
 
@@ -52,8 +51,8 @@ class Base(ABC):
         """
         raise NotImplementedError
 
-    @abstractclassmethod
-    def reset_bulk(cls, n: int) -> np.ndarray:
+    @abstractmethod
+    def reset_bulk(self, n: int) -> np.ndarray:
         """Provides multiple new environment states.
 
         Args:
@@ -64,11 +63,10 @@ class Base(ABC):
         """
         raise NotImplementedError
 
-    @classmethod
-    def reset(cls) -> np.ndarray:
+    def reset(self) -> np.ndarray:
         """Provides a single new environment state.
 
         Returns:
             np.ndarray: Initial state
         """
-        return cls.reset_bulk(1)[0]
+        return self.reset_bulk(1)[0]
