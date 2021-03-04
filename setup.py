@@ -1,3 +1,4 @@
+import ai
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -5,9 +6,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ai-projects",
-    version="0.0.1",
+    version=ai.__version__,
     author="Jakob Stigenberg",
-    description="Some RL stuff",
+    description="Collection of AI algorithms and agents.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jakkes/RL_Projects",
@@ -26,5 +27,5 @@ setuptools.setup(
 )
 
 # Publish
-# python3 setup.py sdist bdist_wheel
+# python setup.py sdist bdist_wheel
 # twine upload dist/*

@@ -1,3 +1,3 @@
-# Reinforcement Learning agents
+# Artificial Intelligence
 
-A collection of reinforcement learning (RL) algorithms and environments.
+A collection of AI algorithms, agents, and more.
