@@ -50,5 +50,5 @@ def test_compute_reward():
 
     players = np.array([1.0, 1.0, -1.0, -1.0, 1.0])
 
-    rewards = ConnectFour()._compute_rewards(states, players)
+    rewards = ConnectFour.get_factory()()._compute_rewards(states, players)
     assert np.array_equal(rewards, np.array([1.0, 1.0, 1.0, -1.0, 0.0]))

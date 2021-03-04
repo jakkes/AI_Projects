@@ -145,12 +145,3 @@ class ConnectFour(Base):
         output_fn(" | ".join(str(x) for x in range(7)))
         for i in range(6):
             print_line(i)
-
-    @classmethod
-    def get_factory(cls) -> "_Factory":
-        return _Factory()
-
-
-class _Factory(Factory):
-    def __call__(self) -> ConnectFour:
-        return ConnectFour()

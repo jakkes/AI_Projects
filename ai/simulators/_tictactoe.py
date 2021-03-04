@@ -131,12 +131,3 @@ class TicTacToe(Base):
 | --- | --- | --- |         | --- | --- | --- |
         """
         )
-
-    @classmethod
-    def get_factory(cls) -> "_Factory":
-        return _Factory()
-
-
-class _Factory(Factory):
-    def __call__(self) -> TicTacToe:
-        return TicTacToe()

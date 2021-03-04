@@ -6,7 +6,7 @@ from ai.simulators import TicTacToe
 def test_steps():
 
     actions = [4, 0, 2, 6, 3, 8, 5]
-    sim = TicTacToe()
+    sim = TicTacToe.get_factory()()
 
     state = sim.reset()
     terminal = False
@@ -30,7 +30,7 @@ def test_diag_win():
             [1.0, 0.0, -1.0, 0.0, -1.0, 1.0, 0.0, 0.0, 0.0, -1.0],
         ]
     )
-    states, rewards, terminals, _ = TicTacToe().step_bulk(
+    states, rewards, terminals, _ = TicTacToe.get_factory()().step_bulk(
         states, np.array([8, 6], dtype=np.int32)
     )
 

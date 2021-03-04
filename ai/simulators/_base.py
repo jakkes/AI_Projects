@@ -1,9 +1,12 @@
-from abc import abstractmethod, ABC, abstractclassmethod
-from typing import Dict, List, Tuple
+from abc import abstractmethod, ABC
+from typing import Dict, List, Tuple, TypeVar
 
 import numpy as np
 import ai
 from . import action_spaces
+
+
+T = TypeVar("T")
 
 
 class Base(ABC):
@@ -72,7 +75,11 @@ class Base(ABC):
         """
         return self.reset_bulk(1)[0]
 
-    @abstractclassmethod
-    def get_factory(cls, *args, **kwargs) -> "ai.simulators.Factory":
-        """Creates and returns a factory object that spawns simulators when called."""
-        raise NotImplementedError
+    @classmethod
+    def get_factory(cls: T, *args, **kwargs) -> "ai.simulators.Factory[T]":
+        """Creates and returns a factory object that spawns simulators when called.
+
+        Args and kwargs are passed along to the class constructor. However, if other
+        behavior is required, feel free to override this method and return a factory
+        class of your choice."""
+        return ai.simulators.Factory[T](cls, *args, **kwargs)
