@@ -2,7 +2,7 @@ from abc import ABC, abstractclassmethod
 from typing import Any, TypeVar, Tuple
 
 import numpy as np
-import rl
+import ai
 
 T = TypeVar("T")
 
