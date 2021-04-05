@@ -6,7 +6,6 @@ import torch.nn.functional as F
 
 import ai.agents.rainbow_dqn as rainbow
 
-
 class NoisyLinear(nn.Linear):
     def __init__(self, in_features, out_features, std_init, bias=True):
         super().__init__(in_features, out_features, bias)
