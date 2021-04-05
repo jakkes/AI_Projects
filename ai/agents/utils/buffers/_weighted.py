@@ -8,6 +8,8 @@ from ._base import Base
 
 
 class Weighted(Base):
+    """Buffer where samples are drawn according to their sample weight."""
+
     def __init__(
         self,
         capacity: int,
