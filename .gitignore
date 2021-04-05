@@ -1,5 +1,6 @@
 # Ignore saved models
-**/models
+models/
+runs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
