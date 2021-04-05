@@ -49,4 +49,6 @@ if __name__ == "__main__":
         os.makedirs(args.save_path, exist_ok=False)
 
     net = Network()
-    train(4, ConnectFour, net, optim.SGD(net.parameters(), lr=1e-4, weight_decay=1e-5), AlphaZeroConfig(), args.save_path)
+    config = AlphaZeroConfig()
+    config.simulations = 400
+    train(4, ConnectFour, net, optim.SGD(net.parameters(), lr=1e-4, weight_decay=1e-5), config, args.save_path)

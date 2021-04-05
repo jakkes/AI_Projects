@@ -42,5 +42,7 @@ def play(simulator: Simulator, network: nn.Module, config: AlphaZeroConfig):
 if __name__ == "__main__":
     args = parser.parse_args()
 
+    config = AlphaZeroConfig()
+    config.simulations = 400
     net = jit.load(args.save_path)
-    play(ConnectFour, net, AlphaZeroConfig())
+    play(ConnectFour, net, config)
