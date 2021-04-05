@@ -1,4 +1,4 @@
-"""WIP"""
+"""Rainbow DQN implementation."""
 
 from typing import List, Dict, Any
 
