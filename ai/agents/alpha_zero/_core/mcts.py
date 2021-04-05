@@ -51,8 +51,9 @@ def mcts(
         config (MCTSConfig): Configuration.
         simulations (int, optional): Number of MCTS steps. Defaults to 50.
         root_node (MCTSNode, optional): If not None, this node is used as root. Useful
-        when the tree has previously been traversed, i.e. previously computed children
-        are maintained instead of erasing the already computed tree. Defaults to None.
+            when the tree has previously been traversed, i.e. previously computed
+            children are maintained instead of erasing the already computed tree.
+            Defaults to None.
 
     Returns:
         MCTSNode: Root node.
