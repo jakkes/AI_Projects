@@ -1,4 +1,4 @@
-"""Module containing implementations of RL algorithms."""
+"""Module containing implementations of AI algorithms."""
 
 from . import alpha_zero
 

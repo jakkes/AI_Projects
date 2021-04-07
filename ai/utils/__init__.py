@@ -1,4 +1,4 @@
-"""Module containing general utility methods, used throughout the rl library."""
+"""Module containing general utility methods, used throughout the library."""
 
 from . import np, torch, logging
 

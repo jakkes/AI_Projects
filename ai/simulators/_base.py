@@ -15,6 +15,19 @@ class Base(ABC):
     A simulator, as opposed to an environment, executes actions based on a
     given state, rather than a interally tracked state."""
 
+    def __init__(self, deterministic: bool) -> None:
+        """
+        Args:
+            deterministic (bool): Flag indicating if this simulator instance is
+                considered deterministic or not.
+        """
+        super().__init__()
+        self._deterministic = deterministic
+
+    @property
+    def deterministic(self) -> bool:
+        return self._deterministic
+
     def step(
         self, state: np.ndarray, action: int
     ) -> Tuple[np.ndarray, float, bool, Dict]:
