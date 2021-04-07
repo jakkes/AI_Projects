@@ -25,6 +25,7 @@ from ._core.loggers import LearnerLogger, SelfPlayLogger
 from ._core.mcts import mcts, MCTSConfig
 from ._core.mcts_node import MCTSNode
 from ._train import train
+from . import networks
 
 __all__ = [
     "mcts",
@@ -37,4 +38,5 @@ __all__ = [
     "MCTSConfig",
     "MCTSNode",
     "train",
+    "networks"
 ]
