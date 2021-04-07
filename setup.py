@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="ai-projects",
+    name="ai",
     version=ai.__version__,
     author="Jakob Stigenberg",
     description="Collection of AI algorithms and agents.",
