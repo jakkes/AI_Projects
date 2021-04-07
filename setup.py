@@ -19,7 +19,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ),
     install_requires=[
-        "torch~=1.7.1",
+        "torch~=1.8.1",
         "scipy~=1.6.1",
         "tensorboard~=2.4.1",
     ],
