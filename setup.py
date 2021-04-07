@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="ai-projects",
+    name="ai",
     version=ai.__version__,
     author="Jakob Stigenberg",
     description="Collection of AI algorithms and agents.",
@@ -19,11 +19,11 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ),
     install_requires=[
-        "torch~=1.7.1",
+        "torch~=1.8.1",
         "scipy~=1.6.1",
         "tensorboard~=2.4.1",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.7",
 )
 
 # Publish

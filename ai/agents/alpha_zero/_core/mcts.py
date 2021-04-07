@@ -59,6 +59,11 @@ def mcts(
         MCTSNode: Root node.
     """
 
+    if not simulator.deterministic:
+        raise ValueError(
+            "Cannot run Monte Carlo Tree Search using a stochastic simulator."
+        )
+
     root = (
         MCTSNode(state, action_mask, simulator, network, config=config)
         if root_node is None

@@ -29,18 +29,18 @@ def train(
 
     Args:
         simulator (simulators.Factory): Simulator factory spawning simulators
-        on which to train the model.
+            on which to train the model.
         self_play_workers (int): Number of self play workers to spawn.
         learner_config (LearnerConfig): Configuration for the learner worker.
         self_play_config (SelfPlayConfig): Configuration for the self play worker.
         network (nn.Module): Network.
         optimizer (optim.Optimizer): Optimizer.
         save_path (str, optional): Path to where to store training checkpoints. If None,
-        no checkpoints are stored. Defaults to None.
+            no checkpoints are stored. Defaults to None.
         save_period (int, optional): Time (in seconds) between checkpoints. If less than
-        zero, no saves are made. Defaults to -1.
+            zero, no saves are made. Defaults to -1.
         train_time (int, optional): Training time in seconds. If less than zero,
-        training is run until the process is interupted. Defaults to -1.
+            training is run until the process is interupted. Defaults to -1.
     """
     network.share_memory()
 

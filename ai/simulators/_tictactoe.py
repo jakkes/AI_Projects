@@ -28,7 +28,7 @@ class TicTacToe(Base):
     `-1`."""
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(True)
         self._action_space = action_spaces.TicTacToe()
 
     @property
