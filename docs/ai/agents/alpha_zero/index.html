@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>ai.agents.alpha_zero API documentation</title>
+<meta name="description" content="Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search for
+zero sum games …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ai.agents.alpha_zero</code></h1>
+</header>
+<section id="section-intro">
+<p>Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search for
+zero sum games.</p>
+<p>The AlphaZero algorithm consists of two core components: the <code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code> and the
+<code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>. The <code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>s generate rollouts of the policy that are then
+passed onto the <code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code> where network updates are performed. These are
+configurable by the <code><a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a></code> and <code><a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code>.</p>
+<p>In addition to these, there are two logging servers used for visualization to
+tensorboard: <code><a title="ai.agents.alpha_zero.LearnerLogger" href="#ai.agents.alpha_zero.LearnerLogger">LearnerLogger</a></code> and <code><a title="ai.agents.alpha_zero.SelfPlayLogger" href="#ai.agents.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code>.</p>
+<p>For a basic implementation of the AlphaZero algorithm, see the <code><a title="ai.agents.alpha_zero.train" href="#ai.agents.alpha_zero.train">train()</a></code> method. This
+method uses pure python multiprocessing. However, replacing the python queues by some
+other transportation protocol (implementing the queue interface) should allow the
+algorithm to run across multiple machines as well. If running across machines, network
+parameters must be communicated as well. In the <code><a title="ai.agents.alpha_zero.train" href="#ai.agents.alpha_zero.train">train()</a></code> method, the network is simply
+put into shared memory.</p>
+<p>When evaluating a model, use the <code><a title="ai.agents.alpha_zero.mcts" href="#ai.agents.alpha_zero.mcts">mcts()</a></code> method.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search for
+zero sum games.
+
+The AlphaZero algorithm consists of two core components: the `LearnerWorker` and the
+`SelfPlayWorker`. The `SelfPlayWorker`s generate rollouts of the policy that are then
+passed onto the `LearnerWorker` where network updates are performed. These are
+configurable by the `LearnerConfig` and `SelfPlayConfig`.
+
+In addition to these, there are two logging servers used for visualization to
+tensorboard: `LearnerLogger` and `SelfPlayLogger`.
+
+For a basic implementation of the AlphaZero algorithm, see the `train` method. This
+method uses pure python multiprocessing. However, replacing the python queues by some
+other transportation protocol (implementing the queue interface) should allow the
+algorithm to run across multiple machines as well. If running across machines, network
+parameters must be communicated as well. In the `train` method, the network is simply
+put into shared memory.
+
+When evaluating a model, use the `mcts` method.
+&#34;&#34;&#34;
+
+from ._core.learner_worker import LearnerWorker, LearnerConfig
+from ._core.self_play_worker import SelfPlayWorker, SelfPlayConfig
+from ._core.loggers import LearnerLogger, SelfPlayLogger
+from ._core.mcts import mcts, MCTSConfig
+from ._core.mcts_node import MCTSNode
+from ._train import train
+from . import networks
+
+__all__ = [
+    &#34;mcts&#34;,
+    &#34;LearnerWorker&#34;,
+    &#34;LearnerConfig&#34;,
+    &#34;SelfPlayWorker&#34;,
+    &#34;SelfPlayConfig&#34;,
+    &#34;LearnerLogger&#34;,
+    &#34;SelfPlayLogger&#34;,
+    &#34;MCTSConfig&#34;,
+    &#34;MCTSNode&#34;,
+    &#34;train&#34;,
+    &#34;networks&#34;
+]</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="ai.agents.alpha_zero.networks" href="networks/index.html">ai.agents.alpha_zero.networks</a></code></dt>
+<dd>
+<div class="desc"><p>Example implementations of networks for some simulators.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="ai.agents.alpha_zero.mcts"><code class="name flex">
+<span>def <span class="ident">mcts</span></span>(<span>state: numpy.ndarray, action_mask: numpy.ndarray, simulator: ai.simulators._base.Base, network: torch.nn.modules.module.Module, config: ai.agents.alpha_zero._core.mcts.MCTSConfig, root_node: ai.agents.alpha_zero._core.mcts_node.MCTSNode = None) ‑> ai.agents.alpha_zero._core.mcts_node.MCTSNode</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Runs the Monte Carlo Tree Search algorithm.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>state</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>Start state.</dd>
+<dt><strong><code>action_mask</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>Start action mask.</dd>
+<dt><strong><code>simulator</code></strong> :&ensp;<code>Simulator</code></dt>
+<dd>Simulator.</dd>
+<dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
+<dd>Network.</dd>
+<dt><strong><code>config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a></code></dt>
+<dd>Configuration.</dd>
+<dt><strong><code>simulations</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Number of MCTS steps. Defaults to 50.</dd>
+<dt><strong><code>root_node</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code>, optional</dt>
+<dd>If not None, this node is used as root. Useful
+when the tree has previously been traversed, i.e. previously computed
+children are maintained instead of erasing the already computed tree.
+Defaults to None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code></dt>
+<dd>Root node.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mcts(
+    state: np.ndarray,
+    action_mask: np.ndarray,
+    simulator: simulators.Base,
+    network: nn.Module,
+    config: MCTSConfig,
+    root_node: MCTSNode = None,
+) -&gt; MCTSNode:
+    &#34;&#34;&#34;Runs the Monte Carlo Tree Search algorithm.
+
+    Args:
+        state (np.ndarray): Start state.
+        action_mask (np.ndarray): Start action mask.
+        simulator (Simulator): Simulator.
+        network (nn.Module): Network.
+        config (MCTSConfig): Configuration.
+        simulations (int, optional): Number of MCTS steps. Defaults to 50.
+        root_node (MCTSNode, optional): If not None, this node is used as root. Useful
+            when the tree has previously been traversed, i.e. previously computed
+            children are maintained instead of erasing the already computed tree.
+            Defaults to None.
+
+    Returns:
+        MCTSNode: Root node.
+    &#34;&#34;&#34;
+
+    if not simulator.deterministic:
+        raise ValueError(
+            &#34;Cannot run Monte Carlo Tree Search using a stochastic simulator.&#34;
+        )
+
+    root = (
+        MCTSNode(state, action_mask, simulator, network, config=config)
+        if root_node is None
+        else root_node
+    )
+    if not np.array_equal(state, root.state):
+        raise ValueError(&#34;Given state and state of the root node differ.&#34;)
+    if not np.array_equal(action_mask, root.action_mask):
+        raise ValueError(&#34;Given action mask and action mask of the root node differ.&#34;)
+    root.rootify()
+
+    for _ in range(config.simulations):
+        node = root
+        while not node.is_leaf:
+            node = node.select()
+
+        node.expand()
+        node.backup()
+    return root</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.train"><code class="name flex">
+<span>def <span class="ident">train</span></span>(<span>simulator: ai.simulators._factory.Factory, self_play_workers: int, learner_config: ai.agents.alpha_zero._core.learner_worker.LearnerConfig, self_play_config: ai.agents.alpha_zero._core.self_play_worker.SelfPlayConfig, network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, save_path: str = None, save_period: int = -1, train_time: int = -1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Starts training an AlphaZero model.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>simulator</code></strong> :&ensp;<code>simulators.Factory</code></dt>
+<dd>Simulator factory spawning simulators
+on which to train the model.</dd>
+<dt><strong><code>self_play_workers</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of self play workers to spawn.</dd>
+<dt><strong><code>learner_config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a></code></dt>
+<dd>Configuration for the learner worker.</dd>
+<dt><strong><code>self_play_config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code></dt>
+<dd>Configuration for the self play worker.</dd>
+<dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
+<dd>Network.</dd>
+<dt><strong><code>optimizer</code></strong> :&ensp;<code>optim.Optimizer</code></dt>
+<dd>Optimizer.</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Path to where to store training checkpoints. If None,
+no checkpoints are stored. Defaults to None.</dd>
+<dt><strong><code>save_period</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Time (in seconds) between checkpoints. If less than
+zero, no saves are made. Defaults to -1.</dd>
+<dt><strong><code>train_time</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Training time in seconds. If less than zero,
+training is run until the process is interupted. Defaults to -1.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def train(
+    simulator: simulators.Factory,
+    self_play_workers: int,
+    learner_config: LearnerConfig,
+    self_play_config: SelfPlayConfig,
+    network: nn.Module,
+    optimizer: optim.Optimizer,
+    save_path: str = None,
+    save_period: int = -1,
+    train_time: int = -1
+):
+    &#34;&#34;&#34;Starts training an AlphaZero model.
+
+    Args:
+        simulator (simulators.Factory): Simulator factory spawning simulators
+            on which to train the model.
+        self_play_workers (int): Number of self play workers to spawn.
+        learner_config (LearnerConfig): Configuration for the learner worker.
+        self_play_config (SelfPlayConfig): Configuration for the self play worker.
+        network (nn.Module): Network.
+        optimizer (optim.Optimizer): Optimizer.
+        save_path (str, optional): Path to where to store training checkpoints. If None,
+            no checkpoints are stored. Defaults to None.
+        save_period (int, optional): Time (in seconds) between checkpoints. If less than
+            zero, no saves are made. Defaults to -1.
+        train_time (int, optional): Training time in seconds. If less than zero,
+            training is run until the process is interupted. Defaults to -1.
+    &#34;&#34;&#34;
+    network.share_memory()
+
+    sample_queue = Queue(maxsize=2000)
+    episode_logging_queue = Queue(maxsize=2000)
+    learner_logging_queue = Queue(maxsize=2000)
+
+    self_play_workers = [
+        SelfPlayWorker(
+            simulator,
+            network,
+            self_play_config,
+            sample_queue,
+            episode_logging_queue=episode_logging_queue,
+        )
+        for _ in range(self_play_workers)
+    ]
+
+    learner_worker = LearnerWorker(
+        network,
+        optimizer,
+        learner_config,
+        sample_queue,
+        learner_logging_queue=learner_logging_queue,
+        save_path=save_path,
+        save_period=save_period
+    )
+
+    learner_logger = LearnerLogger(learner_logging_queue)
+    self_play_logger = SelfPlayLogger(episode_logging_queue)
+
+    learner_logger.start()
+    self_play_logger.start()
+    learner_worker.start()
+    for worker in self_play_workers:
+        worker.start()
+
+    start = perf_counter()
+    while train_time &lt; 0 or perf_counter() - start &lt; train_time:
+        sleep(10)
+
+    learner_logger.terminate()
+    self_play_logger.terminate()
+    learner_worker.terminate()
+    for worker in self_play_workers:
+        worker.terminate()
+
+    learner_logger.join()
+    self_play_logger.join()
+    learner_worker.join()
+    for worker in self_play_workers:
+        worker.join()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ai.agents.alpha_zero.LearnerConfig"><code class="flex name class">
+<span>class <span class="ident">LearnerConfig</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Configuration of the Learner process.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LearnerConfig:
+    &#34;&#34;&#34;Configuration of the Learner process.&#34;&#34;&#34;
+    def __init__(self) -&gt; None:
+        self.batch_size = 32
+        &#34;&#34;&#34;Batch size used during training.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.LearnerConfig.batch_size"><code class="name">var <span class="ident">batch_size</span></code></dt>
+<dd>
+<div class="desc"><p>Batch size used during training.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="ai.agents.alpha_zero.LearnerLogger"><code class="flex name class">
+<span>class <span class="ident">LearnerLogger</span></span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f88b9d3b550>>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Logging server for the <code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code>.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
+<dd>Queue from which logging items are gathered.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LearnerLogger(SummaryWriterServer):
+    &#34;&#34;&#34;Logging server for the `LearnerWorker`.&#34;&#34;&#34;
+    def __init__(self, data_queue: Queue):
+        &#34;&#34;&#34;
+        Args:
+            data_queue (Queue): Queue from which logging items are gathered.
+        &#34;&#34;&#34;
+        super().__init__(&#34;Learner&#34;, data_queue)
+        self.step = 0
+
+    def log(self, writer: SummaryWriter, data):
+        self.step += 1
+        writer.add_scalar(&#34;Training/Loss&#34;, data, global_step=self.step)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>ai.utils.logging._summary_writer_server.SummaryWriterServer</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.LearnerLogger.log"><code class="name flex">
+<span>def <span class="ident">log</span></span>(<span>self, writer: torch.utils.tensorboard.writer.SummaryWriter, data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This method is called whenever data is retrieved from the data queue.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>summary_writer</code></strong> :&ensp;<code>SummaryWriter</code></dt>
+<dd>Summary writer used by this server.</dd>
+<dt><strong><code>data</code></strong> :&ensp;<code>Any</code></dt>
+<dd>Data, defined by the publishing entity.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def log(self, writer: SummaryWriter, data):
+    self.step += 1
+    writer.add_scalar(&#34;Training/Loss&#34;, data, global_step=self.step)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ai.agents.alpha_zero.LearnerWorker"><code class="flex name class">
+<span>class <span class="ident">LearnerWorker</span></span>
+<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: ai.agents.alpha_zero._core.learner_worker.LearnerConfig, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f88b9d3b550>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f88b9d3b550>> = None, save_path: str = None, save_period: int = -1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process objects represent activity that is run in a separate process</p>
+<p>The class is analogous to <code>threading.Thread</code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LearnerWorker(Process):
+    def __init__(
+        self,
+        network: nn.Module,
+        optimizer: optim.Optimizer,
+        config: LearnerConfig,
+        sample_queue: Queue,
+        learner_logging_queue: Queue = None,
+        save_path: str = None,
+        save_period: int = -1,
+    ):
+        super().__init__(daemon=True)
+        self.network = network
+        self.optimizer = optimizer
+        self.config = config
+        self.sample_queue = sample_queue
+        self.learner_logging_queue = learner_logging_queue
+        self.save_path = save_path
+        self.save_period = save_period
+
+        self.last_save_time = None
+
+    def train_step(self, states: Tensor, masks: Tensor, policies: Tensor, z: Tensor):
+        p, v = self.network(states, masks)
+        loggedp = torch.where(
+            torch.isinf(p), torch.zeros_like(p), torch.log_softmax(p, dim=1)
+        )
+
+        loss = (z - v.view(-1)).square().mean() - (policies * loggedp).sum(dim=1).mean()
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        if self.learner_logging_queue is not None:
+            self.learner_logging_queue.put_nowait(loss.detach())
+
+        if (
+            self.save_period &gt; 0
+            and perf_counter() - self.last_save_time &gt; self.save_period
+        ):
+            self.save(states, masks)
+            self.last_save_time = perf_counter()
+
+    def save(self, states: Tensor, masks: Tensor):
+        if self.save_path is None:
+            return
+
+        save_dir = os.path.join(self.save_path, str(int(time())))
+        os.makedirs(save_dir, exist_ok=False)
+
+        model = jit.trace(self.network, (states, masks))
+        jit.save(model, os.path.join(save_dir, &#34;network.pt&#34;))
+
+    def run(self):
+        batch_states, batch_masks, batch_policies, batch_z = [], [], [], []
+        L = 0
+        self.last_save_time = perf_counter()
+        while True:
+            try:
+                states, masks, policies, z = self.sample_queue.get(timeout=5)
+                N = states.shape[0]
+                while N &gt; 0:
+                    M = min(self.config.batch_size - L, N)
+                    batch_states.append(states[:M])
+                    states = states[M:]
+                    batch_masks.append(masks[:M])
+                    masks = masks[M:]
+                    batch_policies.append(policies[:M])
+                    policies = policies[M:]
+                    batch_z.append(z[:M])
+                    z = z[M:]
+                    N -= M
+                    L += M
+
+                    if L &gt;= self.config.batch_size:
+                        self.train_step(
+                            torch.cat(batch_states),
+                            torch.cat(batch_masks),
+                            torch.cat(batch_policies),
+                            torch.cat(batch_z),
+                        )
+                        batch_states, batch_masks, batch_policies, batch_z = (
+                            [],
+                            [],
+                            [],
+                            [],
+                        )
+                        L = 0
+            except Empty:
+                continue</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>multiprocessing.context.Process</li>
+<li>multiprocessing.process.BaseProcess</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.LearnerWorker.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Method to be run in sub-process; can be overridden in sub-class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(self):
+    batch_states, batch_masks, batch_policies, batch_z = [], [], [], []
+    L = 0
+    self.last_save_time = perf_counter()
+    while True:
+        try:
+            states, masks, policies, z = self.sample_queue.get(timeout=5)
+            N = states.shape[0]
+            while N &gt; 0:
+                M = min(self.config.batch_size - L, N)
+                batch_states.append(states[:M])
+                states = states[M:]
+                batch_masks.append(masks[:M])
+                masks = masks[M:]
+                batch_policies.append(policies[:M])
+                policies = policies[M:]
+                batch_z.append(z[:M])
+                z = z[M:]
+                N -= M
+                L += M
+
+                if L &gt;= self.config.batch_size:
+                    self.train_step(
+                        torch.cat(batch_states),
+                        torch.cat(batch_masks),
+                        torch.cat(batch_policies),
+                        torch.cat(batch_z),
+                    )
+                    batch_states, batch_masks, batch_policies, batch_z = (
+                        [],
+                        [],
+                        [],
+                        [],
+                    )
+                    L = 0
+        except Empty:
+            continue</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.LearnerWorker.save"><code class="name flex">
+<span>def <span class="ident">save</span></span>(<span>self, states: torch.Tensor, masks: torch.Tensor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save(self, states: Tensor, masks: Tensor):
+    if self.save_path is None:
+        return
+
+    save_dir = os.path.join(self.save_path, str(int(time())))
+    os.makedirs(save_dir, exist_ok=False)
+
+    model = jit.trace(self.network, (states, masks))
+    jit.save(model, os.path.join(save_dir, &#34;network.pt&#34;))</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.LearnerWorker.train_step"><code class="name flex">
+<span>def <span class="ident">train_step</span></span>(<span>self, states: torch.Tensor, masks: torch.Tensor, policies: torch.Tensor, z: torch.Tensor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def train_step(self, states: Tensor, masks: Tensor, policies: Tensor, z: Tensor):
+    p, v = self.network(states, masks)
+    loggedp = torch.where(
+        torch.isinf(p), torch.zeros_like(p), torch.log_softmax(p, dim=1)
+    )
+
+    loss = (z - v.view(-1)).square().mean() - (policies * loggedp).sum(dim=1).mean()
+    self.optimizer.zero_grad()
+    loss.backward()
+    self.optimizer.step()
+
+    if self.learner_logging_queue is not None:
+        self.learner_logging_queue.put_nowait(loss.detach())
+
+    if (
+        self.save_period &gt; 0
+        and perf_counter() - self.last_save_time &gt; self.save_period
+    ):
+        self.save(states, masks)
+        self.last_save_time = perf_counter()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSConfig"><code class="flex name class">
+<span>class <span class="ident">MCTSConfig</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Configuration for the Monte Carlo Tree Search.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MCTSConfig:
+    &#34;&#34;&#34;Configuration for the Monte Carlo Tree Search.&#34;&#34;&#34;
+
+    def __init__(self) -&gt; None:
+        self.c = 1.25
+        &#34;&#34;&#34;Exploration coefficient. Larger value results in more emphasis on exploration
+        in the Monte Carlo Tree Search.&#34;&#34;&#34;
+
+        self.T = 0.1
+        &#34;&#34;&#34;Policy temperature.&#34;&#34;&#34;
+
+        self.alpha = 3
+        &#34;&#34;&#34;Affects the dirchlet noise added to the root used in the tree search.&#34;&#34;&#34;
+
+        self.epsilon = 0.25
+        &#34;&#34;&#34;Coefficient governing the impact of dirchlet noise.&#34;&#34;&#34;
+
+        self.simulations = 200
+        &#34;&#34;&#34;Number of MCTS steps to run per state evaluation.&#34;&#34;&#34;
+
+        self.zero_sum_game: bool = True
+        &#34;&#34;&#34;If True, the simulator is assumed to be a zero sum game where players
+        alternate moves. Rewards are zero until reaching a terminal state.&#34;&#34;&#34;
+
+        self.discount_factor: float = 0.99
+        &#34;&#34;&#34;Discount factor, used only if `zero_sum_game` is False.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>ai.agents.alpha_zero._core.self_play_worker.SelfPlayConfig</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.MCTSConfig.T"><code class="name">var <span class="ident">T</span></code></dt>
+<dd>
+<div class="desc"><p>Policy temperature.</p></div>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSConfig.alpha"><code class="name">var <span class="ident">alpha</span></code></dt>
+<dd>
+<div class="desc"><p>Affects the dirchlet noise added to the root used in the tree search.</p></div>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSConfig.c"><code class="name">var <span class="ident">c</span></code></dt>
+<dd>
+<div class="desc"><p>Exploration coefficient. Larger value results in more emphasis on exploration
+in the Monte Carlo Tree Search.</p></div>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSConfig.discount_factor"><code class="name">var <span class="ident">discount_factor</span></code></dt>
+<dd>
+<div class="desc"><p>Discount factor, used only if <code>zero_sum_game</code> is False.</p></div>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSConfig.epsilon"><code class="name">var <span class="ident">epsilon</span></code></dt>
+<dd>
+<div class="desc"><p>Coefficient governing the impact of dirchlet noise.</p></div>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSConfig.simulations"><code class="name">var <span class="ident">simulations</span></code></dt>
+<dd>
+<div class="desc"><p>Number of MCTS steps to run per state evaluation.</p></div>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSConfig.zero_sum_game"><code class="name">var <span class="ident">zero_sum_game</span></code></dt>
+<dd>
+<div class="desc"><p>If True, the simulator is assumed to be a zero sum game where players
+alternate moves. Rewards are zero until reaching a terminal state.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode"><code class="flex name class">
+<span>class <span class="ident">MCTSNode</span></span>
+<span>(</span><span>state: np.ndarray, action_mask: np.ndarray, simulator: simulators.Base, network: nn.Module, parent: <a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a> = None, config: mcts.MCTSConfig = None, action: int = None, reward: float = None, terminal: bool = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Node in the MCTS algorithm.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>state</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>State of this node.</dd>
+<dt><strong><code>action_mask</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>Action mask of the state.</dd>
+<dt><strong><code>simulator</code></strong> :&ensp;<code>Simulator</code></dt>
+<dd>Simulator used in the roll out</dd>
+<dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
+<dd>Network used in the roll out</dd>
+<dt><strong><code>parent</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code>, optional</dt>
+<dd>Parent node. Defaults to None.</dd>
+<dt><strong><code>config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a></code>, optional</dt>
+<dd>Configuration of the MCTS. Defaults to None.</dd>
+<dt><strong><code>action</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Action that led to this node. Defaults to None.</dd>
+<dt><strong><code>reward</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Reward obtained upon transitioning to this node.</dd>
+<dt>Defaults to None.</dt>
+<dt><strong><code>terminal</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether or not this node is in a terminal state.</dd>
+</dl>
+<p>Defaults to None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MCTSNode:
+    &#34;&#34;&#34;Node in the MCTS algorithm.&#34;&#34;&#34;
+
+    def __init__(
+        self,
+        state: np.ndarray,
+        action_mask: np.ndarray,
+        simulator: simulators.Base,
+        network: nn.Module,
+        parent: MCTSNode = None,
+        config: mcts.MCTSConfig = None,
+        action: int = None,
+        reward: float = None,
+        terminal: bool = None,
+    ):
+        &#34;&#34;&#34;
+        Args:
+            state (np.ndarray): State of this node.
+            action_mask (np.ndarray): Action mask of the state.
+            simulator (Simulator): Simulator used in the roll out
+            network (nn.Module): Network used in the roll out
+            parent (MCTSNode, optional): Parent node. Defaults to None.
+            config (MCTSConfig, optional): Configuration of the MCTS. Defaults to None.
+            action (int, optional): Action that led to this node. Defaults to None.
+            reward (float, optional): Reward obtained upon transitioning to this node.
+            Defaults to None.
+            terminal (bool, optional): Whether or not this node is in a terminal state.
+            Defaults to None.
+        &#34;&#34;&#34;
+        self._state = state
+        self._action_mask = action_mask
+        self._action = action
+        self._reward = reward
+        self._terminal = terminal
+        self._simulator = simulator
+        self._network = network
+        self._config = config
+        self._parent = parent
+        self._P = None
+        self._N = None
+        self._W = None
+        self._V = None
+        self._children: List[MCTSNode] = None
+        self._expanded: bool = False
+
+        if not np.any(self._action_mask) and not self._terminal:
+            print(&#34;Stop&#34;)
+
+    @property
+    def is_leaf(self) -&gt; bool:
+        &#34;&#34;&#34;True if this node is a leaf node.&#34;&#34;&#34;
+        return self._children is None
+
+    @property
+    def is_root(self) -&gt; bool:
+        &#34;&#34;&#34;True if this node is the root.&#34;&#34;&#34;
+        return self._parent is None
+
+    @property
+    def is_terminal(self) -&gt; bool:
+        &#34;&#34;&#34;True if this node is a terminal state.&#34;&#34;&#34;
+        return self._terminal
+
+    @property
+    def parent(self) -&gt; Optional[MCTSNode]:
+        &#34;&#34;&#34;The parent of this node.&#34;&#34;&#34;
+        return self._parent
+
+    @property
+    def children(self) -&gt; Optional[List[Optional[MCTSNode]]]:
+        &#34;&#34;&#34;The children of this node. If this node has not been expanded, then
+        `None` is returned, otherwise the list of (possible children) is returned. If
+        not None, the list consists of `MCTSNode`s on indices representing legal
+        actions. Illegal action indices are `None`. In other words, the child at index
+        `i` corresponds to the node retrieved by action `i`.
+        &#34;&#34;&#34;
+        return self._children
+
+    @property
+    def state(self) -&gt; np.ndarray:
+        &#34;&#34;&#34;The state of this node.&#34;&#34;&#34;
+        return self._state
+
+    @property
+    def action(self) -&gt; Optional[int]:
+        &#34;&#34;&#34;The action that led to this node. If this node is the root, then this value
+        is `None`.&#34;&#34;&#34;
+        return self._action
+
+    @property
+    def reward(self) -&gt; Optional[bool]:
+        &#34;&#34;&#34;The reward obtained on the transition into this node. If this node is the
+        root, then this value is `None`.&#34;&#34;&#34;
+        return self._reward
+
+    @property
+    def action_mask(self) -&gt; np.ndarray:
+        &#34;&#34;&#34;The action mask of this node.&#34;&#34;&#34;
+        return self._action_mask
+
+    @property
+    def action_policy(self) -&gt; np.ndarray:
+        &#34;&#34;&#34;Action policy calculated in this node.&#34;&#34;&#34;
+        distribution = np.power(self._N, 1 / self._config.T)
+        return distribution / np.sum(distribution)
+
+    def select(self) -&gt; MCTSNode:
+        &#34;&#34;&#34;Traverses one step in the tree from this node according to the selection
+        policy.
+
+        Raises:
+            ValueError: If this node is in a terminal state.
+
+        Returns:
+            MCTSNode: The node selected.
+        &#34;&#34;&#34;
+        if self.is_terminal:
+            raise ValueError(&#34;Cannot select action from terminal state.&#34;)
+
+        Q = np.zeros_like(self._N)
+        mask = self._N &gt; 0
+        Q[mask] = self._W[mask] / self._N[mask]
+        if np.any(self._N &gt; 0):
+            U = self._P * np.sqrt(np.sum(self._N)) / (1 + self._N)
+        else:
+            U = self._P
+        QU = Q + self._config.c * U
+        QU[~self._action_mask] = -np.inf
+        return self._children[np.argmax(QU)]
+
+    def expand(self):
+        &#34;&#34;&#34;Expands the node. If the node has already been expanded, then this is a
+        no-op.
+        &#34;&#34;&#34;
+
+        if self._expanded:
+            return
+
+        self._init_pv()
+
+        if not self.is_terminal:
+            actions = np.arange(self._action_mask.shape[0])[self._action_mask]
+            states = np.expand_dims(self._state, 0)
+            states = np.repeat(states, actions.shape[0], axis=0)
+            next_states, rewards, terminals, _ = self._simulator.step_bulk(
+                states, actions
+            )
+            next_masks = (
+                self._simulator.action_space
+                .as_discrete
+                .action_mask_bulk(next_states)
+            )
+
+            self._children = [None] * self._action_mask.shape[0]
+            for next_state, next_mask, reward, terminal, action in zip(
+                next_states, next_masks, rewards, terminals, actions
+            ):
+                self._children[action] = MCTSNode(
+                    next_state,
+                    next_mask,
+                    self._simulator,
+                    self._network,
+                    parent=self,
+                    config=self._config,
+                    action=action,
+                    reward=reward,
+                    terminal=terminal,
+                )
+
+            self._N = np.zeros(self._action_mask.shape[0])
+            self._W = np.zeros(self._action_mask.shape[0])
+
+        self._expanded = True
+
+    def backup(self):
+        &#34;&#34;&#34;Runs the backpropagation from this node up to the root.&#34;&#34;&#34;
+        if self.is_root:
+            return
+
+        if self.is_terminal:
+            self.parent._backpropagate(self._action, self._reward)
+        elif self._config.zero_sum_game:
+            self.parent._backpropagate(self._action, -self._V)
+        else:
+            self.parent._backpropagate(
+                self.action, self._reward + self._config.discount_factor * self._V
+            )
+
+    def _backpropagate(self, action: int, value: float):
+        self._N[action] += 1
+        self._W[action] += value
+
+        if self.parent is not None:
+            self.parent._backpropagate(self.action, -value)
+
+    def _init_pv(self):
+        with torch.no_grad():
+            p, v = self._network(
+                torch.as_tensor(self._state, dtype=torch.float).unsqueeze_(0),
+                torch.as_tensor(self._action_mask, dtype=torch.bool).unsqueeze_(0),
+            )
+        self._P = torch.softmax(p, dim=1).squeeze_(0).numpy()
+        self._V = v[0, 0].numpy()
+
+        if self.is_root:
+            self.add_noise()
+
+    def add_noise(self):
+        &#34;&#34;&#34;Adds dirchlet noise to the prior probability.&#34;&#34;&#34;
+        d = np.random.dirichlet(
+            self._config.alpha * np.ones(self._action_mask.shape[0])[self._action_mask]
+        )
+        self._P[self._action_mask] = (1 - self._config.epsilon) * self._P[
+            self._action_mask
+        ] + self._config.epsilon * d
+
+    def rootify(self):
+        &#34;&#34;&#34;Converts this node to a root node, cutting ties with all parents, while
+        maintaining its children.&#34;&#34;&#34;
+
+        if self.is_terminal:
+            raise ValueError(&#34;Cannot rootify a terminal state.&#34;)
+
+        self._parent = None
+        self._action = None
+        self._reward = None
+        self._terminal = False
+
+        if self._P is not None:
+            self.add_noise()</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.MCTSNode.action"><code class="name">var <span class="ident">action</span> : Union[int, NoneType]</code></dt>
+<dd>
+<div class="desc"><p>The action that led to this node. If this node is the root, then this value
+is <code>None</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def action(self) -&gt; Optional[int]:
+    &#34;&#34;&#34;The action that led to this node. If this node is the root, then this value
+    is `None`.&#34;&#34;&#34;
+    return self._action</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.action_mask"><code class="name">var <span class="ident">action_mask</span> : numpy.ndarray</code></dt>
+<dd>
+<div class="desc"><p>The action mask of this node.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def action_mask(self) -&gt; np.ndarray:
+    &#34;&#34;&#34;The action mask of this node.&#34;&#34;&#34;
+    return self._action_mask</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.action_policy"><code class="name">var <span class="ident">action_policy</span> : numpy.ndarray</code></dt>
+<dd>
+<div class="desc"><p>Action policy calculated in this node.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def action_policy(self) -&gt; np.ndarray:
+    &#34;&#34;&#34;Action policy calculated in this node.&#34;&#34;&#34;
+    distribution = np.power(self._N, 1 / self._config.T)
+    return distribution / np.sum(distribution)</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.children"><code class="name">var <span class="ident">children</span> : Union[List[Union[ai.agents.alpha_zero._core.mcts_node.MCTSNode, NoneType]], NoneType]</code></dt>
+<dd>
+<div class="desc"><p>The children of this node. If this node has not been expanded, then
+<code>None</code> is returned, otherwise the list of (possible children) is returned. If
+not None, the list consists of <code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code>s on indices representing legal
+actions. Illegal action indices are <code>None</code>. In other words, the child at index
+<code>i</code> corresponds to the node retrieved by action <code>i</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def children(self) -&gt; Optional[List[Optional[MCTSNode]]]:
+    &#34;&#34;&#34;The children of this node. If this node has not been expanded, then
+    `None` is returned, otherwise the list of (possible children) is returned. If
+    not None, the list consists of `MCTSNode`s on indices representing legal
+    actions. Illegal action indices are `None`. In other words, the child at index
+    `i` corresponds to the node retrieved by action `i`.
+    &#34;&#34;&#34;
+    return self._children</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.is_leaf"><code class="name">var <span class="ident">is_leaf</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>True if this node is a leaf node.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def is_leaf(self) -&gt; bool:
+    &#34;&#34;&#34;True if this node is a leaf node.&#34;&#34;&#34;
+    return self._children is None</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.is_root"><code class="name">var <span class="ident">is_root</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>True if this node is the root.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def is_root(self) -&gt; bool:
+    &#34;&#34;&#34;True if this node is the root.&#34;&#34;&#34;
+    return self._parent is None</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.is_terminal"><code class="name">var <span class="ident">is_terminal</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>True if this node is a terminal state.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def is_terminal(self) -&gt; bool:
+    &#34;&#34;&#34;True if this node is a terminal state.&#34;&#34;&#34;
+    return self._terminal</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.parent"><code class="name">var <span class="ident">parent</span> : Union[ai.agents.alpha_zero._core.mcts_node.MCTSNode, NoneType]</code></dt>
+<dd>
+<div class="desc"><p>The parent of this node.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def parent(self) -&gt; Optional[MCTSNode]:
+    &#34;&#34;&#34;The parent of this node.&#34;&#34;&#34;
+    return self._parent</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.reward"><code class="name">var <span class="ident">reward</span> : Union[bool, NoneType]</code></dt>
+<dd>
+<div class="desc"><p>The reward obtained on the transition into this node. If this node is the
+root, then this value is <code>None</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def reward(self) -&gt; Optional[bool]:
+    &#34;&#34;&#34;The reward obtained on the transition into this node. If this node is the
+    root, then this value is `None`.&#34;&#34;&#34;
+    return self._reward</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.state"><code class="name">var <span class="ident">state</span> : numpy.ndarray</code></dt>
+<dd>
+<div class="desc"><p>The state of this node.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def state(self) -&gt; np.ndarray:
+    &#34;&#34;&#34;The state of this node.&#34;&#34;&#34;
+    return self._state</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.MCTSNode.add_noise"><code class="name flex">
+<span>def <span class="ident">add_noise</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Adds dirchlet noise to the prior probability.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_noise(self):
+    &#34;&#34;&#34;Adds dirchlet noise to the prior probability.&#34;&#34;&#34;
+    d = np.random.dirichlet(
+        self._config.alpha * np.ones(self._action_mask.shape[0])[self._action_mask]
+    )
+    self._P[self._action_mask] = (1 - self._config.epsilon) * self._P[
+        self._action_mask
+    ] + self._config.epsilon * d</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.backup"><code class="name flex">
+<span>def <span class="ident">backup</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Runs the backpropagation from this node up to the root.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def backup(self):
+    &#34;&#34;&#34;Runs the backpropagation from this node up to the root.&#34;&#34;&#34;
+    if self.is_root:
+        return
+
+    if self.is_terminal:
+        self.parent._backpropagate(self._action, self._reward)
+    elif self._config.zero_sum_game:
+        self.parent._backpropagate(self._action, -self._V)
+    else:
+        self.parent._backpropagate(
+            self.action, self._reward + self._config.discount_factor * self._V
+        )</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.expand"><code class="name flex">
+<span>def <span class="ident">expand</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Expands the node. If the node has already been expanded, then this is a
+no-op.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def expand(self):
+    &#34;&#34;&#34;Expands the node. If the node has already been expanded, then this is a
+    no-op.
+    &#34;&#34;&#34;
+
+    if self._expanded:
+        return
+
+    self._init_pv()
+
+    if not self.is_terminal:
+        actions = np.arange(self._action_mask.shape[0])[self._action_mask]
+        states = np.expand_dims(self._state, 0)
+        states = np.repeat(states, actions.shape[0], axis=0)
+        next_states, rewards, terminals, _ = self._simulator.step_bulk(
+            states, actions
+        )
+        next_masks = (
+            self._simulator.action_space
+            .as_discrete
+            .action_mask_bulk(next_states)
+        )
+
+        self._children = [None] * self._action_mask.shape[0]
+        for next_state, next_mask, reward, terminal, action in zip(
+            next_states, next_masks, rewards, terminals, actions
+        ):
+            self._children[action] = MCTSNode(
+                next_state,
+                next_mask,
+                self._simulator,
+                self._network,
+                parent=self,
+                config=self._config,
+                action=action,
+                reward=reward,
+                terminal=terminal,
+            )
+
+        self._N = np.zeros(self._action_mask.shape[0])
+        self._W = np.zeros(self._action_mask.shape[0])
+
+    self._expanded = True</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.rootify"><code class="name flex">
+<span>def <span class="ident">rootify</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts this node to a root node, cutting ties with all parents, while
+maintaining its children.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rootify(self):
+    &#34;&#34;&#34;Converts this node to a root node, cutting ties with all parents, while
+    maintaining its children.&#34;&#34;&#34;
+
+    if self.is_terminal:
+        raise ValueError(&#34;Cannot rootify a terminal state.&#34;)
+
+    self._parent = None
+    self._action = None
+    self._reward = None
+    self._terminal = False
+
+    if self._P is not None:
+        self.add_noise()</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.MCTSNode.select"><code class="name flex">
+<span>def <span class="ident">select</span></span>(<span>self) ‑> ai.agents.alpha_zero._core.mcts_node.MCTSNode</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Traverses one step in the tree from this node according to the selection
+policy.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If this node is in a terminal state.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code></dt>
+<dd>The node selected.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def select(self) -&gt; MCTSNode:
+    &#34;&#34;&#34;Traverses one step in the tree from this node according to the selection
+    policy.
+
+    Raises:
+        ValueError: If this node is in a terminal state.
+
+    Returns:
+        MCTSNode: The node selected.
+    &#34;&#34;&#34;
+    if self.is_terminal:
+        raise ValueError(&#34;Cannot select action from terminal state.&#34;)
+
+    Q = np.zeros_like(self._N)
+    mask = self._N &gt; 0
+    Q[mask] = self._W[mask] / self._N[mask]
+    if np.any(self._N &gt; 0):
+        U = self._P * np.sqrt(np.sum(self._N)) / (1 + self._N)
+    else:
+        U = self._P
+    QU = Q + self._config.c * U
+    QU[~self._action_mask] = -np.inf
+    return self._children[np.argmax(QU)]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ai.agents.alpha_zero.SelfPlayConfig"><code class="flex name class">
+<span>class <span class="ident">SelfPlayConfig</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Configuration for the self play worker.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SelfPlayConfig(MCTSConfig):
+    &#34;&#34;&#34;Configuration for the self play worker.&#34;&#34;&#34;
+
+    def __init__(self):
+        super().__init__()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>ai.agents.alpha_zero._core.mcts.MCTSConfig</li>
+</ul>
+</dd>
+<dt id="ai.agents.alpha_zero.SelfPlayLogger"><code class="flex name class">
+<span>class <span class="ident">SelfPlayLogger</span></span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f88b9d3b550>>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Logging server for the <code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
+<dd>Queue from which logging items are gathered.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SelfPlayLogger(SummaryWriterServer):
+    &#34;&#34;&#34;Logging server for the `SelfPlayWorker`.&#34;&#34;&#34;
+    def __init__(self, data_queue: Queue):
+        &#34;&#34;&#34;
+        Args:
+            data_queue (Queue): Queue from which logging items are gathered.
+        &#34;&#34;&#34;
+        super().__init__(&#34;SelfPlay&#34;, data_queue)
+        self.step = 0
+
+    def log(self, writer: SummaryWriter, data: Any):
+        self.step += 1
+        reward, start_value, kl_div, first_action = data
+        writer.add_scalar(&#34;Episode/Reward&#34;, reward, global_step=self.step)
+        writer.add_scalar(
+            &#34;Episode/Start value&#34;, start_value, global_step=self.step
+        )
+        writer.add_scalar(
+            &#34;Episode/Start KL Div&#34;, kl_div, global_step=self.step
+        )
+        writer.add_scalar(
+            &#34;Episode/First action&#34;, first_action, global_step=self.step
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>ai.utils.logging._summary_writer_server.SummaryWriterServer</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.SelfPlayLogger.log"><code class="name flex">
+<span>def <span class="ident">log</span></span>(<span>self, writer: torch.utils.tensorboard.writer.SummaryWriter, data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This method is called whenever data is retrieved from the data queue.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>summary_writer</code></strong> :&ensp;<code>SummaryWriter</code></dt>
+<dd>Summary writer used by this server.</dd>
+<dt><strong><code>data</code></strong> :&ensp;<code>Any</code></dt>
+<dd>Data, defined by the publishing entity.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def log(self, writer: SummaryWriter, data: Any):
+    self.step += 1
+    reward, start_value, kl_div, first_action = data
+    writer.add_scalar(&#34;Episode/Reward&#34;, reward, global_step=self.step)
+    writer.add_scalar(
+        &#34;Episode/Start value&#34;, start_value, global_step=self.step
+    )
+    writer.add_scalar(
+        &#34;Episode/Start KL Div&#34;, kl_div, global_step=self.step
+    )
+    writer.add_scalar(
+        &#34;Episode/First action&#34;, first_action, global_step=self.step
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ai.agents.alpha_zero.SelfPlayWorker"><code class="flex name class">
+<span>class <span class="ident">SelfPlayWorker</span></span>
+<span>(</span><span>simulator: ai.simulators._factory.Factory, network: torch.nn.modules.module.Module, config: ai.agents.alpha_zero._core.self_play_worker.SelfPlayConfig, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f88b9d3b550>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f88b9d3b550>> = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process objects represent activity that is run in a separate process</p>
+<p>The class is analogous to <code>threading.Thread</code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SelfPlayWorker(Process):
+    def __init__(
+        self,
+        simulator: simulators.Factory,
+        network: nn.Module,
+        config: SelfPlayConfig,
+        sample_queue: Queue,
+        episode_logging_queue: Queue = None,
+    ):
+        super().__init__(daemon=True)
+        self.simulator = simulator()
+        self.network = network
+        self.config = config
+        self.sample_queue = sample_queue
+        self.episode_logging_queue = episode_logging_queue
+
+    def run_episode(self):
+        states, action_masks, action_policies = [], [], []
+        terminal = False
+        reward = 0
+        state = self.simulator.reset()
+        action_mask = self.simulator.action_space.as_discrete.action_mask(state)
+
+        with torch.no_grad():
+            start_prior, start_value = self.network(
+                torch.as_tensor(state, dtype=torch.float).unsqueeze_(0),
+                torch.as_tensor(action_mask).unsqueeze_(0),
+            )
+        start_value = start_value.item()
+        start_prior = start_prior.softmax(dim=1).squeeze_(0)
+        first_action_policy = None
+        first_action = None
+
+        root = None
+        while not terminal:
+            root = mcts(
+                state,
+                action_mask,
+                self.simulator,
+                self.network,
+                self.config,
+                root_node=root,
+            )
+
+            action_policy = root.action_policy
+            if first_action_policy is None:
+                first_action_policy = action_policy
+
+            states.append(state)
+            action_masks.append(action_mask)
+            action_policies.append(torch.as_tensor(action_policy, dtype=torch.float))
+
+            action = np.random.choice(
+                self.simulator.action_space.as_discrete.size, p=action_policy
+            )
+            if first_action is None:
+                first_action = action
+
+            state, reward, terminal, _ = self.simulator.step(state, action)
+            action_mask = self.simulator.action_space.as_discrete.action_mask(state)
+            root = root.children[action]
+
+        if self.episode_logging_queue is not None:
+            kl_div = -(
+                first_action_policy * torch.log_softmax(start_prior, dim=0).numpy()
+            ).sum()
+            self.episode_logging_queue.put_nowait(
+                (abs(reward), start_value, kl_div, first_action)
+            )
+
+        states = torch.as_tensor(np.stack(states), dtype=torch.float)
+        action_masks = torch.as_tensor(np.stack(action_masks))
+        action_policies = torch.as_tensor(np.stack(action_policies), dtype=torch.float)
+        z = torch.ones(states.shape[0])
+        i = torch.arange(1, states.shape[0] + 1, 2)
+        j = torch.arange(2, states.shape[0] + 1, 2)
+        z[-i] *= reward
+        z[-j] *= -reward
+
+        return states, action_masks, action_policies, z
+
+    def run(self) -&gt; None:
+        while True:
+            try:
+                self.sample_queue.put(self.run_episode(), timeout=5)
+            except Full:
+                logger.warn(&#34;Sample queue full. Skipping...&#34;)
+                continue</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>multiprocessing.context.Process</li>
+<li>multiprocessing.process.BaseProcess</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.agents.alpha_zero.SelfPlayWorker.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Method to be run in sub-process; can be overridden in sub-class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(self) -&gt; None:
+    while True:
+        try:
+            self.sample_queue.put(self.run_episode(), timeout=5)
+        except Full:
+            logger.warn(&#34;Sample queue full. Skipping...&#34;)
+            continue</code></pre>
+</details>
+</dd>
+<dt id="ai.agents.alpha_zero.SelfPlayWorker.run_episode"><code class="name flex">
+<span>def <span class="ident">run_episode</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_episode(self):
+    states, action_masks, action_policies = [], [], []
+    terminal = False
+    reward = 0
+    state = self.simulator.reset()
+    action_mask = self.simulator.action_space.as_discrete.action_mask(state)
+
+    with torch.no_grad():
+        start_prior, start_value = self.network(
+            torch.as_tensor(state, dtype=torch.float).unsqueeze_(0),
+            torch.as_tensor(action_mask).unsqueeze_(0),
+        )
+    start_value = start_value.item()
+    start_prior = start_prior.softmax(dim=1).squeeze_(0)
+    first_action_policy = None
+    first_action = None
+
+    root = None
+    while not terminal:
+        root = mcts(
+            state,
+            action_mask,
+            self.simulator,
+            self.network,
+            self.config,
+            root_node=root,
+        )
+
+        action_policy = root.action_policy
+        if first_action_policy is None:
+            first_action_policy = action_policy
+
+        states.append(state)
+        action_masks.append(action_mask)
+        action_policies.append(torch.as_tensor(action_policy, dtype=torch.float))
+
+        action = np.random.choice(
+            self.simulator.action_space.as_discrete.size, p=action_policy
+        )
+        if first_action is None:
+            first_action = action
+
+        state, reward, terminal, _ = self.simulator.step(state, action)
+        action_mask = self.simulator.action_space.as_discrete.action_mask(state)
+        root = root.children[action]
+
+    if self.episode_logging_queue is not None:
+        kl_div = -(
+            first_action_policy * torch.log_softmax(start_prior, dim=0).numpy()
+        ).sum()
+        self.episode_logging_queue.put_nowait(
+            (abs(reward), start_value, kl_div, first_action)
+        )
+
+    states = torch.as_tensor(np.stack(states), dtype=torch.float)
+    action_masks = torch.as_tensor(np.stack(action_masks))
+    action_policies = torch.as_tensor(np.stack(action_policies), dtype=torch.float)
+    z = torch.ones(states.shape[0])
+    i = torch.arange(1, states.shape[0] + 1, 2)
+    j = torch.arange(2, states.shape[0] + 1, 2)
+    z[-i] *= reward
+    z[-j] *= -reward
+
+    return states, action_masks, action_policies, z</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ai.agents" href="../index.html">ai.agents</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="ai.agents.alpha_zero.networks" href="networks/index.html">ai.agents.alpha_zero.networks</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="ai.agents.alpha_zero.mcts" href="#ai.agents.alpha_zero.mcts">mcts</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.train" href="#ai.agents.alpha_zero.train">train</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a></code></h4>
+<ul class="">
+<li><code><a title="ai.agents.alpha_zero.LearnerConfig.batch_size" href="#ai.agents.alpha_zero.LearnerConfig.batch_size">batch_size</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.LearnerLogger" href="#ai.agents.alpha_zero.LearnerLogger">LearnerLogger</a></code></h4>
+<ul class="">
+<li><code><a title="ai.agents.alpha_zero.LearnerLogger.log" href="#ai.agents.alpha_zero.LearnerLogger.log">log</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code></h4>
+<ul class="">
+<li><code><a title="ai.agents.alpha_zero.LearnerWorker.run" href="#ai.agents.alpha_zero.LearnerWorker.run">run</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.LearnerWorker.save" href="#ai.agents.alpha_zero.LearnerWorker.save">save</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.LearnerWorker.train_step" href="#ai.agents.alpha_zero.LearnerWorker.train_step">train_step</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a></code></h4>
+<ul class="two-column">
+<li><code><a title="ai.agents.alpha_zero.MCTSConfig.T" href="#ai.agents.alpha_zero.MCTSConfig.T">T</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSConfig.alpha" href="#ai.agents.alpha_zero.MCTSConfig.alpha">alpha</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSConfig.c" href="#ai.agents.alpha_zero.MCTSConfig.c">c</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSConfig.discount_factor" href="#ai.agents.alpha_zero.MCTSConfig.discount_factor">discount_factor</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSConfig.epsilon" href="#ai.agents.alpha_zero.MCTSConfig.epsilon">epsilon</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSConfig.simulations" href="#ai.agents.alpha_zero.MCTSConfig.simulations">simulations</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSConfig.zero_sum_game" href="#ai.agents.alpha_zero.MCTSConfig.zero_sum_game">zero_sum_game</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code></h4>
+<ul class="two-column">
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.action" href="#ai.agents.alpha_zero.MCTSNode.action">action</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.action_mask" href="#ai.agents.alpha_zero.MCTSNode.action_mask">action_mask</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.action_policy" href="#ai.agents.alpha_zero.MCTSNode.action_policy">action_policy</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.add_noise" href="#ai.agents.alpha_zero.MCTSNode.add_noise">add_noise</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.backup" href="#ai.agents.alpha_zero.MCTSNode.backup">backup</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.children" href="#ai.agents.alpha_zero.MCTSNode.children">children</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.expand" href="#ai.agents.alpha_zero.MCTSNode.expand">expand</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.is_leaf" href="#ai.agents.alpha_zero.MCTSNode.is_leaf">is_leaf</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.is_root" href="#ai.agents.alpha_zero.MCTSNode.is_root">is_root</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.is_terminal" href="#ai.agents.alpha_zero.MCTSNode.is_terminal">is_terminal</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.parent" href="#ai.agents.alpha_zero.MCTSNode.parent">parent</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.reward" href="#ai.agents.alpha_zero.MCTSNode.reward">reward</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.rootify" href="#ai.agents.alpha_zero.MCTSNode.rootify">rootify</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.select" href="#ai.agents.alpha_zero.MCTSNode.select">select</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.MCTSNode.state" href="#ai.agents.alpha_zero.MCTSNode.state">state</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.SelfPlayLogger" href="#ai.agents.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code></h4>
+<ul class="">
+<li><code><a title="ai.agents.alpha_zero.SelfPlayLogger.log" href="#ai.agents.alpha_zero.SelfPlayLogger.log">log</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code></h4>
+<ul class="">
+<li><code><a title="ai.agents.alpha_zero.SelfPlayWorker.run" href="#ai.agents.alpha_zero.SelfPlayWorker.run">run</a></code></li>
+<li><code><a title="ai.agents.alpha_zero.SelfPlayWorker.run_episode" href="#ai.agents.alpha_zero.SelfPlayWorker.run_episode">run_episode</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>
