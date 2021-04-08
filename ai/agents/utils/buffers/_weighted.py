@@ -87,7 +87,7 @@ class Weighted(Base):
         i = self._retrieve_indices(w)
         return (
             tuple(x[i] for x in self._data),
-            self._weights[self._wi + i],
+            self._weights[self._wi + i] / self._weights[0],
             i
         )
 
@@ -103,7 +103,7 @@ class Weighted(Base):
 
         ######################################
         ###### Remove duplicate entries ######
-        weights = torch.as_tensor(weights)
+        weights = torch.as_tensor(weights).pow_(self._alpha)
         _, argi = torch.unique(i, return_inverse=True)
         i = i[argi]
         if len(weights.shape) > 0:

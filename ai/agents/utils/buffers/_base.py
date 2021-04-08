@@ -32,7 +32,7 @@ class Base(abc.ABC):
 
         Returns:
             Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]: Tuple of (data,
-                weights, identifier).
+                sample_probabilities, identifier).
         """
         raise NotImplementedError
 

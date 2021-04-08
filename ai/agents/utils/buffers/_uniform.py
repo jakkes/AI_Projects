@@ -35,7 +35,7 @@ class Uniform(Base):
         i = torch.randint(0, self.size, (n, ))
         return (
             tuple(x[i] for x in self._data),
-            torch.ones(self.size),
+            torch.ones(n) / self.size,
             i
         )
 
