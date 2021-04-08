@@ -1,0 +1,29 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: format
+  image: python:3.7-alpine
+  commands:
+  - pip install black
+  - black .
+- name: docs
+  image: python:3.7-alpine
+  commands:
+  - pip install pdoc3
+  - rm -rf ./docs/ai/
+  - pdoc3 ./levelai --html -o docs
+- name: push
+  image: alpine/git
+  commands:
+  - git config user.name drone
+  - git config user.email drone
+  - git add docs
+  - git commit -am "[CI SKIP]" --allow-empty
+  - git push
+
+trigger:
+  branch:
+  - master
