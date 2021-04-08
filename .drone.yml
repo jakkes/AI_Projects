@@ -17,7 +17,7 @@ steps:
 - name: push
   image: alpine/git
   commands:
-  - echo $KEY > $HOME/.ssh/id_rsa
+  - echo "$KEY" > $HOME/.ssh/id_rsa
   - git add .
   - git config user.name drone
   - git config user.email drone
