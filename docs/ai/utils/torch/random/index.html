@@ -29,32 +29,11 @@
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Utility methods dealing with random numbers in PyTorch.&#34;&#34;&#34;
 
-import torch
+
+from ._choice import choice
 
 
-@torch.jit.script
-def choice(probabilities: torch.Tensor) -&gt; torch.Tensor:
-    &#34;&#34;&#34;Selects elements with probability proportional to the given weights.
-
-    Args:
-        probabilities (torch.Tensor): Tensor of shape `(..., N)`. Arguments are sampled
-        over the last dimension according to the weight.
-
-    Returns:
-        torch.Tensor: Tensor of shape equal to the input shape, but the last dimension.
-        Data type is `torch.long`.
-
-    Example usage:
-    ```python
-    x = torch.tensor([[1.0, 1.0, 1.0],
-                      [0.0, 1.0, 2.0]])
-    y = choice(x)   # y[0] is any of (0, 1, 2) with equal probability. y[1] is any of
-                    # (1, 2), with 2 occuring with twice the probability of 1.
-    ```
-    &#34;&#34;&#34;
-    cumsummed = (probabilities / probabilities.sum(-1, keepdim=True)).cumsum(-1)
-    r = torch.rand(probabilities.shape[:-1]).unsqueeze_(-1)
-    return (r &gt; cumsummed).sum(-1)</code></pre>
+__all__ = [&#34;choice&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -74,7 +53,7 @@ def choice(probabilities: torch.Tensor) -&gt; torch.Tensor:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="ai.utils.torch" href="index.html">ai.utils.torch</a></code></li>
+<li><code><a title="ai.utils.torch" href="../index.html">ai.utils.torch</a></code></li>
 </ul>
 </li>
 </ul>

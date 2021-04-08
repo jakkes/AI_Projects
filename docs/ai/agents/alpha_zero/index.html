@@ -331,7 +331,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </dd>
 <dt id="ai.agents.alpha_zero.LearnerLogger"><code class="flex name class">
 <span>class <span class="ident">LearnerLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fdc377fa6d0>>)</span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f089d989710>>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Logging server for the <code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code>.</p>
@@ -390,7 +390,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </dd>
 <dt id="ai.agents.alpha_zero.LearnerWorker"><code class="flex name class">
 <span>class <span class="ident">LearnerWorker</span></span>
-<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: ai.agents.alpha_zero._core.learner_worker.LearnerConfig, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fdc377fa6d0>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fdc377fa6d0>> = None, save_path: str = None, save_period: int = -1)</span>
+<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: ai.agents.alpha_zero._core.learner_worker.LearnerConfig, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f089d989710>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f089d989710>> = None, save_path: str = None, save_period: int = -1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>
@@ -1278,7 +1278,7 @@ policy.</p>
 </dd>
 <dt id="ai.agents.alpha_zero.SelfPlayLogger"><code class="flex name class">
 <span>class <span class="ident">SelfPlayLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fdc377fa6d0>>)</span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f089d989710>>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Logging server for the <code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>.</p>
@@ -1357,7 +1357,7 @@ policy.</p>
 </dd>
 <dt id="ai.agents.alpha_zero.SelfPlayWorker"><code class="flex name class">
 <span>class <span class="ident">SelfPlayWorker</span></span>
-<span>(</span><span>simulator: ai.simulators._factory.Factory, network: torch.nn.modules.module.Module, config: ai.agents.alpha_zero._core.self_play_worker.SelfPlayConfig, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fdc377fa6d0>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fdc377fa6d0>> = None)</span>
+<span>(</span><span>simulator: ai.simulators._factory.Factory, network: torch.nn.modules.module.Module, config: ai.agents.alpha_zero._core.self_play_worker.SelfPlayConfig, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f089d989710>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f089d989710>> = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>

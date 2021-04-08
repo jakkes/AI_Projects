@@ -50,52 +50,38 @@ __all__ = [&#34;NoisyLinear&#34;]</code></pre>
 <span>(</span><span>in_features, out_features, std_init, bias=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Applies a linear transformation to the incoming data: :math:<code>y = xA^T + b</code></p>
-<p>This module supports :ref:<code>TensorFloat32&lt;tf32_on_ampere&gt;</code>.</p>
+<div class="desc"><p>Implementation of a noisy (linear) network.</p>
+<p>Noisy networks add random noise to the activation, scaled by learnable weights.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>in_features</code></strong></dt>
-<dd>size of each input sample</dd>
-<dt><strong><code>out_features</code></strong></dt>
-<dd>size of each output sample</dd>
-<dt><strong><code>bias</code></strong></dt>
-<dd>If set to <code>False</code>, the layer will not learn an additive bias.
-Default: <code>True</code></dd>
-</dl>
-<h2 id="shape">Shape</h2>
-<ul>
-<li>Input: :math:<code>(N, *, H_{in})</code> where :math:<code>*</code> means any number of
-additional dimensions and :math:<code>H_{in} = \text{in\_features}</code></li>
-<li>Output: :math:<code>(N, *, H_{out})</code> where all but the last dimension
-are the same shape as the input and :math:<code>H_{out} = \text{out\_features}</code>.</li>
-</ul>
-<h2 id="attributes">Attributes</h2>
-<dl>
-<dt><strong><code>weight</code></strong></dt>
-<dd>the learnable weights of the module of shape
-:math:<code>(\text{out\_features}, \text{in\_features})</code>. The values are
-initialized from :math:<code>\mathcal{U}(-\sqrt{k}, \sqrt{k})</code>, where
-:math:<code>k = \frac{1}{\text{in\_features}}</code></dd>
-<dt><strong><code>bias</code></strong></dt>
-<dd>the learnable bias of the module of shape :math:<code>(\text{out\_features})</code>.
-If :attr:<code>bias</code> is <code>True</code>, the values are initialized from
-:math:<code>\mathcal{U}(-\sqrt{k}, \sqrt{k})</code> where
-:math:<code>k = \frac{1}{\text{in\_features}}</code></dd>
-</dl>
-<p>Examples::</p>
-<pre><code>&gt;&gt;&gt; m = nn.Linear(20, 30)
-&gt;&gt;&gt; input = torch.randn(128, 20)
-&gt;&gt;&gt; output = m(input)
-&gt;&gt;&gt; print(output.size())
-torch.Size([128, 30])
-</code></pre>
-<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<dt><strong><code>in_features</code></strong> :&ensp;<code>[type]</code></dt>
+<dd>Number of in features.</dd>
+<dt><strong><code>out_features</code></strong> :&ensp;<code>[type]</code></dt>
+<dd>Number of out features.</dd>
+<dt><strong><code>std_init</code></strong> :&ensp;<code>[type]</code></dt>
+<dd>Initial standard deviation of the noise.</dd>
+<dt><strong><code>bias</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, uses a bias a term in the linear
+transformation. Defaults to True.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class NoisyLinear(nn.Linear):
+    &#34;&#34;&#34;Implementation of a noisy (linear) network.
+    
+    Noisy networks add random noise to the activation, scaled by learnable weights.&#34;&#34;&#34;
+
     def __init__(self, in_features, out_features, std_init, bias=True):
+        &#34;&#34;&#34;
+        Args:
+            in_features ([type]): Number of in features.
+            out_features ([type]): Number of out features.
+            std_init ([type]): Initial standard deviation of the noise.
+            bias (bool, optional): If True, uses a bias a term in the linear
+                transformation. Defaults to True.
+        &#34;&#34;&#34;
         super().__init__(in_features, out_features, bias)
 
         self.noise_weight = nn.Parameter(Tensor(out_features, in_features))
