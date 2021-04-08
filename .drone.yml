@@ -17,7 +17,7 @@ steps:
   - git config user.email drone
   - git add docs
   - git commit -am "[CI SKIP]" --allow-empty
-  - git push
+  - git push origin master
 
 trigger:
   branch:
