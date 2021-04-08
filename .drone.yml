@@ -7,8 +7,6 @@ steps:
 - name: install
   image: python:3.7-alpine
   commands:
-  - pwd
-  - ls -la
   - pip install --editable .
 - name: docs
   image: python:3.7-alpine
