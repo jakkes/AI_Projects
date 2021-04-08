@@ -4,12 +4,12 @@ type: docker
 name: default
 
 steps:
-- name: docs
-  image: python:3.7-slim
-  commands:
-  - pip install . pdoc3
-  - rm -rf ./docs/ai/
-  - pdoc3 ./ai --html -o docs
+# - name: docs
+#   image: python:3.7-slim
+#   commands:
+#   - pip install . pdoc3
+#   - rm -rf ./docs/ai/
+#   - pdoc3 ./ai --html -o docs
 - name: push
   image: alpine/git
   environment:
@@ -22,7 +22,7 @@ steps:
   - git config user.name drone
   - git config user.email drone
   - git commit -m "[CI SKIP]" --allow-empty
-  - git push git@github.com:jakkes/AI_Projects.git master
+  - git push origin master
 
 trigger:
   branch:
