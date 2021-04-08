@@ -1,5 +1,3 @@
-"""Utility methods dealing with random numbers in PyTorch."""
-
 import torch
 
 

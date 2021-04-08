@@ -8,7 +8,19 @@ from torch.nn import functional as F
 
 
 class NoisyLinear(nn.Linear):
+    """Implementation of a noisy (linear) network.
+    
+    Noisy networks add random noise to the activation, scaled by learnable weights."""
+
     def __init__(self, in_features, out_features, std_init, bias=True):
+        """
+        Args:
+            in_features ([type]): Number of in features.
+            out_features ([type]): Number of out features.
+            std_init ([type]): Initial standard deviation of the noise.
+            bias (bool, optional): If True, uses a bias a term in the linear
+                transformation. Defaults to True.
+        """
         super().__init__(in_features, out_features, bias)
 
         self.noise_weight = nn.Parameter(Tensor(out_features, in_features))
