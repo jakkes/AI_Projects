@@ -35,6 +35,9 @@ class TicTacToe(Base):
     def action_space(self) -> action_spaces.TicTacToe:
         return self._action_space
 
+    def close(self):
+        pass
+
     def reset_bulk(self, n: int) -> np.ndarray:
         states = np.zeros((n, 10))
         states[:, -1] = 1.0

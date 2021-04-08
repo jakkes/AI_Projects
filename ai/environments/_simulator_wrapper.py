@@ -37,6 +37,9 @@ class SimulatorWrapper(environments.Base):
         self._ready = True
         return self._state, self._action_mask
 
+    def close(self):
+        self._simulator.close()
+
     @classmethod
     def get_factory(cls, factory: simulators.Factory) -> environments.Factory:
         """Wraps a simulator factory into an environment factory."""

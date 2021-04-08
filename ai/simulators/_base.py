@@ -88,6 +88,11 @@ class Base(ABC):
         """
         return self.reset_bulk(1)[0]
 
+    @abstractmethod
+    def close(self):
+        """Disposes resources used by the simulator."""
+        raise NotImplementedError
+
     @classmethod
     def get_factory(cls: T, *args, **kwargs) -> "ai.simulators.Factory[T]":
         """Creates and returns a factory object that spawns simulators when called.

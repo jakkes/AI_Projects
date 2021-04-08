@@ -34,6 +34,9 @@ class ConnectFour(Base):
         states[:, -1] = 1.0
         return states
 
+    def close(self):
+        pass
+
     @property
     def action_space(self) -> action_spaces.ConnectFour:
         return self._action_space

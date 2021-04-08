@@ -1,13 +1,10 @@
-from typing import Dict, Tuple, TypeVar
+from typing import Dict, Tuple
 from abc import ABC, abstractmethod
 
 import numpy as np
 
 import ai
 from . import action_spaces
-
-
-T = TypeVar("T")
 
 
 class Base(ABC):
@@ -45,11 +42,16 @@ class Base(ABC):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def close(self):
+        """Disposes resources used by the environment."""
+        raise NotImplementedError
+
     @classmethod
-    def get_factory(cls: T, *args, **kwargs) -> "ai.environments.Factory[T]":
+    def get_factory(cls, *args, **kwargs) -> "ai.environments.Factory":
         """Creates and returns a factory object that spawns simulators when called.
 
         Args and kwargs are passed along to the class constructor. However, if other
         behavior is required, feel free to override this method and return a factory
         class of your choice."""
-        return ai.environments.Factory[T](cls, *args, **kwargs)
+        return ai.environments.Factory(cls, *args, **kwargs)
