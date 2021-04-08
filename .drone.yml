@@ -4,6 +4,10 @@ type: docker
 name: default
 
 steps:
+- name: install
+  image: python:3.7-alpine
+  commans:
+  - pip install -e .
 - name: docs
   image: python:3.7-alpine
   commands:
