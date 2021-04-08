@@ -4,11 +4,6 @@ type: docker
 name: default
 
 steps:
-- name: format
-  image: python:3.7-alpine
-  commands:
-  - pip install black
-  - black .
 - name: docs
   image: python:3.7-alpine
   commands:
