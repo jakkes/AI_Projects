@@ -1,4 +1,3 @@
-import ai
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -6,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ai",
-    version=ai.__version__,
+    version="0.0.4",
     author="Jakob Stigenberg",
     description="Collection of AI algorithms and agents.",
     long_description=long_description,
