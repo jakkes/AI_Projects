@@ -183,6 +183,11 @@ class Agent:
             2,
         )
 
+    @property
+    def config(self) -> AgentConfig:
+        """Agent configuration in use."""
+        return self._config
+
     def observe(
         self,
         states: Union[Tensor, ndarray],
@@ -324,3 +329,10 @@ class Agent:
         self._train_steps += 1
         if self._train_steps % self._config.target_update_steps == 0:
             self._target_update()
+
+    def buffer_size(self) -> int:
+        """
+        Returns:
+            int: The current size of the replay buffer.
+        """
+        return self._buffer.size
