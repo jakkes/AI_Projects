@@ -3,10 +3,6 @@ kind: pipeline
 type: docker
 name: default
 
-environment:
-  KEY:
-    from_secret: PRIVATEKEY
-
 steps:
 - name: docs
   image: python:3.7-slim
@@ -16,6 +12,9 @@ steps:
   - pdoc3 ./ai --html -o docs
 - name: push
   image: alpine/git
+  environment:
+    KEY:
+      from_secret: PRIVATEKEY
   commands:
   - echo "$KEY" > $HOME/.ssh/id_rsa
   - git add .
