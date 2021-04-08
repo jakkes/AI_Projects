@@ -8,9 +8,17 @@ def test_n_step_reward_collector():
     dtypes = (torch.float32, torch.float32, torch.float32)
     collector = agents.utils.NStepRewardCollector(5, 0.75, shapes, dtypes)
 
+    for _ in range(4):
+        out = collector.step(
+            1.0,
+            False,
+            tuple(torch.rand(shape, dtype=dtype) for shape, dtype in zip(shapes, dtypes))
+        )
+        assert out is None
+
     out = collector.step(
         1.0,
         False,
         tuple(torch.rand(shape, dtype=dtype) for shape, dtype in zip(shapes, dtypes))
     )
-    assert out is None
+    assert out is not None

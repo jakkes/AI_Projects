@@ -38,12 +38,15 @@ class NStepRewardCollector:
         self._i = 0
         self._looped = False
 
+        self._state_data_shapes = state_data_shapes
+        self._state_data_dtypes = state_data_dtypes
+
     def step(
         self,
         reward: float,
         terminal: bool,
         state_data: Sequence[Union[Tensor, ndarray]],
-    ) -> Optional[Tuple[Sequence[Tensor], Tensor, Sequence[Tensor]]]:
+    ) -> Optional[Tuple[Sequence[Tensor], Tensor, Tensor, Sequence[Tensor]]]:
         """Observes one state transition
 
         Args:
@@ -53,10 +56,36 @@ class NStepRewardCollector:
                 was transitioned _from_.
 
         Returns:
-            Optional[Tuple[Sequence[Tensor], Tensor, Sequence[Tensor]]]: If available:
-            Tuple of state data, rewards, next state data. Otherwise, None.
+            Optional[Tuple[Sequence[Tensor], Tensor, Tensor, Sequence[Tensor]]]: If
+                available: Tuple of state data, rewards, terminals, next state data.
+                Otherwise, None.
         """
+
+        return_state_data = [[] for _ in self._state_data_shapes]
+        return_rewards = []
+        return_terminals = []
+        return_next_state_data = [[] for _ in self._state_data_shapes]
+
+        if self._looped:
+            rewards = self._rewards[self._i, (self._i + self._index_vector) % self._n_step]
+            rewards *= self._discount_vector
+            return_rewards.append(rewards.sum())
+            return_terminals.append(False)
+            for x, y in zip(self._state_data_buffer, return_state_data):
+                y.append(x[self._i])
+            for x, y in zip(state_data, return_next_state_data):
+                y.append(x)
 
         index_vector = (self._index_vector + self._i) % self._n_step
         self._rewards[index_vector, self._index_vector].fill_(reward)
+        for x, y in zip(state_data, self._state_data_buffer):
+            y[self._i] = x
+        
+        self._i += 1
+        if self._i >= self._n_step:
+            self._i = 0
+            self._looped = True
 
+        if terminal:
+            n_return = self._n_step if self._looped else self._i
+            rewards = 
