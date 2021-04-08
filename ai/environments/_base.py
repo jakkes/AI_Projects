@@ -1,8 +1,13 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, TypeVar
 from abc import ABC, abstractmethod
 
 import numpy as np
+
+import ai
 from . import action_spaces
+
+
+T = TypeVar("T")
 
 
 class Base(ABC):
@@ -39,3 +44,12 @@ class Base(ABC):
             flag, and debugging dictionary.
         """
         raise NotImplementedError
+
+    @classmethod
+    def get_factory(cls: T, *args, **kwargs) -> "ai.environments.Factory[T]":
+        """Creates and returns a factory object that spawns simulators when called.
+
+        Args and kwargs are passed along to the class constructor. However, if other
+        behavior is required, feel free to override this method and return a factory
+        class of your choice."""
+        return ai.environments.Factory[T](cls, *args, **kwargs)
