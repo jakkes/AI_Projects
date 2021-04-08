@@ -16,6 +16,7 @@ steps:
     KEY:
       from_secret: PRIVATEKEY
   commands:
+  - mkdir $HOME/.ssh
   - echo "$KEY" > $HOME/.ssh/id_rsa
   - git add .
   - git config user.name drone
