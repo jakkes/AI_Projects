@@ -3,6 +3,10 @@ kind: pipeline
 type: docker
 name: default
 
+environment:
+  KEY:
+    from_secret: PRIVATEKEY
+
 steps:
 - name: docs
   image: python:3.7-slim
@@ -13,11 +17,12 @@ steps:
 - name: push
   image: alpine/git
   commands:
+  - echo $KEY > $HOME/.ssh/id_rsa
+  - git add .
   - git config user.name drone
   - git config user.email drone
-  - git add docs
-  - git commit -am "[CI SKIP]" --allow-empty
-  - git push origin master
+  - git commit -m "[CI SKIP]" --allow-empty
+  - git push git@github.com:jakkes/AI_Projects.git master
 
 trigger:
   branch:
