@@ -5,11 +5,11 @@ name: default
 
 steps:
 - name: install
-  image: python:3.7-alpine
+  image: python:3.7-slim
   commands:
   - pip install --editable .
 - name: docs
-  image: python:3.7-alpine
+  image: python:3.7-slim
   commands:
   - pip install pdoc3
   - rm -rf ./docs/ai/
