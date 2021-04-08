@@ -5,13 +5,13 @@ T = TypeVar("T")
 
 
 class Factory(Generic[T]):
-    """Factories are callable objects that spawn simulator instances."""
+    """Factories are callable objects that spawn environment instances."""
 
     def __init__(self, cls: T, *args, **kwargs):
         """
         Args:
-            cls (T): Simulator class.
-            *args, **kwargs: arguments and key-word arguments passed to the simulator
+            cls (T): Environment class.
+            *args, **kwargs: arguments and key-word arguments passed to the environment
                 __init__ method.
         """
         super().__init__()

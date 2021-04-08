@@ -36,3 +36,16 @@ class SimulatorWrapper(environments.Base):
         self._state, self._action_mask = self._simulator.reset()
         self._ready = True
         return self._state, self._action_mask
+
+    @classmethod
+    def get_factory(cls, factory: simulators.Factory) -> environments.Factory:
+        """Wraps a simulator factory into an environment factory."""
+        return Factory(factory)
+
+
+class Factory(environments.Factory):
+    def __init__(self, factory: simulators.Factory):
+        self._factory = factory
+
+    def __call__(self) -> SimulatorWrapper:
+        return SimulatorWrapper(self._factory())
