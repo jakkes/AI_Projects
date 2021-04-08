@@ -9,7 +9,7 @@ steps:
   commands:
   - pip install pdoc3
   - rm -rf ./docs/ai/
-  - pdoc3 ./levelai --html -o docs
+  - pdoc3 ./ai --html -o docs
 - name: push
   image: alpine/git
   commands:
