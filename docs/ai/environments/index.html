@@ -34,10 +34,11 @@ implementations of it.&#34;&#34;&#34;
 
 from . import action_spaces
 from ._base import Base
+from ._factory import Factory
 from ._simulator_wrapper import SimulatorWrapper
 
 
-__all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;]</code></pre>
+__all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;, &#34;Factory&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -101,7 +102,16 @@ observable from the outside.</p></div>
             Tuple[np.ndarray, float, bool, Dict]: Tuple of next state, reward, terminal
             flag, and debugging dictionary.
         &#34;&#34;&#34;
-        raise NotImplementedError</code></pre>
+        raise NotImplementedError
+
+    @classmethod
+    def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.environments.Factory[T]&#34;:
+        &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
+
+        Args and kwargs are passed along to the class constructor. However, if other
+        behavior is required, feel free to override this method and return a factory
+        class of your choice.&#34;&#34;&#34;
+        return ai.environments.Factory[T](cls, *args, **kwargs)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -111,6 +121,31 @@ observable from the outside.</p></div>
 <ul class="hlist">
 <li>ai.environments._simulator_wrapper.SimulatorWrapper</li>
 </ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ai.environments.Base.get_factory"><code class="name flex">
+<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> ai.environments._factory.Factory[~T]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates and returns a factory object that spawns simulators when called.</p>
+<p>Args and kwargs are passed along to the class constructor. However, if other
+behavior is required, feel free to override this method and return a factory
+class of your choice.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.environments.Factory[T]&#34;:
+    &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
+
+    Args and kwargs are passed along to the class constructor. However, if other
+    behavior is required, feel free to override this method and return a factory
+    class of your choice.&#34;&#34;&#34;
+    return ai.environments.Factory[T](cls, *args, **kwargs)</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Instance variables</h3>
 <dl>
 <dt id="ai.environments.Base.action_space"><code class="name">var <span class="ident">action_space</span> : ai.environments.action_spaces._base.Base</code></dt>
@@ -190,6 +225,50 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 </dd>
 </dl>
 </dd>
+<dt id="ai.environments.Factory"><code class="flex name class">
+<span>class <span class="ident">Factory</span></span>
+<span>(</span><span>cls: ~T, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Factories are callable objects that spawn environment instances.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>cls</code></strong> :&ensp;<code>T</code></dt>
+<dd>Environment class.</dd>
+</dl>
+<p><em>args, </em>*kwargs: arguments and key-word arguments passed to the environment
+<strong>init</strong> method.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Factory(Generic[T]):
+    &#34;&#34;&#34;Factories are callable objects that spawn environment instances.&#34;&#34;&#34;
+
+    def __init__(self, cls: T, *args, **kwargs):
+        &#34;&#34;&#34;
+        Args:
+            cls (T): Environment class.
+            *args, **kwargs: arguments and key-word arguments passed to the environment
+                __init__ method.
+        &#34;&#34;&#34;
+        super().__init__()
+        self._cls = cls
+        self._args = args
+        self._kwargs = kwargs
+
+    def __call__(self) -&gt; T:
+        return self._cls(*self._args, **self._kwargs)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>ai.environments._simulator_wrapper.Factory</li>
+</ul>
+</dd>
 <dt id="ai.environments.SimulatorWrapper"><code class="flex name class">
 <span>class <span class="ident">SimulatorWrapper</span></span>
 <span>(</span><span>simulator: ai.simulators._base.Base)</span>
@@ -234,13 +313,36 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
     def reset(self) -&gt; Tuple[np.ndarray, np.ndarray]:
         self._state, self._action_mask = self._simulator.reset()
         self._ready = True
-        return self._state, self._action_mask</code></pre>
+        return self._state, self._action_mask
+
+    @classmethod
+    def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
+        &#34;&#34;&#34;Wraps a simulator factory into an environment factory.&#34;&#34;&#34;
+        return Factory(factory)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>ai.environments._base.Base</li>
 <li>abc.ABC</li>
 </ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ai.environments.SimulatorWrapper.get_factory"><code class="name flex">
+<span>def <span class="ident">get_factory</span></span>(<span>factory: ai.simulators._factory.Factory) ‑> ai.environments._factory.Factory</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wraps a simulator factory into an environment factory.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
+    &#34;&#34;&#34;Wraps a simulator factory into an environment factory.&#34;&#34;&#34;
+    return Factory(factory)</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="ai.environments.SimulatorWrapper.reset"><code class="name flex">
@@ -324,13 +426,18 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 <h4><code><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></code></h4>
 <ul class="">
 <li><code><a title="ai.environments.Base.action_space" href="#ai.environments.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.environments.Base.get_factory" href="#ai.environments.Base.get_factory">get_factory</a></code></li>
 <li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
 <li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
 </ul>
 </li>
 <li>
+<h4><code><a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a></code></h4>
+</li>
+<li>
 <h4><code><a title="ai.environments.SimulatorWrapper" href="#ai.environments.SimulatorWrapper">SimulatorWrapper</a></code></h4>
 <ul class="">
+<li><code><a title="ai.environments.SimulatorWrapper.get_factory" href="#ai.environments.SimulatorWrapper.get_factory">get_factory</a></code></li>
 <li><code><a title="ai.environments.SimulatorWrapper.reset" href="#ai.environments.SimulatorWrapper.reset">reset</a></code></li>
 <li><code><a title="ai.environments.SimulatorWrapper.step" href="#ai.environments.SimulatorWrapper.step">step</a></code></li>
 </ul>

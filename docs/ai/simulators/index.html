@@ -683,7 +683,14 @@ output function.</p>
 <span>(</span><span>cls: ~T, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Factories are callable objects that spawn simulator instances.</p></div>
+<div class="desc"><p>Factories are callable objects that spawn simulator instances.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>cls</code></strong> :&ensp;<code>T</code></dt>
+<dd>Simulator class.</dd>
+</dl>
+<p><em>args, </em>*kwargs: arguments and key-word arguments passed to the simulator
+<strong>init</strong> method.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -692,6 +699,12 @@ output function.</p>
     &#34;&#34;&#34;Factories are callable objects that spawn simulator instances.&#34;&#34;&#34;
 
     def __init__(self, cls: T, *args, **kwargs):
+        &#34;&#34;&#34;
+        Args:
+            cls (T): Simulator class.
+            *args, **kwargs: arguments and key-word arguments passed to the simulator
+                __init__ method.
+        &#34;&#34;&#34;
         super().__init__()
         self._cls = cls
         self._args = args
