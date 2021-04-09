@@ -384,7 +384,10 @@ class Agent:
         action_masks = torch.as_tensor(action_masks, dtype=torch.bool)
 
         with torch.no_grad():
-            values = self._network(states)
+            if self.config.use_distributional:
+                values = (self._z.view(1, 1, -1) * self._network(states)).sum(2)
+            else:
+                values = self._network(states)
             return _apply_masks(values, action_masks)
 
     def q_values_single(
