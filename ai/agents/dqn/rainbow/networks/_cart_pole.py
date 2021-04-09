@@ -23,9 +23,9 @@ class CartPole(nn.Module):
         """
         super().__init__()
         self._body = nn.Sequential(
-            ai_nn.NoisyLinear(4, 32, std_init),
+            ai_nn.NoisyLinear(4, 128, std_init),
             nn.ReLU(inplace=True),
-            ai_nn.NoisyLinear(32, 2 * n_atoms if use_distributional else 2, std_init)
+            ai_nn.NoisyLinear(128, 2 * n_atoms if use_distributional else 2, std_init)
         )
         self._use_distributional = use_distributional
         self._n_atoms = n_atoms
