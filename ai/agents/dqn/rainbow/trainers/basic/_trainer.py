@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import torch
 from multiprocessing import Queue
@@ -60,7 +61,10 @@ class Trainer:
 
         while not terminal:
             step += 1
-            action = self._agent.act_single(state, mask)
+            if random.random() < self._config.epsilon:
+                action = env.action_space.sample()
+            else:
+                action = self._agent.act_single(state, mask)
             next_state, reward, terminal, _ = env.step(action)
             total_reward += reward
             total_discounted_reward = (

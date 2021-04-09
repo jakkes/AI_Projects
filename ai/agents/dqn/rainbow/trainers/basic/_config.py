@@ -17,3 +17,7 @@ class Config:
 
     minimum_buffer_size: int = 100
     """Minimum buffer size before training steps are executed."""
+
+    epsilon: float = 0.1
+    """A random action is chosen, as opposed to the greedy action, with this
+    probability during training."""
