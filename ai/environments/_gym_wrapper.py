@@ -15,7 +15,13 @@ class Factory(environments.Factory):
 
 
 class GymWrapper(environments.Base):
+    """Environment wrapper for openAI gym environments."""
+
     def __init__(self, env: gym.Env):
+        """
+        Args:
+            env (gym.Env): Environment instance to wrap.
+        """
         self._env = env
         self._action_space = environments.action_spaces.DiscreteGymWrapper(
             env.action_space
@@ -33,4 +39,6 @@ class GymWrapper(environments.Base):
 
     @classmethod
     def get_factory(cls, env_id: str) -> Factory:
+        """Creates an environment factory that spawns the specific `env_id`. For
+        possible values, see the openAI gym documentation."""
         return Factory(env_id)
