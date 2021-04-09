@@ -7,4 +7,4 @@ def test_cart_pole():
 
     state, terminal = env.reset(), False
     while not terminal:
-        env.step(env.action_space.sample())
+        _, _, terminal, _ = env.step(env.action_space.sample())
