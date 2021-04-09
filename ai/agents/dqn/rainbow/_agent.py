@@ -1,4 +1,5 @@
 import copy
+import queue
 from typing import Union
 
 import numpy as np
@@ -72,6 +73,7 @@ class Agent:
         self._train_steps = 0
         self._max_error = torch.tensor(1.0)
         self._config = config
+        self._logging_queue: queue.Queue = None
 
     def _initialize_not_inference_mode(self, config: AgentConfig):
         if self._optimizer is None:
@@ -336,9 +338,29 @@ class Agent:
         if self._train_steps % self._config.target_update_steps == 0:
             self._target_update()
 
+        if self._logging_queue is not None:
+            self._logging_queue.put({
+                "loss": loss.detach().item(),
+                "max_error": self._max_error.item()
+            })
+
     def buffer_size(self) -> int:
         """
         Returns:
             int: The current size of the replay buffer.
         """
         return self._buffer.size
+
+    def set_logging_queue(self, queue: queue.Queue):
+        """Sets (and overrides previously set) logging queue used by the agent. The
+        agent outputs logging items to this queue. The output is formatted as a mapping,
+        i.e. JSON representable. List of logging fields are given below.
+
+        Training step logs (always produced jointly):
+            "loss" -> float, training loss computed in a training step.
+            "max_error" -> float, weight assigned to new samples in the replay buffer.
+
+        Args:
+            queue (queue.Queue): Queue.
+        """
+        self._logging_queue = queue

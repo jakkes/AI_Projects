@@ -1,10 +1,12 @@
 import numpy as np
 import torch
+from multiprocessing import Queue
 
 import ai.agents as agents
 import ai.agents.dqn.rainbow as rainbow
 import ai.environments as environments
 from ._config import Config
+from ._logger import Logger
 
 
 class Trainer:
@@ -26,14 +28,18 @@ class Trainer:
         self._config = config
         self._env_factory = environment
 
+        self._logging_queue = Queue(maxsize=2000)
+        self._logging_server = Logger(self._logging_queue)
+        self._agent.set_logging_queue(self._logging_queue)
+
         self._reward_collector = agents.utils.NStepRewardCollector(
             config.n_step,
-            agent.discount_factor,
+            agent.config.discount_factor,
             (agent.config.state_shape, (), (agent.config.action_space_size,)),
             (torch.float32, torch.long, torch.bool),
         )
 
-        agent.discount_factor = agent.discount_factor ** config.n_step
+        agent.discount_factor = agent.config.discount_factor ** config.n_step
 
     def _run(self, env: environments.Base):
         for _ in range(self._config.episodes):
@@ -48,11 +54,17 @@ class Trainer:
         mask = env.action_space.as_discrete().action_mask
         terminal = False
         step = -1
+        total_reward = 0.0
+        total_discounted_reward = 0.0
 
         while not terminal:
             step += 1
             action = self._agent.act_single(state, mask)
             next_state, reward, terminal, _ = env.step(action)
+            total_reward += reward
+            total_discounted_reward = (
+                reward + self._agent.config.discount_factor * total_discounted_reward
+            )
 
             if (
                 self._config.max_environment_steps > 0
@@ -65,6 +77,11 @@ class Trainer:
             mask = env.action_space.as_discrete().action_mask
 
             self._train_step()
+
+        self._logging_queue.put({
+            "reward": total_reward,
+            "discounted_reward": total_discounted_reward
+        })
 
     def _add_to_collector(self, state, action, action_mask, reward, terminal):
         out = self._reward_collector.step(
@@ -86,8 +103,12 @@ class Trainer:
     def start(self):
         """Starts training, according to the configuration."""
 
+        self._logging_server.start()
+
         env = self._env_factory()
         try:
             self._run(env)
         finally:
             env.close()
+            self._logging_server.terminate()
+            self._logging_server.join()
