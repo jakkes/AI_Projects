@@ -22,6 +22,7 @@ setuptools.setup(
         "scipy~=1.6.1",
         "tensorboard~=2.4.1",
         "attrs~=20.3.0"
+        "gym~=0.18.0",
     ],
     python_requires=">=3.7",
 )

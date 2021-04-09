@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 import ai
-from . import action_spaces
+import ai.environments as environments
 
 
 class Base(ABC):
@@ -16,7 +16,7 @@ class Base(ABC):
 
     @property
     @abstractmethod
-    def action_space(self) -> action_spaces.Base:
+    def action_space(self) -> environments.action_spaces.Base:
         """The action space instance used by the environment instance."""
         raise NotImplementedError
 
