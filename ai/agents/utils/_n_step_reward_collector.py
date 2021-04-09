@@ -60,6 +60,11 @@ class NStepRewardCollector:
                 Otherwise, None.
         """
 
+        state_data = [
+            torch.as_tensor(data, dtype=dtype)
+            for data, dtype in zip(state_data, self._state_data_dtypes)
+        ]
+
         return_state_data = [[] for _ in self._state_data_shapes]
         return_rewards = []
         return_terminals = []

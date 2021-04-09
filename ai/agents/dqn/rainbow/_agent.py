@@ -26,7 +26,7 @@ def _get_actions(
         d = network(states)
         values = torch.sum(d * z.view(1, 1, -1), dim=2)
     else:
-        values = network(states).argmax(dim=1)
+        values = network(states)
     values = _apply_masks(values, action_masks)
     return values.argmax(dim=1)
 
@@ -57,9 +57,8 @@ class Agent:
         if not inference_mode:
             self._initialize_not_inference_mode(config)
 
-        if config.use_distributional:
-            self._z = torch.linspace(config.v_min, config.v_max, steps=config.n_atoms)
-            self._dz = self._z[1] - self._z[0]
+        self._z = torch.linspace(config.v_min, config.v_max, steps=config.n_atoms)
+        self._dz = self._z[1] - self._z[0]
 
         self.discount_factor = config.discount_factor
         """Discount factor used during training."""
