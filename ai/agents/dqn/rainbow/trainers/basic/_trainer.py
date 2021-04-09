@@ -1,20 +1,26 @@
+import numpy as np
 import torch
 
 import ai.agents as agents
+import ai.agents.dqn.rainbow as rainbow
 import ai.environments as environments
-from ... import Agent
 from ._config import Config
 
 
 class Trainer:
     """Trainer class."""
 
-    def __init__(self, agent: Agent, config: Config, environment: environments.Factory):
+    def __init__(
+        self,
+        agent: rainbow.Agent,
+        config: Config,
+        environment: environments.Factory,
+    ):
         """
         Args:
-            agent (Agent): Agent.
+            agent (rainbow.Agent): Agent.
             config (Config): Trainer configuration.
-            environment (env.Factory): Environment factory.
+            environment (environments.Factory): Environment factory.
         """
         self._agent = agent
         self._config = config
@@ -74,7 +80,7 @@ class Trainer:
             (next_states, _, next_action_masks),
         ) = out
         self._agent.observe(
-            states, actions, rewards, terminals, next_states, next_action_masks
+            states, actions, rewards, terminals, next_states, next_action_masks, np.nan
         )
 
     def start(self):

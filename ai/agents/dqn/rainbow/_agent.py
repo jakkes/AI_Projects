@@ -70,8 +70,9 @@ class Agent:
                 config.beta_t_end - config.beta_t_start
             )
 
-        self._config = config
         self._train_steps = 0
+        self._max_error = torch.tensor(1.0)
+        self._config = config
 
     def _initialize_not_inference_mode(self, config: AgentConfig):
         if self._optimizer is None:
@@ -207,8 +208,11 @@ class Agent:
             terminals (Union[Tensor, ndarray]): Terminal flags
             next_states (Union[Tensor, ndarray]): Next states
             next_action_masks (Union[Tensor, ndarray]): Next action masks
-            errors (Union[Tensor, ndarray]): TD errors
+            errors (Union[Tensor, ndarray]): TD errors. NaN values are replaced by
+                appropriate initialization value.
         """
+        errors = torch.as_tensor(errors, dtype=torch.float32)
+        errors[errors.isnan()] = self._max_error
         self._buffer.add(
             (
                 torch.as_tensor(states, dtype=torch.float32),
@@ -240,7 +244,8 @@ class Agent:
             terminal (bool): True if `next_state` is a terminal state
             next_state (Union[Tensor, ndarray]): Next state
             next_action_mask (Union[Tensor, ndarray]): Next action mask
-            error (float): TD error
+            error (float): TD error. NaN values are replaced by appropriate
+                initialization value.
         """
         self.observe(
             torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
@@ -317,11 +322,13 @@ class Agent:
             w = (1.0 / self._buffer.size / sample_probs) ** beta
             w /= w.max()
             if self._config.use_distributional:
+                updated_weights = loss.detach()
                 (w * loss).mean().backward()
-                self._buffer.update_weights(sample_ids, loss.detach())
             else:
+                updated_weights = loss.detach().pow(0.5)
                 (w * loss).mean().backward()
-                self._buffer.update_weights(sample_ids, loss.detach().pow(0.5))
+            self._buffer.update_weights(sample_ids, updated_weights)
+            self._max_error += 0.05 * (updated_weights.max() - self._max_error)
         else:
             loss.mean().backward()
         self._optimizer.step()
