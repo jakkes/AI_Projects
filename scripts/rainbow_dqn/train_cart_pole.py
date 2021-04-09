@@ -10,6 +10,26 @@ class ArgumentParser(tap.Tap):
     """Number of episodes to run the training for."""
 
 
+class Network(nn.Module):
+    def __init__(self, distributional: bool, atoms: int):
+        super().__init__()
+        self.a = nn.Linear(4, 32)
+        self.b = nn.ReLU(inplace=True)
+        self.c = nn.Linear(32, 2 * atoms if distributional else 2)
+
+        self.dist = distributional
+        self.atoms = atoms
+
+    def forward(self, x):
+        x = self.a(x)
+        x = self.b(x)
+        x = self.c(x)
+
+        if self.dist:
+            x = x.view(-1, 2, self.atoms)
+        return x
+
+
 def main(args: ArgumentParser):
     env_factory = environments.GymWrapper.get_factory("CartPole-v0")
 
@@ -19,17 +39,13 @@ def main(args: ArgumentParser):
     agent_config.batch_size = 32
     agent_config.target_update_steps = 10
     agent_config.discount_factor = 0.99
-    agent_config.replay_capacity = 10000
+    agent_config.replay_capacity = 8192
 
-    agent_config.use_prioritized_experience_replay = False
-    agent_config.use_distributional = False
-    agent_config.use_double = False
+    agent_config.use_prioritized_experience_replay = True
+    agent_config.use_distributional = True
+    agent_config.use_double = True
 
-    network = nn.Sequential(
-        nn.Linear(4, 32),
-        nn.ReLU(inplace=True),
-        nn.Linear(32, 2)
-    )
+    network = Network(agent_config.use_distributional, agent_config.n_atoms)
     optimizer = optim.Adam(network.parameters(), lr=1e-4)
     agent = rainbow.Agent(agent_config, network, optimizer)
 
