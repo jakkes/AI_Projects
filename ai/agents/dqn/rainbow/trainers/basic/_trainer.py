@@ -56,6 +56,7 @@ class Trainer:
         step = -1
         total_reward = 0.0
         total_discounted_reward = 0.0
+        start_value = self._agent.q_values_single(state, mask).max().item()
 
         while not terminal:
             step += 1
@@ -80,7 +81,9 @@ class Trainer:
 
         self._logging_queue.put({
             "reward": total_reward,
-            "discounted_reward": total_discounted_reward
+            "discounted_reward": total_discounted_reward,
+            "steps": step,
+            "start_value": start_value
         })
 
     def _add_to_collector(self, state, action, action_mask, reward, terminal):

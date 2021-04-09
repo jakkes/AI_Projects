@@ -324,14 +324,16 @@ class Agent:
             w /= w.max()
             if self._config.use_distributional:
                 updated_weights = loss.detach()
-                (w * loss).mean().backward()
             else:
                 updated_weights = loss.detach().pow(0.5)
-                (w * loss).mean().backward()
+            loss = (w * loss).mean()
             self._buffer.update_weights(sample_ids, updated_weights)
             self._max_error += 0.05 * (updated_weights.max() - self._max_error)
         else:
-            loss.mean().backward()
+            loss = loss.mean()
+        loss.backward()
+        if self.config.gradient_norm > 0:
+            nn.utils.clip_grad_norm_(self._network.parameters(), self.config.gradient_norm)
         self._optimizer.step()
 
         self._train_steps += 1
@@ -339,10 +341,9 @@ class Agent:
             self._target_update()
 
         if self._logging_queue is not None:
-            self._logging_queue.put({
-                "loss": loss.detach().item(),
-                "max_error": self._max_error.item()
-            })
+            self._logging_queue.put(
+                {"loss": loss.detach().item(), "max_error": self._max_error.item()}
+            )
 
     def buffer_size(self) -> int:
         """
@@ -364,3 +365,41 @@ class Agent:
             queue (queue.Queue): Queue.
         """
         self._logging_queue = queue
+
+    def q_values(
+        self, states: Union[Tensor, ndarray], action_masks: Union[Tensor, ndarray]
+    ) -> Tensor:
+        """Computes the Q-values for each state-action pair. Illegal actions are given
+        a values -inf.
+
+        Args:
+            states (Union[Tensor, ndarray]): States.
+            action_masks (Union[Tensor, ndarray]): Action masks.
+
+        Returns:
+            Tensor: Q-values.
+        """
+
+        states = torch.as_tensor(states, dtype=torch.float32)
+        action_masks = torch.as_tensor(action_masks, dtype=torch.bool)
+
+        with torch.no_grad():
+            values = self._network(states)
+            return _apply_masks(values, action_masks)
+
+    def q_values_single(
+        self, state: Union[Tensor, ndarray], action_mask: Union[Tensor, ndarray]
+    ) -> Tensor:
+        """Computes the Q-values of all state-action pairs, given a single state.
+
+        Args:
+            state (Union[Tensor, ndarray]): State.
+            action_mask (Union[Tensor, ndarray]): Action mask.
+
+        Returns:
+            Tensor: Q-values, illegal actions have value -inf.
+        """
+        return self.q_values(
+            torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
+            torch.as_tensor(action_mask, dtype=torch.bool).unsqueeze_(0)
+        )[0]

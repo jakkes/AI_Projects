@@ -24,4 +24,10 @@ class Logger(logging.SummaryWriterServer):
             summary_writer.add_scalar(
                 "Env/Discounted reward", data["discounted_reward"], self.episode
             )
+            summary_writer.add_scalar(
+                "Env/Steps", data["steps"], self.episode
+            )
+            summary_writer.add_scalar(
+                "Agent/Start value", data["start_value"], self.episode
+            )
             self.episode += 1

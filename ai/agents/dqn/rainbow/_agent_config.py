@@ -57,3 +57,7 @@ class AgentConfig:
 
     beta_t_end: int = 10000
     """Number of updates after which beta should have annealed to `beta_end`."""
+
+    gradient_norm: float = 20
+    """Gradients are normed (L2) to this value, if larger. If this value is negative,
+    no normalization is done."""

@@ -21,6 +21,9 @@ class ArgumentParser(tap.Tap):
     replay_capacity: int = 8192
     """Replay capacity."""
 
+    noise_std: float = 1.0
+    """Initial noise STD in the NoisyNet."""
+
 
 def main(args: ArgumentParser):
     env_factory = environments.GymWrapper.get_factory("CartPole-v0")
@@ -34,23 +37,23 @@ def main(args: ArgumentParser):
     agent_config.replay_capacity = args.replay_capacity
 
     agent_config.use_prioritized_experience_replay = False
-    agent_config.use_distributional = True
+    agent_config.use_distributional = False
     agent_config.use_double = True
     agent_config.n_atoms = 21
     agent_config.v_min = 0
     agent_config.v_max = 100
 
     network = rainbow.networks.CartPole(
-        agent_config.use_distributional, agent_config.n_atoms, 0.5
+        agent_config.use_distributional, agent_config.n_atoms, args.noise_std
     )
-    optimizer = optim.Adam(network.parameters(), lr=1e-4)
+    optimizer = optim.Adam(network.parameters(), lr=1e-4, )
     agent = rainbow.Agent(agent_config, network, optimizer)
 
     trainer_config = rainbow.trainers.basic.Config()
     trainer_config.episodes = args.episodes
     trainer_config.max_environment_steps = -1
     trainer_config.minimum_buffer_size = 200
-    trainer_config.n_step = 1
+    trainer_config.n_step = 3
 
     trainer = rainbow.trainers.basic.Trainer(agent, trainer_config, env_factory)
     trainer.start()
