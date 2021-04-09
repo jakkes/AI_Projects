@@ -37,6 +37,9 @@ class GymWrapper(environments.Base):
     def reset(self) -> np.ndarray:
         return self._env.reset()
 
+    def close(self):
+        self._env.close()
+
     @classmethod
     def get_factory(cls, env_id: str) -> Factory:
         """Creates an environment factory that spawns the specific `env_id`. For
