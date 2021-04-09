@@ -51,16 +51,16 @@ __all__ = [&#34;choice&#34;]</code></pre>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>probabilities</code></strong> :&ensp;<code>torch.Tensor</code></dt>
-<dd>Tensor of shape <code>(&hellip;, N)</code>. Arguments are sampled</dd>
+<dd>Tensor of shape <code>(&hellip;, N)</code>. Arguments are sampled
+over the last dimension according to the weight.</dd>
 </dl>
-<p>over the last dimension according to the weight.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>torch.Tensor</code></dt>
-<dd>Tensor of shape equal to the input shape, but the last dimension.</dd>
+<dd>Tensor of shape equal to the input shape, but the last dimension.
+Data type is <code>torch.long</code>.</dd>
 </dl>
-<p>Data type is <code>torch.long</code>.
-Example usage:</p>
+<p>Example usage:</p>
 <pre><code class="language-python">x = torch.tensor([[1.0, 1.0, 1.0],
                   [0.0, 1.0, 2.0]])
 y = choice(x)   # y[0] is any of (0, 1, 2) with equal probability. y[1] is any of
@@ -75,11 +75,11 @@ y = choice(x)   # y[0] is any of (0, 1, 2) with equal probability. y[1] is any o
 
     Args:
         probabilities (torch.Tensor): Tensor of shape `(..., N)`. Arguments are sampled
-        over the last dimension according to the weight.
+            over the last dimension according to the weight.
 
     Returns:
         torch.Tensor: Tensor of shape equal to the input shape, but the last dimension.
-        Data type is `torch.long`.
+            Data type is `torch.long`.
 
     Example usage:
     ```python

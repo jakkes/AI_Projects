@@ -47,18 +47,18 @@ __all__ = [&#34;NoisyLinear&#34;]</code></pre>
 <dl>
 <dt id="ai.utils.torch.nn.NoisyLinear"><code class="flex name class">
 <span>class <span class="ident">NoisyLinear</span></span>
-<span>(</span><span>in_features, out_features, std_init, bias=True)</span>
+<span>(</span><span>in_features: int, out_features: int, std_init: float, bias: bool = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Implementation of a noisy (linear) network.</p>
 <p>Noisy networks add random noise to the activation, scaled by learnable weights.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>in_features</code></strong> :&ensp;<code>[type]</code></dt>
+<dt><strong><code>in_features</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of in features.</dd>
-<dt><strong><code>out_features</code></strong> :&ensp;<code>[type]</code></dt>
+<dt><strong><code>out_features</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of out features.</dd>
-<dt><strong><code>std_init</code></strong> :&ensp;<code>[type]</code></dt>
+<dt><strong><code>std_init</code></strong> :&ensp;<code>float</code></dt>
 <dd>Initial standard deviation of the noise.</dd>
 <dt><strong><code>bias</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>If True, uses a bias a term in the linear
@@ -70,15 +70,17 @@ transformation. Defaults to True.</dd>
 </summary>
 <pre><code class="python">class NoisyLinear(nn.Linear):
     &#34;&#34;&#34;Implementation of a noisy (linear) network.
-    
+
     Noisy networks add random noise to the activation, scaled by learnable weights.&#34;&#34;&#34;
 
-    def __init__(self, in_features, out_features, std_init, bias=True):
+    def __init__(
+        self, in_features: int, out_features: int, std_init: float, bias: bool = True
+    ):
         &#34;&#34;&#34;
         Args:
-            in_features ([type]): Number of in features.
-            out_features ([type]): Number of out features.
-            std_init ([type]): Initial standard deviation of the noise.
+            in_features (int): Number of in features.
+            out_features (int): Number of out features.
+            std_init (float): Initial standard deviation of the noise.
             bias (bool, optional): If True, uses a bias a term in the linear
                 transformation. Defaults to True.
         &#34;&#34;&#34;
@@ -97,6 +99,7 @@ transformation. Defaults to True.</dd>
         self.register_buffer(&#34;beps&#34;, torch.zeros(out_features))
 
     def forward(self, x):
+        &#34;&#34;&#34;&#34;&#34;&#34;
         if self.training:
             epsin = NoisyLinear.get_noise(self.in_features)
             epsout = NoisyLinear.get_noise(self.out_features)
@@ -147,20 +150,13 @@ transformation. Defaults to True.</dd>
 <span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the :class:<code>Module</code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def forward(self, x):
+    &#34;&#34;&#34;&#34;&#34;&#34;
     if self.training:
         epsin = NoisyLinear.get_noise(self.in_features)
         epsout = NoisyLinear.get_noise(self.out_features)
