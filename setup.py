@@ -21,6 +21,7 @@ setuptools.setup(
         "torch~=1.8.1",
         "scipy~=1.6.1",
         "tensorboard~=2.4.1",
+        "gym~=0.18.0",
     ],
     python_requires=">=3.7",
 )
