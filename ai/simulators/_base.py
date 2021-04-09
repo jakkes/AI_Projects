@@ -26,6 +26,7 @@ class Base(ABC):
 
     @property
     def deterministic(self) -> bool:
+        """Whether or not the simulator instance is deterministic or stochastic."""
         return self._deterministic
 
     def step(
@@ -91,6 +92,11 @@ class Base(ABC):
     @abstractmethod
     def close(self):
         """Disposes resources used by the simulator."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def render(self, state: np.ndarray):
+        """Renders the given state."""
         raise NotImplementedError
 
     @classmethod

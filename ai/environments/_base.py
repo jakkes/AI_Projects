@@ -47,6 +47,11 @@ class Base(ABC):
         """Disposes resources used by the environment."""
         raise NotImplementedError
 
+    @abstractmethod
+    def render(self):
+        """Renders the environment in its current state."""
+        raise NotImplementedError
+
     @classmethod
     def get_factory(cls, *args, **kwargs) -> "ai.environments.Factory":
         """Creates and returns a factory object that spawns simulators when called.

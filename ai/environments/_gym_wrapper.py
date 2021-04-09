@@ -41,6 +41,9 @@ class GymWrapper(environments.Base):
     def close(self):
         self._env.close()
 
+    def render(self):
+        self._env.render()
+
     @classmethod
     def get_factory(cls, env_id: str) -> Factory:
         """Creates an environment factory that spawns the specific `env_id`. For
