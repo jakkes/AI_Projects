@@ -1,7 +1,6 @@
 import torch
 
 
-@torch.jit.script
 def choice(probabilities: torch.Tensor) -> torch.Tensor:
     """Selects elements with probability proportional to the given weights.
 
