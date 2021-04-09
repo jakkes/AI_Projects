@@ -36,9 +36,10 @@ from . import action_spaces
 from ._base import Base
 from ._factory import Factory
 from ._simulator_wrapper import SimulatorWrapper
+from ._gym_wrapper import GymWrapper
 
 
-__all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;, &#34;Factory&#34;]</code></pre>
+__all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;, &#34;Factory&#34;, &#34;GymWrapper&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -78,7 +79,7 @@ observable from the outside.</p></div>
 
     @property
     @abstractmethod
-    def action_space(self) -&gt; action_spaces.Base:
+    def action_space(self) -&gt; environments.action_spaces.Base:
         &#34;&#34;&#34;The action space instance used by the environment instance.&#34;&#34;&#34;
         raise NotImplementedError
 
@@ -119,6 +120,7 @@ observable from the outside.</p></div>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li>ai.environments._gym_wrapper.GymWrapper</li>
 <li>ai.environments._simulator_wrapper.SimulatorWrapper</li>
 </ul>
 <h3>Static methods</h3>
@@ -157,7 +159,7 @@ def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.environments.Factory[T]&#
 </summary>
 <pre><code class="python">@property
 @abstractmethod
-def action_space(self) -&gt; action_spaces.Base:
+def action_space(self) -&gt; environments.action_spaces.Base:
     &#34;&#34;&#34;The action space instance used by the environment instance.&#34;&#34;&#34;
     raise NotImplementedError</code></pre>
 </details>
@@ -266,8 +268,139 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li>ai.environments._gym_wrapper.Factory</li>
 <li>ai.environments._simulator_wrapper.Factory</li>
 </ul>
+</dd>
+<dt id="ai.environments.GymWrapper"><code class="flex name class">
+<span>class <span class="ident">GymWrapper</span></span>
+<span>(</span><span>env: gym.core.Env)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Environment wrapper for openAI gym environments.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>env</code></strong> :&ensp;<code>gym.Env</code></dt>
+<dd>Environment instance to wrap.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GymWrapper(environments.Base):
+    &#34;&#34;&#34;Environment wrapper for openAI gym environments.&#34;&#34;&#34;
+
+    def __init__(self, env: gym.Env):
+        &#34;&#34;&#34;
+        Args:
+            env (gym.Env): Environment instance to wrap.
+        &#34;&#34;&#34;
+        self._env = env
+        self._action_space = environments.action_spaces.DiscreteGymWrapper(
+            env.action_space
+        )
+
+    @property
+    def action_space(self) -&gt; environments.action_spaces.Base:
+        return self._action_space
+
+    def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
+        return self._env.step(action)
+
+    def reset(self) -&gt; np.ndarray:
+        return self._env.reset()
+
+    @classmethod
+    def get_factory(cls, env_id: str) -&gt; Factory:
+        &#34;&#34;&#34;Creates an environment factory that spawns the specific `env_id`. For
+        possible values, see the openAI gym documentation.&#34;&#34;&#34;
+        return Factory(env_id)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>ai.environments._base.Base</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ai.environments.GymWrapper.get_factory"><code class="name flex">
+<span>def <span class="ident">get_factory</span></span>(<span>env_id: str) ‑> ai.environments._gym_wrapper.Factory</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates an environment factory that spawns the specific <code>env_id</code>. For
+possible values, see the openAI gym documentation.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def get_factory(cls, env_id: str) -&gt; Factory:
+    &#34;&#34;&#34;Creates an environment factory that spawns the specific `env_id`. For
+    possible values, see the openAI gym documentation.&#34;&#34;&#34;
+    return Factory(env_id)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="ai.environments.GymWrapper.action_space"><code class="name">var <span class="ident">action_space</span> : ai.environments.action_spaces._base.Base</code></dt>
+<dd>
+<div class="desc"><p>The action space instance used by the environment instance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def action_space(self) -&gt; environments.action_spaces.Base:
+    return self._action_space</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.environments.GymWrapper.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self) ‑> numpy.ndarray</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Resets the environment to a new initial state.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.ndarray</code></dt>
+<dd>Initial state.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset(self) -&gt; np.ndarray:
+    return self._env.reset()</code></pre>
+</details>
+</dd>
+<dt id="ai.environments.GymWrapper.step"><code class="name flex">
+<span>def <span class="ident">step</span></span>(<span>self, action: int) ‑> Tuple[numpy.ndarray, float, bool, Dict]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Executes an action in the environment.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>action</code></strong> :&ensp;<code>int</code></dt>
+<dd>Action index</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Tuple[np.ndarray, float, bool, Dict]</code></dt>
+<dd>Tuple of next state, reward, terminal</dd>
+</dl>
+<p>flag, and debugging dictionary.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
+    return self._env.step(action)</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="ai.environments.SimulatorWrapper"><code class="flex name class">
 <span>class <span class="ident">SimulatorWrapper</span></span>
@@ -433,6 +566,15 @@ def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
 </li>
 <li>
 <h4><code><a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ai.environments.GymWrapper" href="#ai.environments.GymWrapper">GymWrapper</a></code></h4>
+<ul class="">
+<li><code><a title="ai.environments.GymWrapper.action_space" href="#ai.environments.GymWrapper.action_space">action_space</a></code></li>
+<li><code><a title="ai.environments.GymWrapper.get_factory" href="#ai.environments.GymWrapper.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.environments.GymWrapper.reset" href="#ai.environments.GymWrapper.reset">reset</a></code></li>
+<li><code><a title="ai.environments.GymWrapper.step" href="#ai.environments.GymWrapper.step">step</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="ai.environments.SimulatorWrapper" href="#ai.environments.SimulatorWrapper">SimulatorWrapper</a></code></h4>
