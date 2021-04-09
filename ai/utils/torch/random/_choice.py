@@ -6,11 +6,11 @@ def choice(probabilities: torch.Tensor) -> torch.Tensor:
 
     Args:
         probabilities (torch.Tensor): Tensor of shape `(..., N)`. Arguments are sampled
-        over the last dimension according to the weight.
+            over the last dimension according to the weight.
 
     Returns:
         torch.Tensor: Tensor of shape equal to the input shape, but the last dimension.
-        Data type is `torch.long`.
+            Data type is `torch.long`.
 
     Example usage:
     ```python
