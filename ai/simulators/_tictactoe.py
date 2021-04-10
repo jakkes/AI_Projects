@@ -1,16 +1,14 @@
 from typing import Callable, Tuple, List, Dict
 import numpy as np
 
-from . import action_spaces
-from .base import Base
-from .factory import Factory
+import ai.simulators as simulators
 
 
 _DIAG_INDICES = np.array([0, 4, 8]).astype(np.int32)
 _CROSS_DIAG_INDICES = np.array([2, 4, 6]).astype(np.int32)
 
 
-class TicTacToe(Base):
+class TicTacToe(simulators.Base):
 
     """TicTacToe (connect three, or three in a row) simulator.
 
@@ -29,10 +27,10 @@ class TicTacToe(Base):
 
     def __init__(self) -> None:
         super().__init__(True)
-        self._action_space = action_spaces.TicTacToe()
+        self._action_space = simulators.action_spaces.TicTacToe()
 
     @property
-    def action_space(self) -> action_spaces.TicTacToe:
+    def action_space(self) -> simulators.action_spaces.TicTacToe:
         return self._action_space
 
     def close(self):
