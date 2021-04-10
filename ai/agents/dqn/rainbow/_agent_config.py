@@ -1,63 +1,61 @@
 from typing import Tuple
 
-import attr
 
-
-@attr.s(auto_attribs=True)
 class AgentConfig:
+    """RainbowDQN agent configuration."""
+    def __init__(self) -> None:
+        self.state_shape: Tuple[int, ...] = tuple()
+        """Shape of the state space."""
 
-    state_shape: Tuple[int, ...] = attr.Factory(tuple)
-    """Shape of the state space."""
+        self.action_space_size: int = 0
+        """Number of actions in the action space."""
 
-    action_space_size: int = 0
-    """Number of actions in the action space."""
+        self.replay_capacity: int = 10000
+        """Capacity of the replay buffer."""
 
-    replay_capacity: int = 10000
-    """Capacity of the replay buffer."""
+        self.batch_size: int = 32
+        """Batch size used in learning steps."""
 
-    batch_size: int = 32
-    """Batch size used in learning steps."""
+        self.target_update_steps: int = 20
+        """Number of update steps to apply between each target network update."""
 
-    target_update_steps: int = 20
-    """Number of update steps to apply between each target network update."""
+        self.discount_factor: float = 0.99
+        """Discount factor."""
 
-    discount_factor: float = 0.99
-    """Discount factor."""
+        self.use_double: bool = True
+        """Whether or not to use Double DQN."""
 
-    use_double: bool = True
-    """Whether or not to use Double DQN."""
+        self.use_distributional: bool = True
+        """Whether or not to use the distributional part of RainbowDQN."""
 
-    use_distributional: bool = True
-    """Whether or not to use the distributional part of RainbowDQN."""
+        self.n_atoms: int = 51
+        """Number of support atoms to use in the distributional part of RainbowDQN."""
 
-    n_atoms: int = 51
-    """Number of support atoms to use in the distributional part of RainbowDQN."""
+        self.v_min: float = -1
+        """Minimum value of the distribution support."""
 
-    v_min: float = -1
-    """Minimum value of the distribution support."""
+        self.v_max: float = 1
+        """Maximum value of the distribution support."""
 
-    v_max: float = 1
-    """Maximum value of the distribution support."""
+        self.use_prioritized_experience_replay: bool = True
+        """Whether or not to use the prioritized experience replay part of RainbowDQN."""
 
-    use_prioritized_experience_replay: bool = True
-    """Whether or not to use the prioritized experience replay part of RainbowDQN."""
+        self.alpha: float = 0.6
+        """Controls the distribution of the prioritized experience replay."""
 
-    alpha: float = 0.6
-    """Controls the distribution of the prioritized experience replay."""
+        self.beta_start: float = 0.4
+        """Start value of the beta parameter, used in prioritized experience replay."""
 
-    beta_start: float = 0.4
-    """Start value of the beta parameter, used in prioritized experience replay."""
+        self.beta_end: float = 1.0
+        """End value of the beta parameter, used in prioritized experience replay."""
 
-    beta_end: float = 1.0
-    """End value of the beta parameter, used in prioritized experience replay."""
+        self.beta_t_start: int = 0
+        """Number of updates to apply before linearly annealing beta from `beta_start` to
+        `beta_end`."""
 
-    beta_t_start: int = 0
-    """Number of updates to apply before linearly annealing beta from `beta_start` to
-    `beta_end`."""
+        self.beta_t_end: int = 10000
+        """Number of updates after which beta should have annealed to `beta_end`."""
 
-    beta_t_end: int = 10000
-    """Number of updates after which beta should have annealed to `beta_end`."""
-
-    gradient_norm: float = 20
-    """Gradients are normed (L2) to this value, if larger. If this value is negative,
-    no normalization is done."""
+        self.gradient_norm: float = 20
+        """Gradients are normed (L2) to this value, if larger. If this value is negative,
+        no normalization is done."""
