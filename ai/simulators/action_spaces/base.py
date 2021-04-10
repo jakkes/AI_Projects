@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, TypeVar, Tuple
 
 import numpy as np
-import ai
+import ai.simulators.action_spaces as action_spaces
 
 T = TypeVar("T")
 
@@ -27,10 +27,10 @@ class Base(ABC):
         return self
 
     @property
-    def as_discrete(self) -> "ai.simulators.action_spaces.Discrete":
+    def as_discrete(self) -> "action_spaces.Discrete":
         """This object cast to a discrete action space. Equivalent to calling
         `cast_to(Discrete)`."""
-        return self.cast_to(ai.simulators.action_spaces.Discrete)
+        return self.cast_to(action_spaces.Discrete)
 
     @abstractmethod
     def sample(self, state: np.ndarray) -> Any:

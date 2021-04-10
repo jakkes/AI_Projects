@@ -2,7 +2,7 @@ from typing import Tuple, Dict
 
 import numpy as np
 
-import ai.simulators as simulators
+from ai import simulators
 import ai.environments as environments
 
 

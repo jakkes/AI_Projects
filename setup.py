@@ -22,6 +22,7 @@ setuptools.setup(
         "scipy~=1.6.1",
         "tensorboard~=2.4.1",
         "gym~=0.18.0",
+        "python-linq~=1.4.1"
     ],
     python_requires=">=3.7, <3.9",
 )

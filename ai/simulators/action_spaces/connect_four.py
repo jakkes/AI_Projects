@@ -1,9 +1,9 @@
 import numpy as np
 
-from ._discrete import Discrete
+import ai.simulators.action_spaces as action_spaces
 
 
-class ConnectFour(Discrete):
+class ConnectFour(action_spaces.Discrete):
     """Action space of the ConnectFour simulator."""
 
     @property

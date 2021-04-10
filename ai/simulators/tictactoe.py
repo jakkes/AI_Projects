@@ -2,8 +2,8 @@ from typing import Callable, Tuple, List, Dict
 import numpy as np
 
 from . import action_spaces
-from ._base import Base
-from ._factory import Factory
+from .base import Base
+from .factory import Factory
 
 
 _DIAG_INDICES = np.array([0, 4, 8]).astype(np.int32)
