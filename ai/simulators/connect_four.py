@@ -33,7 +33,7 @@ class ConnectFour(simulators.Base):
         return states
 
     @property
-    def action_space(self) -> action_spaces.ConnectFour:
+    def action_space(self) -> simulators.action_spaces.ConnectFour:
         return self._action_space
 
     def _compute_rewards(self, states: np.ndarray, players: np.ndarray) -> np.ndarray:
