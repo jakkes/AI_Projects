@@ -15,7 +15,6 @@ except RuntimeError:
 
 
 root = os.path.dirname(__file__)
-
 modules = queue.Queue()
 for module in __all__:
     modules.put_nowait((module, ))
@@ -29,6 +28,11 @@ while not modules.empty():
         module.__pdoc__ = {}
     if "__all__" not in dir(module):
         module.__all__ = []
+
+    for obj in module.__all__:
+        obj = eval(".".join(module_name) + f".{obj}")
+        if not isinstance(obj, ModuleType):
+            obj.__module__ = "ai." + ".".join(module_name)
 
     for submodule in os.listdir(os.path.join(root, *module_name)):
         submodule_path = os.path.join(root, *module_name, submodule)
