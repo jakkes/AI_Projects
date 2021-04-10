@@ -2,10 +2,10 @@
 implementations of it."""
 
 
-from .tictactoe import TicTacToe
-from .base import Base
-from .connect_four import ConnectFour
-from .factory import Factory
+from ._tictactoe import TicTacToe
+from ._base import Base
+from ._connect_four import ConnectFour
+from ._factory import Factory
 from . import action_spaces
 
 

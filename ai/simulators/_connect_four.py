@@ -5,7 +5,7 @@ from scipy.signal import convolve
 
 import ai.utils.np as np_utils
 from . import action_spaces
-from .base import Base
+from ._base import Base
 
 
 class ConnectFour(Base):
