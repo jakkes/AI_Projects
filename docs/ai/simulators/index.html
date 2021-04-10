@@ -34,10 +34,10 @@ implementations of it.&#34;&#34;&#34;
 
 
 from . import action_spaces
-from .base import Base
-from .factory import Factory
-from .tictactoe import TicTacToe
-from .connect_four import ConnectFour
+from ._base import Base
+from ._factory import Factory
+from ._connect_four import ConnectFour
+from ._tictactoe import TicTacToe
 
 
 __all__ = [&#34;TicTacToe&#34;, &#34;Base&#34;, &#34;ConnectFour&#34;, &#34;Factory&#34;, &#34;action_spaces&#34;]</code></pre>
@@ -125,19 +125,50 @@ def action_space(self) -&gt; simulators.action_spaces.Base:
 </dd>
 <dt id="ai.simulators.Base.deterministic"><code class="name">var <span class="ident">deterministic</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Whether or not the simulator instance is deterministic or stochastic.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def deterministic(self) -&gt; bool:
+    &#34;&#34;&#34;Whether or not the simulator instance is deterministic or stochastic.&#34;&#34;&#34;
     return self._deterministic</code></pre>
 </details>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="ai.simulators.Base.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Disposes resources used by the simulator.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def close(self):
+    &#34;&#34;&#34;Disposes resources used by the simulator.&#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="ai.simulators.Base.render"><code class="name flex">
+<span>def <span class="ident">render</span></span>(<span>self, state: numpy.ndarray)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Renders the given state.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def render(self, state: np.ndarray):
+    &#34;&#34;&#34;Renders the given state.&#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
 <dt id="ai.simulators.Base.reset"><code class="name flex">
 <span>def <span class="ident">reset</span></span>(<span>self) ‑> numpy.ndarray</span>
 </code></dt>
@@ -355,6 +386,8 @@ output function.</p>
 <li><code><b><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
+<li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
 <li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
 <li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
 <li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
@@ -467,6 +500,8 @@ through the given output function.</p>
 <li><code><b><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
+<li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
 <li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
 <li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
 <li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
@@ -501,8 +536,10 @@ through the given output function.</p>
 <h4><code><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></code></h4>
 <ul class="two-column">
 <li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
 <li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
 <li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.simulators.Base.render" href="#ai.simulators.Base.render">render</a></code></li>
 <li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
 <li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
 <li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>

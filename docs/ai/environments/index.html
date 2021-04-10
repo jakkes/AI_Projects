@@ -33,10 +33,10 @@ implementations of it.</p>
 implementations of it.&#34;&#34;&#34;
 
 from . import action_spaces
-from .base import Base
-from .factory import Factory
-from .simulator_wrapper import SimulatorWrapper
-from .gym_wrapper import GymWrapper
+from ._base import Base
+from ._factory import Factory
+from ._simulator_wrapper import SimulatorWrapper
+from ._gym_wrapper import GymWrapper
 
 
 __all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;, &#34;Factory&#34;, &#34;GymWrapper&#34;]</code></pre>
@@ -78,7 +78,7 @@ observable from the outside.</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.environments.Base.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> <a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a>[~T]</span>
+<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> <a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates and returns a factory object that spawns simulators when called.</p>
@@ -90,13 +90,13 @@ class of your choice.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def get_factory(cls: T, *args, **kwargs) -&gt; &#34;environments.Factory[T]&#34;:
+def get_factory(cls, *args, **kwargs) -&gt; &#34;environments.Factory&#34;:
     &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
 
     Args and kwargs are passed along to the class constructor. However, if other
     behavior is required, feel free to override this method and return a factory
     class of your choice.&#34;&#34;&#34;
-    return environments.Factory[T](cls, *args, **kwargs)</code></pre>
+    return environments.Factory(cls, *args, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
@@ -119,6 +119,36 @@ def action_space(self) -&gt; environments.action_spaces.Base:
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="ai.environments.Base.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Disposes resources used by the environment.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def close(self):
+    &#34;&#34;&#34;Disposes resources used by the environment.&#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="ai.environments.Base.render"><code class="name flex">
+<span>def <span class="ident">render</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Renders the environment in its current state.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def render(self):
+    &#34;&#34;&#34;Renders the environment in its current state.&#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
 <dt id="ai.environments.Base.reset"><code class="name flex">
 <span>def <span class="ident">reset</span></span>(<span>self) ‑> numpy.ndarray</span>
 </code></dt>
@@ -181,7 +211,7 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 </dd>
 <dt id="ai.environments.Factory"><code class="flex name class">
 <span>class <span class="ident">Factory</span></span>
-<span>(</span><span>cls: ~T, *args, **kwargs)</span>
+<span>(</span><span>cls: <a title="ai.environments.Base" href="#ai.environments.Base">Base</a>, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Factories are callable objects that spawn environment instances.</p>
@@ -192,14 +222,10 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 </dl>
 <p><em>args, </em>*kwargs: arguments and key-word arguments passed to the environment
 <strong>init</strong> method.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>typing.Generic</li>
-</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.environments.gym_wrapper.Factory</li>
-<li>ai.environments.simulator_wrapper.Factory</li>
+<li>ai.environments._gym_wrapper.Factory</li>
+<li>ai.environments._simulator_wrapper.Factory</li>
 </ul>
 </dd>
 <dt id="ai.environments.GymWrapper"><code class="flex name class">
@@ -221,7 +247,7 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.environments.GymWrapper.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>env_id: str) ‑> ai.environments.gym_wrapper.Factory</span>
+<span>def <span class="ident">get_factory</span></span>(<span>env_id: str) ‑> ai.environments._gym_wrapper.Factory</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates an environment factory that spawns the specific <code>env_id</code>. For
@@ -243,6 +269,8 @@ def get_factory(cls, env_id: str) -&gt; Factory:
 <li><code><b><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="ai.environments.Base.action_space" href="#ai.environments.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.environments.Base.close" href="#ai.environments.Base.close">close</a></code></li>
+<li><code><a title="ai.environments.Base.render" href="#ai.environments.Base.render">render</a></code></li>
 <li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
 <li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
 </ul>
@@ -288,6 +316,8 @@ def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
 <li><code><b><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="ai.environments.Base.action_space" href="#ai.environments.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.environments.Base.close" href="#ai.environments.Base.close">close</a></code></li>
+<li><code><a title="ai.environments.Base.render" href="#ai.environments.Base.render">render</a></code></li>
 <li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
 <li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
 </ul>
@@ -317,9 +347,11 @@ def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
 <ul>
 <li>
 <h4><code><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="ai.environments.Base.action_space" href="#ai.environments.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.environments.Base.close" href="#ai.environments.Base.close">close</a></code></li>
 <li><code><a title="ai.environments.Base.get_factory" href="#ai.environments.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.environments.Base.render" href="#ai.environments.Base.render">render</a></code></li>
 <li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
 <li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
 </ul>

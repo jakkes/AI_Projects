@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>ai.utils.torch.random API documentation</title>
-<meta name="description" content="Utility methods dealing with random numbers in PyTorch." />
+<title>ai.agents.utils API documentation</title>
+<meta name="description" content="Agent utility methods." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,83 +19,163 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ai.utils.torch.random</code></h1>
+<h1 class="title">Module <code>ai.agents.utils</code></h1>
 </header>
 <section id="section-intro">
-<p>Utility methods dealing with random numbers in PyTorch.</p>
+<p>Agent utility methods.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Utility methods dealing with random numbers in PyTorch.&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;Agent utility methods.&#34;&#34;&#34;
 
-from ._choice import choice
+from ._n_step_reward_collector import NStepRewardCollector
+from . import buffers
 
 
-__all__ = [&#34;choice&#34;]</code></pre>
+__all__ = [&#34;buffers&#34;, &#34;NStepRewardCollector&#34;]</code></pre>
 </details>
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt id="ai.utils.torch.random.choice"><code class="name flex">
-<span>def <span class="ident">choice</span></span>(<span>probabilities: torch.Tensor) ‑> torch.Tensor</span>
-</code></dt>
+<dt><code class="name"><a title="ai.agents.utils.buffers" href="buffers/index.html">ai.agents.utils.buffers</a></code></dt>
 <dd>
-<div class="desc"><p>Selects elements with probability proportional to the given weights.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>probabilities</code></strong> :&ensp;<code>torch.Tensor</code></dt>
-<dd>Tensor of shape <code>(&hellip;, N)</code>. Arguments are sampled
-over the last dimension according to the weight.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>torch.Tensor</code></dt>
-<dd>Tensor of shape equal to the input shape, but the last dimension.
-Data type is <code>torch.long</code>.</dd>
-</dl>
-<p>Example usage:</p>
-<pre><code class="language-python">x = torch.tensor([[1.0, 1.0, 1.0],
-                  [0.0, 1.0, 2.0]])
-y = choice(x)   # y[0] is any of (0, 1, 2) with equal probability. y[1] is any of
-                # (1, 2), with 2 occuring with twice the probability of 1.
-</code></pre></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def choice(probabilities: torch.Tensor) -&gt; torch.Tensor:
-    &#34;&#34;&#34;Selects elements with probability proportional to the given weights.
-
-    Args:
-        probabilities (torch.Tensor): Tensor of shape `(..., N)`. Arguments are sampled
-            over the last dimension according to the weight.
-
-    Returns:
-        torch.Tensor: Tensor of shape equal to the input shape, but the last dimension.
-            Data type is `torch.long`.
-
-    Example usage:
-    ```python
-    x = torch.tensor([[1.0, 1.0, 1.0],
-                      [0.0, 1.0, 2.0]])
-    y = choice(x)   # y[0] is any of (0, 1, 2) with equal probability. y[1] is any of
-                    # (1, 2), with 2 occuring with twice the probability of 1.
-    ```
-    &#34;&#34;&#34;
-    cumsummed = (probabilities / probabilities.sum(-1, keepdim=True)).cumsum(-1)
-    r = torch.rand(probabilities.shape[:-1]).unsqueeze_(-1)
-    return (r &gt; cumsummed).sum(-1)</code></pre>
-</details>
+<div class="desc"><p>Replay buffers.</p></div>
 </dd>
 </dl>
 </section>
 <section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ai.agents.utils.NStepRewardCollector"><code class="flex name class">
+<span>class <span class="ident">NStepRewardCollector</span></span>
+<span>(</span><span>n_step: int, discount_factor: float, state_data_shapes: Sequence[Tuple[int, ...]], state_data_dtypes: Sequence[torch.dtype])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Utility object for collecting n-step rewards.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n_step</code></strong> :&ensp;<code>int</code></dt>
+<dd>N-step to apply.</dd>
+<dt><strong><code>discount_factor</code></strong> :&ensp;<code>float</code></dt>
+<dd>Discount factor.</dd>
+<dt><strong><code>state_data_shapes</code></strong> :&ensp;<code>Sequence[Tuple[int, &hellip;]]</code></dt>
+<dd>Sequence of shapes that need
+to be stored at each state. These tensors are then paired with the
+correct state and next states.</dd>
+<dt><strong><code>state_data_dtypes</code></strong> :&ensp;<code>Sequence[torch.dtype]</code></dt>
+<dd>Sequence of data types that need
+to be stored at each state.</dd>
+</dl></div>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.agents.utils.NStepRewardCollector.step"><code class="name flex">
+<span>def <span class="ident">step</span></span>(<span>self, reward: float, terminal: bool, state_data: Sequence[Union[torch.Tensor, numpy.ndarray]]) ‑> Union[Tuple[Sequence[torch.Tensor], torch.Tensor, torch.Tensor, Sequence[torch.Tensor]], NoneType]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Observes one state transition</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>reward</code></strong> :&ensp;<code>float</code></dt>
+<dd>Reward observed in the 1-step transition.</dd>
+<dt><strong><code>terminal</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If the state transition resulted in a terminal state.</dd>
+<dt><strong><code>state_data</code></strong> :&ensp;<code>Sequence[Union[Tensor, ndarray]]</code></dt>
+<dd>State data of the state that
+was transitioned <em>from</em>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Optional[Tuple[Sequence[Tensor], Tensor, Tensor, Sequence[Tensor]]]</code></dt>
+<dd>If
+available: Tuple of state data, rewards, terminals, next state data.
+Otherwise, None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def step(
+    self,
+    reward: float,
+    terminal: bool,
+    state_data: Sequence[Union[Tensor, ndarray]],
+) -&gt; Optional[Tuple[Sequence[Tensor], Tensor, Tensor, Sequence[Tensor]]]:
+    &#34;&#34;&#34;Observes one state transition
+
+    Args:
+        reward (float): Reward observed in the 1-step transition.
+        terminal (bool): If the state transition resulted in a terminal state.
+        state_data (Sequence[Union[Tensor, ndarray]]): State data of the state that
+            was transitioned _from_.
+
+    Returns:
+        Optional[Tuple[Sequence[Tensor], Tensor, Tensor, Sequence[Tensor]]]: If
+            available: Tuple of state data, rewards, terminals, next state data.
+            Otherwise, None.
+    &#34;&#34;&#34;
+
+    state_data = [
+        torch.as_tensor(data, dtype=dtype)
+        for data, dtype in zip(state_data, self._state_data_dtypes)
+    ]
+
+    return_state_data = [[] for _ in self._state_data_shapes]
+    return_rewards = []
+    return_terminals = []
+    return_next_state_data = [[] for _ in self._state_data_shapes]
+
+    if self._looped:
+        rewards = self._rewards[self._i] * self._discount_vector
+        return_rewards.append(rewards.sum().clone().unsqueeze_(0))
+        return_terminals.append(torch.tensor([False]))
+        for x, y in zip(self._state_data_buffer, return_state_data):
+            y.append(x[self._i].clone().unsqueeze_(0))
+        for x, y in zip(state_data, return_next_state_data):
+            y.append(x.clone().unsqueeze_(0))
+        self._rewards[self._i] = 0.0
+
+    self._rewards[self._index_vector, (self._i - self._index_vector) % self._n_step] = reward
+    for x, y in zip(state_data, self._state_data_buffer):
+        y[self._i] = x
+
+    self._i += 1
+    if self._i &gt;= self._n_step:
+        self._i = 0
+        self._looped = True
+
+    if terminal:
+        n_return = self._n_step if self._looped else self._i
+        rewards = self._rewards[:n_return].clone() * self._discount_vector.view(1, -1)
+        return_rewards.append(rewards.sum(1))
+        return_terminals.append(torch.ones(n_return, dtype=torch.bool))
+        for x, y, z in zip(self._state_data_buffer, return_state_data, return_next_state_data):
+            y.append(x[:n_return].clone())
+            z.append(torch.zeros_like(x[:n_return]))
+
+        self._looped = False
+        self._i = 0
+        self._rewards = torch.zeros_like(self._rewards)
+
+    if len(return_rewards) == 0:
+        return None
+
+    return (
+        tuple(torch.cat(x, dim=0) for x in return_state_data),
+        torch.cat(return_rewards, dim=0),
+        torch.cat(return_terminals, dim=0),
+        tuple(torch.cat(x, dim=0) for x in return_next_state_data)
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -106,12 +186,22 @@ y = choice(x)   # y[0] is any of (0, 1, 2) with equal probability. y[1] is any o
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="ai.utils.torch" href="../index.html">ai.utils.torch</a></code></li>
+<li><code><a title="ai.agents" href="../index.html">ai.agents</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="ai.agents.utils.buffers" href="buffers/index.html">ai.agents.utils.buffers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ai.agents.utils.NStepRewardCollector" href="#ai.agents.utils.NStepRewardCollector">NStepRewardCollector</a></code></h4>
 <ul class="">
-<li><code><a title="ai.utils.torch.random.choice" href="#ai.utils.torch.random.choice">choice</a></code></li>
+<li><code><a title="ai.agents.utils.NStepRewardCollector.step" href="#ai.agents.utils.NStepRewardCollector.step">step</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
