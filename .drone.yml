@@ -4,12 +4,20 @@ type: docker
 name: default
 
 steps:
-- name: docs
-  image: python:3.7-slim
+- name: tests
+  image: python:3.7-alpine
+  commands:
+  - pip install .
+  - pip install -r requirements.txt
+  - pytest
+
+- name: build docs
+  image: python:3.7-alpine
   commands:
   - pip install . pdoc3
   - rm -rf ./docs/ai/
   - pdoc3 ./ai --html -o docs
+
 - name: push
   image: alpine/git
   environment:
