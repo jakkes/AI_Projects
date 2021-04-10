@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-import ai
 import ai.environments as environments
 
 
@@ -53,10 +52,10 @@ class Base(ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_factory(cls, *args, **kwargs) -> "ai.environments.Factory":
+    def get_factory(cls, *args, **kwargs) -> "environments.Factory":
         """Creates and returns a factory object that spawns simulators when called.
 
         Args and kwargs are passed along to the class constructor. However, if other
         behavior is required, feel free to override this method and return a factory
         class of your choice."""
-        return ai.environments.Factory(cls, *args, **kwargs)
+        return environments.Factory(cls, *args, **kwargs)

@@ -33,12 +33,13 @@ implementations of it.</p>
 implementations of it.&#34;&#34;&#34;
 
 from . import action_spaces
-from ._base import Base
-from ._factory import Factory
-from ._simulator_wrapper import SimulatorWrapper
+from .base import Base
+from .factory import Factory
+from .simulator_wrapper import SimulatorWrapper
+from .gym_wrapper import GymWrapper
 
 
-__all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;, &#34;Factory&#34;]</code></pre>
+__all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;, &#34;Factory&#34;, &#34;GymWrapper&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -65,66 +66,19 @@ __all__ = [&#34;Base&#34;, &#34;SimulatorWrapper&#34;, &#34;action_spaces&#34;, 
 <p>An environment is a stateful environment upon which action may be executed. It has
 an internal state that is modified by the action and (potentially only partially)
 observable from the outside.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Base(ABC):
-    &#34;&#34;&#34;Environment base class.
-
-    An environment is a stateful environment upon which action may be executed. It has
-    an internal state that is modified by the action and (potentially only partially)
-    observable from the outside.&#34;&#34;&#34;
-
-    @property
-    @abstractmethod
-    def action_space(self) -&gt; action_spaces.Base:
-        &#34;&#34;&#34;The action space instance used by the environment instance.&#34;&#34;&#34;
-        raise NotImplementedError
-
-    @abstractmethod
-    def reset(self) -&gt; np.ndarray:
-        &#34;&#34;&#34;Resets the environment to a new initial state.
-
-        Returns:
-            np.ndarray: Initial state.
-        &#34;&#34;&#34;
-        raise NotImplementedError
-
-    @abstractmethod
-    def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
-        &#34;&#34;&#34;Executes an action in the environment.
-
-        Args:
-            action (int): Action index
-
-        Returns:
-            Tuple[np.ndarray, float, bool, Dict]: Tuple of next state, reward, terminal
-            flag, and debugging dictionary.
-        &#34;&#34;&#34;
-        raise NotImplementedError
-
-    @classmethod
-    def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.environments.Factory[T]&#34;:
-        &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
-
-        Args and kwargs are passed along to the class constructor. However, if other
-        behavior is required, feel free to override this method and return a factory
-        class of your choice.&#34;&#34;&#34;
-        return ai.environments.Factory[T](cls, *args, **kwargs)</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.environments._simulator_wrapper.SimulatorWrapper</li>
+<li><a title="ai.environments.GymWrapper" href="#ai.environments.GymWrapper">GymWrapper</a></li>
+<li><a title="ai.environments.SimulatorWrapper" href="#ai.environments.SimulatorWrapper">SimulatorWrapper</a></li>
 </ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.environments.Base.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> ai.environments._factory.Factory[~T]</span>
+<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> <a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a>[~T]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates and returns a factory object that spawns simulators when called.</p>
@@ -136,19 +90,19 @@ class of your choice.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.environments.Factory[T]&#34;:
+def get_factory(cls: T, *args, **kwargs) -&gt; &#34;environments.Factory[T]&#34;:
     &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
 
     Args and kwargs are passed along to the class constructor. However, if other
     behavior is required, feel free to override this method and return a factory
     class of your choice.&#34;&#34;&#34;
-    return ai.environments.Factory[T](cls, *args, **kwargs)</code></pre>
+    return environments.Factory[T](cls, *args, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="ai.environments.Base.action_space"><code class="name">var <span class="ident">action_space</span> : ai.environments.action_spaces._base.Base</code></dt>
+<dt id="ai.environments.Base.action_space"><code class="name">var <span class="ident">action_space</span> : <a title="ai.environments.action_spaces.Base" href="action_spaces/index.html#ai.environments.action_spaces.Base">Base</a></code></dt>
 <dd>
 <div class="desc"><p>The action space instance used by the environment instance.</p></div>
 <details class="source">
@@ -157,7 +111,7 @@ def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.environments.Factory[T]&#
 </summary>
 <pre><code class="python">@property
 @abstractmethod
-def action_space(self) -&gt; action_spaces.Base:
+def action_space(self) -&gt; environments.action_spaces.Base:
     &#34;&#34;&#34;The action space instance used by the environment instance.&#34;&#34;&#34;
     raise NotImplementedError</code></pre>
 </details>
@@ -238,40 +192,66 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 </dl>
 <p><em>args, </em>*kwargs: arguments and key-word arguments passed to the environment
 <strong>init</strong> method.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Factory(Generic[T]):
-    &#34;&#34;&#34;Factories are callable objects that spawn environment instances.&#34;&#34;&#34;
-
-    def __init__(self, cls: T, *args, **kwargs):
-        &#34;&#34;&#34;
-        Args:
-            cls (T): Environment class.
-            *args, **kwargs: arguments and key-word arguments passed to the environment
-                __init__ method.
-        &#34;&#34;&#34;
-        super().__init__()
-        self._cls = cls
-        self._args = args
-        self._kwargs = kwargs
-
-    def __call__(self) -&gt; T:
-        return self._cls(*self._args, **self._kwargs)</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>typing.Generic</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.environments._simulator_wrapper.Factory</li>
+<li>ai.environments.gym_wrapper.Factory</li>
+<li>ai.environments.simulator_wrapper.Factory</li>
+</ul>
+</dd>
+<dt id="ai.environments.GymWrapper"><code class="flex name class">
+<span>class <span class="ident">GymWrapper</span></span>
+<span>(</span><span>env: gym.core.Env)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Environment wrapper for openAI gym environments.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>env</code></strong> :&ensp;<code>gym.Env</code></dt>
+<dd>Environment instance to wrap.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="ai.environments.GymWrapper.get_factory"><code class="name flex">
+<span>def <span class="ident">get_factory</span></span>(<span>env_id: str) ‑> ai.environments.gym_wrapper.Factory</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates an environment factory that spawns the specific <code>env_id</code>. For
+possible values, see the openAI gym documentation.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def get_factory(cls, env_id: str) -&gt; Factory:
+    &#34;&#34;&#34;Creates an environment factory that spawns the specific `env_id`. For
+    possible values, see the openAI gym documentation.&#34;&#34;&#34;
+    return Factory(env_id)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.environments.Base.action_space" href="#ai.environments.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
+<li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
+</ul>
+</li>
 </ul>
 </dd>
 <dt id="ai.environments.SimulatorWrapper"><code class="flex name class">
 <span>class <span class="ident">SimulatorWrapper</span></span>
-<span>(</span><span>simulator: ai.simulators._base.Base)</span>
+<span>(</span><span>simulator: <a title="ai.simulators.Base" href="../simulators/index.html#ai.simulators.Base">Base</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Environment that wraps a simulator, exposing it as an environment.</p>
@@ -280,55 +260,15 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 <dt><strong><code>simulator</code></strong> :&ensp;<code>simulators.Base</code></dt>
 <dd>Simulator class to wrap into an environment.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SimulatorWrapper(environments.Base):
-    &#34;&#34;&#34;Environment that wraps a simulator, exposing it as an environment.&#34;&#34;&#34;
-
-    def __init__(self, simulator: simulators.Base):
-        &#34;&#34;&#34;
-        Args:
-            simulator (simulators.Base): Simulator class to wrap into an environment.
-        &#34;&#34;&#34;
-        super().__init__()
-        self._simulator = simulator
-        self._ready = False
-        self._state: np.ndarray = None
-
-    def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
-        if not self._ready:
-            raise ValueError(
-                &#34;Must call &#39;reset()&#39; after having received a terminal state&#34;
-            )
-
-        self._state, reward, terminal, debug = self._simulator.step(
-            self._state, action
-        )
-        if terminal:
-            self._ready = False
-        return self._state, self._action_mask, reward, terminal, debug
-
-    def reset(self) -&gt; Tuple[np.ndarray, np.ndarray]:
-        self._state, self._action_mask = self._simulator.reset()
-        self._ready = True
-        return self._state, self._action_mask
-
-    @classmethod
-    def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
-        &#34;&#34;&#34;Wraps a simulator factory into an environment factory.&#34;&#34;&#34;
-        return Factory(factory)</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>ai.environments._base.Base</li>
+<li><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.environments.SimulatorWrapper.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>factory: ai.simulators._factory.Factory) ‑> ai.environments._factory.Factory</span>
+<span>def <span class="ident">get_factory</span></span>(<span>factory: <a title="ai.simulators.Factory" href="../simulators/index.html#ai.simulators.Factory">Factory</a>) ‑> <a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Wraps a simulator factory into an environment factory.</p></div>
@@ -343,63 +283,16 @@ def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
 </details>
 </dd>
 </dl>
-<h3>Methods</h3>
-<dl>
-<dt id="ai.environments.SimulatorWrapper.reset"><code class="name flex">
-<span>def <span class="ident">reset</span></span>(<span>self) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Resets the environment to a new initial state.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>np.ndarray</code></dt>
-<dd>Initial state.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def reset(self) -&gt; Tuple[np.ndarray, np.ndarray]:
-    self._state, self._action_mask = self._simulator.reset()
-    self._ready = True
-    return self._state, self._action_mask</code></pre>
-</details>
-</dd>
-<dt id="ai.environments.SimulatorWrapper.step"><code class="name flex">
-<span>def <span class="ident">step</span></span>(<span>self, action: int) ‑> Tuple[numpy.ndarray, float, bool, Dict]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Executes an action in the environment.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>action</code></strong> :&ensp;<code>int</code></dt>
-<dd>Action index</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>Tuple[np.ndarray, float, bool, Dict]</code></dt>
-<dd>Tuple of next state, reward, terminal</dd>
-</dl>
-<p>flag, and debugging dictionary.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
-    if not self._ready:
-        raise ValueError(
-            &#34;Must call &#39;reset()&#39; after having received a terminal state&#34;
-        )
-
-    self._state, reward, terminal, debug = self._simulator.step(
-        self._state, action
-    )
-    if terminal:
-        self._ready = False
-    return self._state, self._action_mask, reward, terminal, debug</code></pre>
-</details>
-</dd>
-</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.environments.Base.action_space" href="#ai.environments.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
+<li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -435,11 +328,15 @@ def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
 <h4><code><a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a></code></h4>
 </li>
 <li>
+<h4><code><a title="ai.environments.GymWrapper" href="#ai.environments.GymWrapper">GymWrapper</a></code></h4>
+<ul class="">
+<li><code><a title="ai.environments.GymWrapper.get_factory" href="#ai.environments.GymWrapper.get_factory">get_factory</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="ai.environments.SimulatorWrapper" href="#ai.environments.SimulatorWrapper">SimulatorWrapper</a></code></h4>
 <ul class="">
 <li><code><a title="ai.environments.SimulatorWrapper.get_factory" href="#ai.environments.SimulatorWrapper.get_factory">get_factory</a></code></li>
-<li><code><a title="ai.environments.SimulatorWrapper.reset" href="#ai.environments.SimulatorWrapper.reset">reset</a></code></li>
-<li><code><a title="ai.environments.SimulatorWrapper.step" href="#ai.environments.SimulatorWrapper.step">step</a></code></li>
 </ul>
 </li>
 </ul>

@@ -3,10 +3,9 @@ from typing import Callable, Tuple, List, Dict
 import numpy as np
 from scipy.signal import convolve
 
-from ai.utils.np import cross_diag
+import ai.utils.np as np_utils
 from . import action_spaces
-from ._base import Base
-from ._factory import Factory
+from .base import Base
 
 
 class ConnectFour(Base):
@@ -58,7 +57,7 @@ class ConnectFour(Base):
         win_diagonal = np.any(np.any(win_diagonal, axis=2), axis=1)
 
         win_xdiagonal = (
-            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, np_utils.cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == players
         )
         win_xdiagonal = np.any(np.any(win_xdiagonal, axis=2), axis=1)
@@ -78,7 +77,7 @@ class ConnectFour(Base):
         loss_diagonal = np.any(np.any(loss_diagonal, axis=2), axis=1)
 
         loss_xdiagonal = (
-            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, np_utils.cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == -players
         )
         loss_xdiagonal = np.any(np.any(loss_xdiagonal, axis=2), axis=1)

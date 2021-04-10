@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from ._base import Base
+from .base import Base
 
 
 class Discrete(Base):

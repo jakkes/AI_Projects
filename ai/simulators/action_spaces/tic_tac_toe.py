@@ -1,9 +1,9 @@
 import numpy as np
 
-from ._discrete import Discrete
+import ai.simulators.action_spaces as action_spaces
 
 
-class TicTacToe(Discrete):
+class TicTacToe(action_spaces.Discrete):
     """Action space for the TicTacToe simulator."""
 
     @property
