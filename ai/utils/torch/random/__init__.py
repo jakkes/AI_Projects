@@ -1,6 +1,6 @@
 """Utility methods dealing with random numbers in PyTorch."""
 
-from .choice import choice
+from ._choice import choice
 
 
 __all__ = ["choice"]

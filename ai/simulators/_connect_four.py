@@ -32,6 +32,9 @@ class ConnectFour(simulators.Base):
         states[:, -1] = 1.0
         return states
 
+    def close(self):
+        pass
+
     @property
     def action_space(self) -> simulators.action_spaces.ConnectFour:
         return self._action_space

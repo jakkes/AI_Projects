@@ -32,10 +32,17 @@ class GymWrapper(environments.Base):
         return self._action_space
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict]:
+        action = int(action)
         return self._env.step(action)
 
     def reset(self) -> np.ndarray:
         return self._env.reset()
+
+    def close(self):
+        self._env.close()
+
+    def render(self):
+        self._env.render()
 
     @classmethod
     def get_factory(cls, env_id: str) -> Factory:

@@ -25,6 +25,7 @@ class Base(ABC):
 
     @property
     def deterministic(self) -> bool:
+        """Whether or not the simulator instance is deterministic or stochastic."""
         return self._deterministic
 
     def step(
@@ -86,6 +87,16 @@ class Base(ABC):
             np.ndarray: Initial state
         """
         return self.reset_bulk(1)[0]
+
+    @abstractmethod
+    def close(self):
+        """Disposes resources used by the simulator."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def render(self, state: np.ndarray):
+        """Renders the given state."""
+        raise NotImplementedError
 
     @classmethod
     def get_factory(cls: T, *args, **kwargs) -> "simulators.Factory[T]":
