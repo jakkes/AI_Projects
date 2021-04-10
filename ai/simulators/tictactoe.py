@@ -2,7 +2,7 @@ from typing import Callable, Tuple, List, Dict
 import numpy as np
 
 from . import action_spaces
-from ._base import Base
+from .base import Base
 
 
 _DIAG_INDICES = np.array([0, 4, 8]).astype(np.int32)

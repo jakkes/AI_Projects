@@ -4,11 +4,10 @@ import numpy as np
 from scipy.signal import convolve
 
 import ai.utils.np as np_utils
-from . import action_spaces
-from ._base import Base
+import ai.simulators as simulators
 
 
-class ConnectFour(Base):
+class ConnectFour(simulators.Base):
     """Connect four (four in a row) game simulator.
 
     States are given by a single `np.ndarray` of shape `(43, )`. The first 42 elements
@@ -26,7 +25,7 @@ class ConnectFour(Base):
 
     def __init__(self) -> None:
         super().__init__(True)
-        self._action_space = action_spaces.ConnectFour()
+        self._action_space = simulators.action_spaces.ConnectFour()
 
     def reset_bulk(self, n: int) -> np.ndarray:
         states = np.zeros((n, 7 * 6 + 1))
