@@ -2,8 +2,7 @@ from abc import abstractmethod, ABC
 from typing import Dict, List, Tuple, TypeVar
 
 import numpy as np
-import ai
-from . import action_spaces
+import ai.simulators as simulators
 
 
 T = TypeVar("T")
@@ -48,7 +47,7 @@ class Base(ABC):
 
     @property
     @abstractmethod
-    def action_space(self) -> action_spaces.Base:
+    def action_space(self) -> simulators.action_spaces.Base:
         """The action space class used by this simulator."""
         raise NotImplementedError
 
@@ -89,10 +88,10 @@ class Base(ABC):
         return self.reset_bulk(1)[0]
 
     @classmethod
-    def get_factory(cls: T, *args, **kwargs) -> "ai.simulators.Factory[T]":
+    def get_factory(cls: T, *args, **kwargs) -> "simulators.Factory[T]":
         """Creates and returns a factory object that spawns simulators when called.
 
         Args and kwargs are passed along to the class constructor. However, if other
         behavior is required, feel free to override this method and return a factory
         class of your choice."""
-        return ai.simulators.Factory[T](cls, *args, **kwargs)
+        return simulators.Factory[T](cls, *args, **kwargs)
