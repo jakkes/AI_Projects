@@ -44,7 +44,7 @@ class Discrete(action_spaces.Base):
         raise NotImplementedError
 
     def sample(self, state: np.ndarray) -> int:
-        return np.random.choice(np.arange(self.size())[self.action_mask(state)])
+        return np.random.choice(np.arange(self.size)[self.action_mask(state)])
 
     def contains(self, state: np.ndarray, action: int) -> bool:
         if not isinstance(action, (int, np.integer)):
