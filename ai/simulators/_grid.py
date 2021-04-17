@@ -52,12 +52,6 @@ class Grid(simulators.Base):
         positions = np.product(self._sizes)
         start_states = np.random.randint(0, positions, size=n)
         goal_states = np.random.randint(0, positions, size=n)
-
-        while np.any(goal_states == start_states):
-            goal_states[goal_states == start_states] = np.random.randint(
-                0, positions, size=(goal_states == start_states).sum()
-            )
-        
         return np.stack((start_states, goal_states), axis=1)
 
     def step_bulk(self, states: np.ndarray, actions: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
