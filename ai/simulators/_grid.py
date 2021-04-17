@@ -20,6 +20,7 @@ class ActionSpace(simulators.action_spaces.Discrete):
         re = np.ones((states.shape[0], self.size), dtype=np.bool_)
         re[:, 2*i] = states[:, 0] + 1 < self._sizes
         re[:, 2*i + 1] = states[:, 0] > 0
+        return re
 
 
 class Grid(simulators.Base):
@@ -42,7 +43,7 @@ class Grid(simulators.Base):
 
         self._dim = dim
         self._sizes = sizes
-        self._action_space = ActionSpace(dim)
+        self._action_space = ActionSpace(dim, sizes)
 
     @property
     def action_space(self) -> simulators.action_spaces.Discrete:
@@ -51,7 +52,11 @@ class Grid(simulators.Base):
     def reset_bulk(self, n: int) -> np.ndarray:
         positions = np.product(self._sizes)
         start_states = np.random.randint(0, positions, size=n)
+        start_states = np.unravel_index(start_states)
+        start_states = np.stack(start_states, axis=1)
         goal_states = np.random.randint(0, positions, size=n)
+        goal_states = np.unravel_index(goal_states)
+        goal_states = np.stack(goal_states, axis=1)
         return np.stack((start_states, goal_states), axis=1)
 
     def step_bulk(self, states: np.ndarray, actions: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
@@ -67,3 +72,9 @@ class Grid(simulators.Base):
         rewards = terminals.astype(np.float32)
 
         return next_states, rewards, terminals, [{} for _ in nvec]
+
+    def close(self):
+        pass
+
+    def render(self, state: np.ndarray):
+        raise NotImplementedError
