@@ -36,8 +36,12 @@ class Grid(simulators.Base):
     the goal is reached, otherwise 0."""
 
     def __init__(self, dim: int, sizes: Sequence[int]):
+        """
+        Args:
+            dim (int): Dimension of the grid world.
+            sizes (Sequence[int]): Sizes of each dimension.
+        """
         super().__init__(True)
-
         if len(sizes) != dim:
             raise ValueError("Need to provide one size per dimension.")
 
