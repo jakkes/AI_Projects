@@ -52,21 +52,21 @@ class Grid(simulators.Base):
     def reset_bulk(self, n: int) -> np.ndarray:
         positions = np.product(self._sizes)
         start_states = np.random.randint(0, positions, size=n)
-        start_states = np.unravel_index(start_states)
+        start_states = np.unravel_index(start_states, self._sizes)
         start_states = np.stack(start_states, axis=1)
         goal_states = np.random.randint(0, positions, size=n)
-        goal_states = np.unravel_index(goal_states)
+        goal_states = np.unravel_index(goal_states, self._sizes)
         goal_states = np.stack(goal_states, axis=1)
         return np.stack((start_states, goal_states), axis=1)
 
     def step_bulk(self, states: np.ndarray, actions: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
         nvec = np.arange(actions.shape[0])
-        if np.any(self.action_space.action_mask_bulk(states)[nvec, actions]):
+        if not np.all(self.action_space.action_mask_bulk(states)[nvec, actions]):
             raise ValueError("Cannot execute an illegal action.")
         dim = actions // 2
         increment = - ((actions % 2) * 2 - 1)
         next_states = states.copy()
-        next_states[nvec, dim] += increment
+        next_states[nvec, 0, dim] += increment
 
         terminals = np.all(next_states[:, 0] == next_states[:, 1], axis=1)
         rewards = terminals.astype(np.float32)
