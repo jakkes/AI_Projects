@@ -23,9 +23,19 @@ class ConnectFour(simulators.Base):
     Then, if a winning action is rewarded with `+1` and a losing action is rewarded with
     `-1`."""
 
+    class ActionSpace(simulators.action_spaces.Discrete):
+        """Action space of the ConnectFour simulator."""
+
+        @property
+        def size(cls) -> int:
+            return 7
+
+        def action_mask_bulk(self, states: np.ndarray) -> np.ndarray:
+            return (states[:, :-1].reshape((-1, 6, 7)) != 0).sum(1) < 6
+
     def __init__(self) -> None:
         super().__init__(True)
-        self._action_space = simulators.action_spaces.ConnectFour()
+        self._action_space = ConnectFour.ActionSpace()
 
     def reset_bulk(self, n: int) -> np.ndarray:
         states = np.zeros((n, 7 * 6 + 1))
@@ -36,7 +46,7 @@ class ConnectFour(simulators.Base):
         pass
 
     @property
-    def action_space(self) -> simulators.action_spaces.ConnectFour:
+    def action_space(self) -> "ConnectFour.ActionSpace":
         return self._action_space
 
     def _compute_rewards(self, states: np.ndarray, players: np.ndarray) -> np.ndarray:
