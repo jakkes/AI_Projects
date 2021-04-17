@@ -38,9 +38,10 @@ from ._base import Base
 from ._factory import Factory
 from ._connect_four import ConnectFour
 from ._tictactoe import TicTacToe
+from ._grid import Grid
 
 
-__all__ = [&#34;TicTacToe&#34;, &#34;Base&#34;, &#34;ConnectFour&#34;, &#34;Factory&#34;, &#34;action_spaces&#34;]</code></pre>
+__all__ = [&#34;TicTacToe&#34;, &#34;Base&#34;, &#34;ConnectFour&#34;, &#34;Factory&#34;, &#34;action_spaces&#34;, &#34;Grid&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -80,6 +81,7 @@ considered deterministic or not.</dd>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="ai.simulators.ConnectFour" href="#ai.simulators.ConnectFour">ConnectFour</a></li>
+<li><a title="ai.simulators.Grid" href="#ai.simulators.Grid">Grid</a></li>
 <li><a title="ai.simulators.TicTacToe" href="#ai.simulators.TicTacToe">TicTacToe</a></li>
 </ul>
 <h3>Static methods</h3>
@@ -415,6 +417,49 @@ output function.</p>
 <li>typing.Generic</li>
 </ul>
 </dd>
+<dt id="ai.simulators.Grid"><code class="flex name class">
+<span>class <span class="ident">Grid</span></span>
+<span>(</span><span>dim: int, sizes: Sequence[int])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Simple grid navigation environment. Agents can move in either direction in all
+dimensions and need to reach a goal state.</p>
+<p>States are given by two vectors, specifying the grid coordinates of the agent and
+goal respectively. A grid of dimension <code>N</code> therefore has a state shape of
+<code>(2, N)</code>. On reset, start state and goal state are sampled uniformly across the
+grid. Steps can be taken in one dimension only, and the action space is discrete
+with size <code>2N</code>. Action indices <code>2k</code> moves the agent in the positive direction of
+dimension <code>k</code>, and <code>2k+1</code> in the negative direction. Rewards are given as 1 whenever
+the goal is reached, otherwise 0.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>dim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimension of the grid world.</dd>
+<dt><strong><code>sizes</code></strong> :&ensp;<code>Sequence[int]</code></dt>
+<dd>Sizes of each dimension.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
+<li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
+<li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.simulators.Base.render" href="#ai.simulators.Base.render">render</a></code></li>
+<li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
+<li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
+<li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>
+<li><code><a title="ai.simulators.Base.step_bulk" href="#ai.simulators.Base.step_bulk">step_bulk</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="ai.simulators.TicTacToe"><code class="flex name class">
 <span>class <span class="ident">TicTacToe</span></span>
 </code></dt>
@@ -554,6 +599,9 @@ through the given output function.</p>
 </li>
 <li>
 <h4><code><a title="ai.simulators.Factory" href="#ai.simulators.Factory">Factory</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ai.simulators.Grid" href="#ai.simulators.Grid">Grid</a></code></h4>
 </li>
 <li>
 <h4><code><a title="ai.simulators.TicTacToe" href="#ai.simulators.TicTacToe">TicTacToe</a></code></h4>
