@@ -8,7 +8,7 @@ steps:
 - name: test and docs
   image: python:3.7-slim
   commands:
-  - pip install . pdoc3
+  - pip install pdoc3
   - pip install -r requirements.txt
   - pytest
   - rm -rf ./docs/ai/
