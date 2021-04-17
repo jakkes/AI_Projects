@@ -31,11 +31,9 @@
 
 from ._base import Base
 from ._discrete import Discrete
-from ._connect_four import ConnectFour
-from ._tic_tac_toe import TicTacToe
 
 
-__all__ = [&#34;Base&#34;, &#34;Discrete&#34;, &#34;ConnectFour&#34;, &#34;TicTacToe&#34;]</code></pre>
+__all__ = [&#34;Base&#34;, &#34;Discrete&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -190,32 +188,6 @@ def sample(self, state: np.ndarray) -&gt; Any:
 </dd>
 </dl>
 </dd>
-<dt id="ai.simulators.action_spaces.ConnectFour"><code class="flex name class">
-<span>class <span class="ident">ConnectFour</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Action space of the ConnectFour simulator.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="ai.simulators.action_spaces.Discrete" href="#ai.simulators.action_spaces.Discrete">Discrete</a></li>
-<li><a title="ai.simulators.action_spaces.Base" href="#ai.simulators.action_spaces.Base">Base</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="ai.simulators.action_spaces.Discrete" href="#ai.simulators.action_spaces.Discrete">Discrete</a></b></code>:
-<ul class="hlist">
-<li><code><a title="ai.simulators.action_spaces.Discrete.action_mask" href="#ai.simulators.action_spaces.Discrete.action_mask">action_mask</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.action_mask_bulk" href="#ai.simulators.action_spaces.Discrete.action_mask_bulk">action_mask_bulk</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.as_discrete" href="#ai.simulators.action_spaces.Base.as_discrete">as_discrete</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.cast_to" href="#ai.simulators.action_spaces.Base.cast_to">cast_to</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.contains" href="#ai.simulators.action_spaces.Base.contains">contains</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.sample" href="#ai.simulators.action_spaces.Base.sample">sample</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.size" href="#ai.simulators.action_spaces.Discrete.size">size</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 <dt id="ai.simulators.action_spaces.Discrete"><code class="flex name class">
 <span>class <span class="ident">Discrete</span></span>
 </code></dt>
@@ -232,9 +204,9 @@ are <code>True</code> and illegal action indices <code>False</code>.</p></div>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li>ai.simulators._connect_four.ConnectFour.ActionSpace</li>
 <li>ai.simulators._grid.ActionSpace</li>
-<li><a title="ai.simulators.action_spaces.ConnectFour" href="#ai.simulators.action_spaces.ConnectFour">ConnectFour</a></li>
-<li><a title="ai.simulators.action_spaces.TicTacToe" href="#ai.simulators.action_spaces.TicTacToe">TicTacToe</a></li>
+<li>ai.simulators._tictactoe.TicTacToe.ActionSpace</li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
@@ -333,32 +305,6 @@ def action_mask_bulk(self, states: np.ndarray) -&gt; np.ndarray:
 </li>
 </ul>
 </dd>
-<dt id="ai.simulators.action_spaces.TicTacToe"><code class="flex name class">
-<span>class <span class="ident">TicTacToe</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Action space for the TicTacToe simulator.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="ai.simulators.action_spaces.Discrete" href="#ai.simulators.action_spaces.Discrete">Discrete</a></li>
-<li><a title="ai.simulators.action_spaces.Base" href="#ai.simulators.action_spaces.Base">Base</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="ai.simulators.action_spaces.Discrete" href="#ai.simulators.action_spaces.Discrete">Discrete</a></b></code>:
-<ul class="hlist">
-<li><code><a title="ai.simulators.action_spaces.Discrete.action_mask" href="#ai.simulators.action_spaces.Discrete.action_mask">action_mask</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.action_mask_bulk" href="#ai.simulators.action_spaces.Discrete.action_mask_bulk">action_mask_bulk</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.as_discrete" href="#ai.simulators.action_spaces.Base.as_discrete">as_discrete</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.cast_to" href="#ai.simulators.action_spaces.Base.cast_to">cast_to</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.contains" href="#ai.simulators.action_spaces.Base.contains">contains</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.sample" href="#ai.simulators.action_spaces.Base.sample">sample</a></code></li>
-<li><code><a title="ai.simulators.action_spaces.Discrete.size" href="#ai.simulators.action_spaces.Discrete.size">size</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 </dl>
 </section>
 </article>
@@ -385,18 +331,12 @@ def action_mask_bulk(self, states: np.ndarray) -&gt; np.ndarray:
 </ul>
 </li>
 <li>
-<h4><code><a title="ai.simulators.action_spaces.ConnectFour" href="#ai.simulators.action_spaces.ConnectFour">ConnectFour</a></code></h4>
-</li>
-<li>
 <h4><code><a title="ai.simulators.action_spaces.Discrete" href="#ai.simulators.action_spaces.Discrete">Discrete</a></code></h4>
 <ul class="">
 <li><code><a title="ai.simulators.action_spaces.Discrete.action_mask" href="#ai.simulators.action_spaces.Discrete.action_mask">action_mask</a></code></li>
 <li><code><a title="ai.simulators.action_spaces.Discrete.action_mask_bulk" href="#ai.simulators.action_spaces.Discrete.action_mask_bulk">action_mask_bulk</a></code></li>
 <li><code><a title="ai.simulators.action_spaces.Discrete.size" href="#ai.simulators.action_spaces.Discrete.size">size</a></code></li>
 </ul>
-</li>
-<li>
-<h4><code><a title="ai.simulators.action_spaces.TicTacToe" href="#ai.simulators.action_spaces.TicTacToe">TicTacToe</a></code></h4>
 </li>
 </ul>
 </li>
