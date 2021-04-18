@@ -9,6 +9,9 @@ class Config:
         self.discount: float = 0.95
         """Discount factor."""
 
+        self.state_dtype: torch.dtype = torch.float32
+        """Data type of states."""
+
         self.batch_size: int = 32
         """Update batch size."""
 

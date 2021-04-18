@@ -19,7 +19,7 @@ def _get_action_logit_value(
     p, v = network(state.unsqueeze(0))
     p = torch.where(mask, p, torch.zeros_like(p))
     action = ai.utils.torch.random.choice(p).item()
-    return int(action), p[0, action], v.squeeze(0)
+    return int(action), p[0, action], v[0, 0]
 
 
 class Worker(Process):
@@ -46,17 +46,16 @@ class Worker(Process):
         self._discount = self._config.discount ** self._config.n_step
         self._terminal = True
         self._state = None
-        self._mask = None
         self._steps = 0
         self._loss = 0.0
 
     @property
     def _mask(self):
-        return self._action_space.action_mask
+        return torch.as_tensor(self._action_space.action_mask, dtype=torch.bool)
 
     def _check_reset(self):
         if self._terminal:
-            self._state = torch.as_tensor(self._env.reset(), self._config.state_dtype)
+            self._state = torch.as_tensor(self._env.reset(), dtype=self._config.state_dtype)
             self._terminal = False
 
     def _add_loss(self, reward, terminal, logit, value):
