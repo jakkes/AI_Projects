@@ -27,7 +27,7 @@ class NStepRewardCollector:
                 to be stored at each state.
         """
         self._n_step = n_step
-        self._state_data_buffer = tuple(
+        self._state_data_buffer: Tuple[torch.Tensor, ...] = tuple(
             torch.empty((n_step,) + shape, dtype=dtype)
             for shape, dtype in zip(state_data_shapes, state_data_dtypes)
         )
@@ -111,3 +111,12 @@ class NStepRewardCollector:
             torch.cat(return_terminals, dim=0),
             tuple(torch.cat(x, dim=0) for x in return_next_state_data)
         )
+
+    def clear(self):
+        """Clears the content of the collector."""
+        self._state_data_buffer = tuple(
+            state.detach() for state in self._state_data_buffer
+        )
+        self._rewards = torch.zeros_like(self._rewards)
+        self._i = 0
+        self._looped = False
