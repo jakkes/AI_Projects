@@ -224,8 +224,8 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 <strong>init</strong> method.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.environments._gym_wrapper.Factory</li>
-<li>ai.environments._simulator_wrapper.Factory</li>
+<li>ai.environments._gym_wrapper.GymWrapper.Factory</li>
+<li>ai.environments._simulator_wrapper.SimulatorWrapper.Factory</li>
 </ul>
 </dd>
 <dt id="ai.environments.GymWrapper"><code class="flex name class">
@@ -244,10 +244,21 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 <li><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ai.environments.GymWrapper.ActionSpace"><code class="name">var <span class="ident">ActionSpace</span></code></dt>
+<dd>
+<div class="desc"><p>Discrete action space that wraps a discrete openAI Gym action space.</p></div>
+</dd>
+<dt id="ai.environments.GymWrapper.Factory"><code class="name">var <span class="ident">Factory</span></code></dt>
+<dd>
+<div class="desc"><p>Factories are callable objects that spawn environment instances.</p></div>
+</dd>
+</dl>
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.environments.GymWrapper.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>env_id: str) ‑> ai.environments._gym_wrapper.Factory</span>
+<span>def <span class="ident">get_factory</span></span>(<span>env_id: str) ‑> ai.environments._gym_wrapper.GymWrapper.Factory</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates an environment factory that spawns the specific <code>env_id</code>. For
@@ -257,10 +268,10 @@ possible values, see the openAI gym documentation.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def get_factory(cls, env_id: str) -&gt; Factory:
+def get_factory(cls, env_id: str) -&gt; &#34;GymWrapper.Factory&#34;:
     &#34;&#34;&#34;Creates an environment factory that spawns the specific `env_id`. For
     possible values, see the openAI gym documentation.&#34;&#34;&#34;
-    return Factory(env_id)</code></pre>
+    return GymWrapper.Factory(env_id)</code></pre>
 </details>
 </dd>
 </dl>
@@ -293,10 +304,17 @@ def get_factory(cls, env_id: str) -&gt; Factory:
 <li><a title="ai.environments.Base" href="#ai.environments.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ai.environments.SimulatorWrapper.Factory"><code class="name">var <span class="ident">Factory</span></code></dt>
+<dd>
+<div class="desc"><p>Factories are callable objects that spawn environment instances.</p></div>
+</dd>
+</dl>
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.environments.SimulatorWrapper.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>factory: <a title="ai.simulators.Factory" href="../simulators/index.html#ai.simulators.Factory">Factory</a>) ‑> <a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a></span>
+<span>def <span class="ident">get_factory</span></span>(<span>factory: <a title="ai.simulators.Factory" href="../simulators/index.html#ai.simulators.Factory">Factory</a>) ‑> ai.environments._simulator_wrapper.SimulatorWrapper.Factory</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Wraps a simulator factory into an environment factory.</p></div>
@@ -305,9 +323,9 @@ def get_factory(cls, env_id: str) -&gt; Factory:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
+def get_factory(cls, factory: simulators.Factory) -&gt; &#34;SimulatorWrapper.Factory&#34;:
     &#34;&#34;&#34;Wraps a simulator factory into an environment factory.&#34;&#34;&#34;
-    return Factory(factory)</code></pre>
+    return SimulatorWrapper.Factory(factory)</code></pre>
 </details>
 </dd>
 </dl>
@@ -362,12 +380,15 @@ def get_factory(cls, factory: simulators.Factory) -&gt; environments.Factory:
 <li>
 <h4><code><a title="ai.environments.GymWrapper" href="#ai.environments.GymWrapper">GymWrapper</a></code></h4>
 <ul class="">
+<li><code><a title="ai.environments.GymWrapper.ActionSpace" href="#ai.environments.GymWrapper.ActionSpace">ActionSpace</a></code></li>
+<li><code><a title="ai.environments.GymWrapper.Factory" href="#ai.environments.GymWrapper.Factory">Factory</a></code></li>
 <li><code><a title="ai.environments.GymWrapper.get_factory" href="#ai.environments.GymWrapper.get_factory">get_factory</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="ai.environments.SimulatorWrapper" href="#ai.environments.SimulatorWrapper">SimulatorWrapper</a></code></h4>
 <ul class="">
+<li><code><a title="ai.environments.SimulatorWrapper.Factory" href="#ai.environments.SimulatorWrapper.Factory">Factory</a></code></li>
 <li><code><a title="ai.environments.SimulatorWrapper.get_factory" href="#ai.environments.SimulatorWrapper.get_factory">get_factory</a></code></li>
 </ul>
 </li>

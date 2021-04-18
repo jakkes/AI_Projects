@@ -31,10 +31,9 @@
 
 from ._base import Base
 from ._discrete import Discrete
-from ._discrete_gym_wrapper import DiscreteGymWrapper
 
 
-__all__ = [&#34;Base&#34;, &#34;Discrete&#34;, &#34;DiscreteGymWrapper&#34;]</code></pre>
+__all__ = [&#34;Base&#34;, &#34;Discrete&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -192,7 +191,7 @@ are <code>True</code> and illegal action indices <code>False</code>.</p></div>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="ai.environments.action_spaces.DiscreteGymWrapper" href="#ai.environments.action_spaces.DiscreteGymWrapper">DiscreteGymWrapper</a></li>
+<li>ai.environments._gym_wrapper.GymWrapper.ActionSpace</li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
@@ -239,37 +238,6 @@ def size(self) -&gt; int:
 </li>
 </ul>
 </dd>
-<dt id="ai.environments.action_spaces.DiscreteGymWrapper"><code class="flex name class">
-<span>class <span class="ident">DiscreteGymWrapper</span></span>
-<span>(</span><span>space: gym.spaces.discrete.Discrete)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Discrete action space that wraps a discrete openAI Gym action space.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>space</code></strong> :&ensp;<code>spaces.Discrete</code></dt>
-<dd>Space to wrap.</dd>
-</dl></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="ai.environments.action_spaces.Discrete" href="#ai.environments.action_spaces.Discrete">Discrete</a></li>
-<li><a title="ai.environments.action_spaces.Base" href="#ai.environments.action_spaces.Base">Base</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="ai.environments.action_spaces.Discrete" href="#ai.environments.action_spaces.Discrete">Discrete</a></b></code>:
-<ul class="hlist">
-<li><code><a title="ai.environments.action_spaces.Discrete.action_mask" href="#ai.environments.action_spaces.Discrete.action_mask">action_mask</a></code></li>
-<li><code><a title="ai.environments.action_spaces.Discrete.as_discrete" href="#ai.environments.action_spaces.Base.as_discrete">as_discrete</a></code></li>
-<li><code><a title="ai.environments.action_spaces.Discrete.as_type" href="#ai.environments.action_spaces.Base.as_type">as_type</a></code></li>
-<li><code><a title="ai.environments.action_spaces.Discrete.contains" href="#ai.environments.action_spaces.Base.contains">contains</a></code></li>
-<li><code><a title="ai.environments.action_spaces.Discrete.sample" href="#ai.environments.action_spaces.Base.sample">sample</a></code></li>
-<li><code><a title="ai.environments.action_spaces.Discrete.size" href="#ai.environments.action_spaces.Discrete.size">size</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 </dl>
 </section>
 </article>
@@ -301,9 +269,6 @@ def size(self) -&gt; int:
 <li><code><a title="ai.environments.action_spaces.Discrete.action_mask" href="#ai.environments.action_spaces.Discrete.action_mask">action_mask</a></code></li>
 <li><code><a title="ai.environments.action_spaces.Discrete.size" href="#ai.environments.action_spaces.Discrete.size">size</a></code></li>
 </ul>
-</li>
-<li>
-<h4><code><a title="ai.environments.action_spaces.DiscreteGymWrapper" href="#ai.environments.action_spaces.DiscreteGymWrapper">DiscreteGymWrapper</a></code></h4>
 </li>
 </ul>
 </li>

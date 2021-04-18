@@ -25,12 +25,22 @@ class TicTacToe(simulators.Base):
     Then, if a winning action is rewarded with `+1` and a losing action is rewarded with
     `-1`."""
 
+    class ActionSpace(simulators.action_spaces.Discrete):
+        """Action space for the TicTacToe simulator."""
+
+        @property
+        def size(cls) -> int:
+            return 9
+
+        def action_mask_bulk(self, states: np.ndarray) -> np.ndarray:
+            return states[:, :-1] == 0
+
     def __init__(self) -> None:
         super().__init__(True)
-        self._action_space = simulators.action_spaces.TicTacToe()
+        self._action_space = TicTacToe.ActionSpace()
 
     @property
-    def action_space(self) -> simulators.action_spaces.TicTacToe:
+    def action_space(self) -> "TicTacToe.ActionSpace":
         return self._action_space
 
     def close(self):
