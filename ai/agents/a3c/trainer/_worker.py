@@ -76,6 +76,8 @@ class Worker(Process):
                 self._loss.backward()
                 self._optimizer.step()
                 self._steps = 0
+                self._loss = 0.0
+                self._reward_collector.clear()
 
     def _step(self):
         action, logit, value = _get_action_logit_value(self._network, self._state, self._mask)
@@ -83,6 +85,7 @@ class Worker(Process):
         next_state = torch.as_tensor(next_state, dtype=self._config.state_dtype)
         self._add_loss(reward, terminal, logit, value)
         self._state = next_state
+        self._terminal = terminal
 
     def run(self) -> None:
         self._optimizer: optim.Optimizer = self._optimizer_class(

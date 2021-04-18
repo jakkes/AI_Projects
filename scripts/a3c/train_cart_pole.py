@@ -27,7 +27,7 @@ if __name__ == "__main__":
     config.discount = 0.95
     config.n_step = 3
     config.train_time = 30
-    config.workers = 8
+    config.workers = 1
 
     trainer = a3c.trainer.Trainer(
         config,
