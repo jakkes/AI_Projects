@@ -1,3 +1,4 @@
+from queue import Queue
 from typing import Any, Callable, Mapping, Tuple
 
 import torch
@@ -30,6 +31,7 @@ class Worker(Process):
         network: nn.Module,
         optimizer_class: optim.Optimizer,
         optimizer_params: Mapping[str, Any],
+        logging_queue: Queue
     ):
         super().__init__(daemon=True)
         self._config = config
@@ -38,6 +40,7 @@ class Worker(Process):
         self._optimizer_class = optimizer_class
         self._optimizer_params = optimizer_params
         self._environment = environment
+        self._logging_queue = logging_queue
 
         self._optimizer: Optimizer = None
         self._reward_collector: agents.utils.NStepRewardCollector = None
@@ -48,6 +51,7 @@ class Worker(Process):
         self._state = None
         self._steps = 0
         self._loss = 0.0
+        self._episodic_reward = 0.0
 
     @property
     def _mask(self):
@@ -57,6 +61,8 @@ class Worker(Process):
         if self._terminal:
             self._state = torch.as_tensor(self._env.reset(), dtype=self._config.state_dtype)
             self._terminal = False
+            self._logging_queue.put({"r": self._episodic_reward})
+            self._episodic_reward = 0.0
 
     def _add_loss(self, reward, terminal, logit, value):
         stepinfo = self._reward_collector.step(reward, terminal, (logit, value))
@@ -84,6 +90,8 @@ class Worker(Process):
         next_state, reward, terminal, _ = self._env.step(action)
         next_state = torch.as_tensor(next_state, dtype=self._config.state_dtype)
         self._add_loss(reward, terminal, logit, value)
+
+        self._episodic_reward += reward
         self._state = next_state
         self._terminal = terminal
 

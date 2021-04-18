@@ -26,8 +26,8 @@ if __name__ == "__main__":
     config.batch_size = 32
     config.discount = 0.95
     config.n_step = 3
-    config.train_time = 30
-    config.workers = 1
+    config.train_time = 600
+    config.workers = 8
 
     trainer = a3c.trainer.Trainer(
         config,
