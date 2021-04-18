@@ -124,3 +124,44 @@ def test_n_step_1():
         assert terminals[0].item() is False
         assert rewards.shape == (1, )
         assert rewards[0] == i - 1
+
+
+def test_clear():
+    shapes = ((),)
+    dtypes = (torch.long,)
+    collector = agents.utils.NStepRewardCollector(3, 0.5, shapes, dtypes)
+
+    all_states = torch.arange(20)
+
+    for i in range(3):
+        assert collector.step(i, False, (all_states[i],)) is None
+
+    for i in range(3, 10):
+        (states, ), rewards, terminals, (next_states, ) = collector.step(
+            i, False, (all_states[i],)
+        )
+        assert states.shape == (1, )
+        assert states[0] == i - 3
+        assert next_states.shape == (1, )
+        assert next_states[0] == i
+        assert terminals.shape == (1, )
+        assert terminals[0].item() is False
+        assert rewards.shape == (1, )
+        assert rewards[0] == (i - 3) + 0.5 * (i - 2) + 0.5**2 * (i - 1)
+
+    collector.clear()
+    for i in range(10, 13):
+        assert collector.step(i, False, (all_states[i],)) is None
+    
+    for i in range(13, 20):
+        (states, ), rewards, terminals, (next_states, ) = collector.step(
+            i, False, (all_states[i],)
+        )
+        assert states.shape == (1, )
+        assert states[0] == i - 3
+        assert next_states.shape == (1, )
+        assert next_states[0] == i
+        assert terminals.shape == (1, )
+        assert terminals[0].item() is False
+        assert rewards.shape == (1, )
+        assert rewards[0] == (i - 3) + 0.5 * (i - 2) + 0.5**2 * (i - 1)
