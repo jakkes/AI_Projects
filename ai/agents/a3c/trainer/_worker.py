@@ -89,7 +89,7 @@ class Worker(Process):
                 exped = logitss.exp()
                 self._loss += self._config.entropy_regularization_coefficient * (
                     exped * (logitss - exped.sum(dim=1, keepdim=True))
-                )
+                ).sum()
 
             if self._steps >= self._config.batch_size:
                 self._loss /= self._steps
