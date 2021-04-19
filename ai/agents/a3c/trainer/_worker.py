@@ -78,7 +78,7 @@ class Worker(Process):
 
             if self._steps >= self._config.batch_size:
                 self._loss /= self._steps
-                self._logging_queue.put(self._loss.detach().item())
+                self._logging_queue.put({"l": self._loss.detach().item()})
                 self._optimizer.zero_grad()
                 self._loss.backward()
                 self._optimizer.step()
