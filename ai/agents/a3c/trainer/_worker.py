@@ -1,3 +1,4 @@
+from math import sqrt
 from queue import Queue
 from typing import Any, Callable, Mapping, Tuple
 
@@ -31,7 +32,7 @@ class Worker(Process):
         network: nn.Module,
         optimizer_class: optim.Optimizer,
         optimizer_params: Mapping[str, Any],
-        logging_queue: Queue
+        logging_queue: Queue,
     ):
         super().__init__(daemon=True)
         self._config = config
@@ -59,9 +60,13 @@ class Worker(Process):
 
     def _check_reset(self):
         if self._terminal:
-            self._state = torch.as_tensor(self._env.reset(), dtype=self._config.state_dtype)
+            self._state = torch.as_tensor(
+                self._env.reset(), dtype=self._config.state_dtype
+            )
             self._terminal = False
-            self._logging_queue.put({"r": self._episodic_reward})
+            with torch.no_grad():
+                _, v = self._network(self._state.unsqueeze(0))
+            self._logging_queue.put({"r": self._episodic_reward, "v": v.item()})
             self._episodic_reward = 0.0
 
     def _add_loss(self, reward, terminal, logit, value):
@@ -78,16 +83,26 @@ class Worker(Process):
 
             if self._steps >= self._config.batch_size:
                 self._loss /= self._steps
-                self._logging_queue.put({"l": self._loss.detach().item()})
                 self._optimizer.zero_grad()
                 self._loss.backward()
+                self._logging_queue.put(
+                    {
+                        "l": self._loss.detach().item(),
+                        "gm": sqrt(sum(
+                            param.grad.pow(2).sum().item()
+                            for _, param in self._network.named_parameters()
+                        )),
+                    }
+                )
                 self._optimizer.step()
                 self._steps = 0
                 self._loss = 0.0
                 self._reward_collector.clear()
 
     def _step(self):
-        action, logit, value = _get_action_logit_value(self._network, self._state, self._mask)
+        action, logit, value = _get_action_logit_value(
+            self._network, self._state, self._mask
+        )
         next_state, reward, terminal, _ = self._env.step(action)
         next_state = torch.as_tensor(next_state, dtype=self._config.state_dtype)
         self._add_loss(reward, terminal, logit, value)
