@@ -9,4 +9,7 @@ class Logger(logging.SummaryWriterServer):
         super().__init__("a3c", data_queue)
 
     def log(self, summary_writer: SummaryWriter, data):
-        summary_writer.add_scalar("Episode/Reward", data["r"])
+        if "r" in data:
+            summary_writer.add_scalar("Episode/Reward", data["r"])
+        if "l" in data:
+            summary_writer.add_scalar("Agent/Loss", data["l"])
