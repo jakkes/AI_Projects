@@ -23,3 +23,7 @@ class Config:
 
         self.train_time: int = 600
         """Training time, in seconds."""
+
+        self.entropy_regularization_coefficient: float = 1e-5
+        """Entropy regularization coefficient. Larger value results in more exploration,
+        rather than exploitation."""

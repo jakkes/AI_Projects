@@ -18,10 +18,11 @@ def _get_action_logit_value(
     state: torch.Tensor,
     mask: torch.Tensor,
 ) -> Tuple[int, float, torch.Tensor]:
-    p, v = network(state.unsqueeze(0))
-    p = torch.where(mask, p, torch.zeros_like(p))
-    action = ai.utils.torch.random.choice(p).item()
-    return int(action), p[0, action], v[0, 0]
+    logits, v = network(state.unsqueeze(0))
+    logits = logits.squeeze_(0)
+    logits = torch.where(mask, logits, torch.zeros_like(logits) - float("inf"))
+    action = ai.utils.torch.random.choice(torch.softmax(logits, dim=0)).item()
+    return int(action), logits, v[0, 0]
 
 
 class Worker(Process):
@@ -69,43 +70,52 @@ class Worker(Process):
             self._logging_queue.put({"r": self._episodic_reward, "v": v.item()})
             self._episodic_reward = 0.0
 
-    def _add_loss(self, reward, terminal, logit, value):
-        stepinfo = self._reward_collector.step(reward, terminal, (logit, value))
+    def _add_loss(self, reward, terminal, logit, logits, value):
+        stepinfo = self._reward_collector.step(reward, terminal, (logit, logits, value))
         if stepinfo is not None:
-            (logits, values), rewards, terminals, (_, nvalues) = stepinfo
+            (logits, logitss, values), rewards, terminals, (_, _, nvalues) = stepinfo
             self._steps += rewards.shape[0]
             advantage = (
                 rewards + self._discount * ~terminals * nvalues.detach() - values
             )
             self._loss += (
-                advantage.pow(2).sum() - (advantage.detach() * logits.log()).sum()
+                advantage.pow(2).sum()
+                - (
+                    advantage.detach()
+                    * (logits - torch.softmax(logitss, dim=1).sum(1).log_())
+                ).sum()
             )
+            if self._config.entropy_regularization_coefficient != 0:
+                exped = logitss.exp()
+                self._loss += self._config.entropy_regularization_coefficient * (
+                    exped * (logitss - exped.sum(dim=1, keepdim=True))
+                )
 
             if self._steps >= self._config.batch_size:
                 self._loss /= self._steps
+                logitem = {"l": self._loss.detach().item()}
                 self._optimizer.zero_grad()
                 self._loss.backward()
-                self._logging_queue.put(
-                    {
-                        "l": self._loss.detach().item(),
-                        "gm": sqrt(sum(
-                            param.grad.pow(2).sum().item()
-                            for _, param in self._network.named_parameters()
-                        )),
-                    }
+                logitem["gm"] = sqrt(
+                    sum(
+                        param.grad.pow(2).sum().item()
+                        for _, param in self._network.named_parameters()
+                    )
                 )
                 self._optimizer.step()
                 self._steps = 0
                 self._loss = 0.0
                 self._reward_collector.clear()
 
+                self._logging_queue.put_nowait(logitem)
+
     def _step(self):
-        action, logit, value = _get_action_logit_value(
+        action, logits, value = _get_action_logit_value(
             self._network, self._state, self._mask
         )
         next_state, reward, terminal, _ = self._env.step(action)
         next_state = torch.as_tensor(next_state, dtype=self._config.state_dtype)
-        self._add_loss(reward, terminal, logit, value)
+        self._add_loss(reward, terminal, logits[action], logits, value)
 
         self._episodic_reward += reward
         self._state = next_state
@@ -120,8 +130,8 @@ class Worker(Process):
         self._reward_collector = agents.utils.NStepRewardCollector(
             self._config.n_step,
             self._config.discount,
-            ((), ()),
-            (torch.float32, torch.float32),
+            ((), (self._action_space.size,), ()),
+            (torch.float32, torch.float32, torch.float32),
         )
 
         while True:
