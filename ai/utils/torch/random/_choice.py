@@ -20,6 +20,8 @@ def choice(probabilities: torch.Tensor) -> torch.Tensor:
                     # (1, 2), with 2 occuring with twice the probability of 1.
     ```
     """
+    if probabilities.isnan().any():
+        raise ValueError("`choice` received NaN values.")
     cumsummed = (probabilities / probabilities.sum(-1, keepdim=True)).cumsum(-1)
     r = torch.rand(probabilities.shape[:-1]).unsqueeze_(-1)
     return (r > cumsummed).sum(-1)
