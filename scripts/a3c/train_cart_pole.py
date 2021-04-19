@@ -28,6 +28,7 @@ if __name__ == "__main__":
     config.n_step = 3
     config.train_time = 600
     config.workers = 8
+    config.entropy_regularization_coefficient = 1e-4
 
     trainer = a3c.trainer.Trainer(
         config,
