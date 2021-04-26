@@ -8,7 +8,14 @@ import ai.agents.minimax as minimax
 
 
 class ArgumentParser(tap.Tap):
-    search_depth: int = 5
+    search_depth: int = 7
+    """Maximum search depth."""
+
+    start: bool = False
+    """If set, then you make the first move."""
+
+    def configure(self) -> None:
+        self.add_argument("--start", action="store_true")
 
 
 class Heuristic(minimax.Heuristic):

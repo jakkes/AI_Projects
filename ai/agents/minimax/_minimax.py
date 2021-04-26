@@ -31,7 +31,7 @@ def _alphabeta(
                 else:
                     value = - np.inf
             else:
-                value = _alphabeta(next_state, simulator, depth - 1, alpha, beta, False, heuristic)
+                value = max(value, _alphabeta(next_state, simulator, depth - 1, alpha, beta, False, heuristic))
             alpha = max(alpha, value)
             if alpha >= beta:
                 break
@@ -48,7 +48,7 @@ def _alphabeta(
                 else:
                     value = np.inf
             else:
-                value = _alphabeta(next_state, simulator, depth - 1, alpha, beta, False, heuristic)
+                value = min(value, _alphabeta(next_state, simulator, depth - 1, alpha, beta, True, heuristic))
             beta = min(beta, value)
             if beta <= alpha:
                 break
