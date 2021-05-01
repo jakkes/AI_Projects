@@ -41,7 +41,7 @@ class SelfPlayWorker(Process):
     def run_episode(self):
         states, action_masks, action_policies = [], [], []
         terminal = False
-        reward = 0
+        rewards = []
         state = self.simulator.reset()
         action_mask = self.simulator.action_space.as_discrete.action_mask(state)
 
@@ -81,6 +81,7 @@ class SelfPlayWorker(Process):
                 first_action = action
 
             state, reward, terminal, _ = self.simulator.step(state, action)
+            rewards.append(reward)
             action_mask = self.simulator.action_space.as_discrete.action_mask(state)
             root = root.children[action]
 
@@ -88,18 +89,26 @@ class SelfPlayWorker(Process):
             kl_div = -(
                 first_action_policy * torch.log_softmax(start_prior, dim=0).numpy()
             ).sum()
+            log_reward = rewards[-1] if self.config.zero_sum_game else sum(rewards)
             self.episode_logging_queue.put_nowait(
-                (abs(reward), start_value, kl_div, first_action)
+                (log_reward, start_value, kl_div, first_action)
             )
 
         states = torch.as_tensor(np.stack(states), dtype=torch.float)
         action_masks = torch.as_tensor(np.stack(action_masks))
         action_policies = torch.as_tensor(np.stack(action_policies), dtype=torch.float)
-        z = torch.ones(states.shape[0])
-        i = torch.arange(1, states.shape[0] + 1, 2)
-        j = torch.arange(2, states.shape[0] + 1, 2)
-        z[-i] *= reward
-        z[-j] *= -reward
+
+        if self.config.zero_sum_game:
+            z = torch.ones(states.shape[0])
+            i = torch.arange(1, states.shape[0] + 1, 2)
+            j = torch.arange(2, states.shape[0] + 1, 2)
+            z[-i] *= rewards[-1]
+            z[-j] *= -rewards[-1]
+        else:
+            z = torch.tensor(rewards, dtype=torch.float32)
+            # TODO: Get rid of this loop.
+            for i in reversed(range(z.shape[0] - 1)):
+                z[i] += self.config.discount_factor * z[i+1]
 
         return states, action_masks, action_policies, z
 
