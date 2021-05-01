@@ -33,14 +33,15 @@ implementations of it.</p>
 implementations of it.&#34;&#34;&#34;
 
 
-from ._tictactoe import TicTacToe
-from ._base import Base
-from ._connect_four import ConnectFour
-from ._factory import Factory
 from . import action_spaces
+from ._base import Base
+from ._factory import Factory
+from ._connect_four import ConnectFour
+from ._tictactoe import TicTacToe
+from ._grid import Grid
 
 
-__all__ = [&#34;TicTacToe&#34;, &#34;Base&#34;, &#34;ConnectFour&#34;, &#34;action_spaces&#34;, &#34;Factory&#34;]</code></pre>
+__all__ = [&#34;TicTacToe&#34;, &#34;Base&#34;, &#34;ConnectFour&#34;, &#34;Factory&#34;, &#34;action_spaces&#34;, &#34;Grid&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -73,111 +74,20 @@ given state, rather than a interally tracked state.</p>
 <dd>Flag indicating if this simulator instance is
 considered deterministic or not.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Base(ABC):
-    &#34;&#34;&#34;Simulator base class.
-
-    A simulator, as opposed to an environment, executes actions based on a
-    given state, rather than a interally tracked state.&#34;&#34;&#34;
-
-    def __init__(self, deterministic: bool) -&gt; None:
-        &#34;&#34;&#34;
-        Args:
-            deterministic (bool): Flag indicating if this simulator instance is
-                considered deterministic or not.
-        &#34;&#34;&#34;
-        super().__init__()
-        self._deterministic = deterministic
-
-    @property
-    def deterministic(self) -&gt; bool:
-        return self._deterministic
-
-    def step(
-        self, state: np.ndarray, action: int
-    ) -&gt; Tuple[np.ndarray, float, bool, Dict]:
-        &#34;&#34;&#34;Executes one step in the environment.
-
-        Args:
-            state (np.ndarray): State
-            action (int): Action index
-
-        Returns:
-            Tuple[np.ndarray, float, bool, Dict]: Tuple of next state, reward, terminal
-            flag, and debugging dictionary.
-        &#34;&#34;&#34;
-        next_states, rewards, terminals, infos = self.step_bulk(
-            np.expand_dims(state, 0), np.array([action])
-        )
-        return next_states[0], rewards[0], terminals[0], infos[0]
-
-    @property
-    @abstractmethod
-    def action_space(self) -&gt; action_spaces.Base:
-        &#34;&#34;&#34;The action space class used by this simulator.&#34;&#34;&#34;
-        raise NotImplementedError
-
-    @abstractmethod
-    def step_bulk(
-        self, states: np.ndarray, actions: np.ndarray
-    ) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
-        &#34;&#34;&#34;Executes a bulk of actions in multiple states.
-
-        Args:
-            states (np.ndarray): States, in batch format.
-            actions (np.ndarray): Integer vector of action indices.
-
-        Returns:
-            Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]: Tuple of
-            next states, rewards, terminal flags, and debugging dictionaries.
-        &#34;&#34;&#34;
-        raise NotImplementedError
-
-    @abstractmethod
-    def reset_bulk(self, n: int) -&gt; np.ndarray:
-        &#34;&#34;&#34;Provides multiple new environment states.
-
-        Args:
-            n (int): Number of states to generate.
-
-        Returns:
-            np.ndarray: Initial states, stacked in the first dimension.
-        &#34;&#34;&#34;
-        raise NotImplementedError
-
-    def reset(self) -&gt; np.ndarray:
-        &#34;&#34;&#34;Provides a single new environment state.
-
-        Returns:
-            np.ndarray: Initial state
-        &#34;&#34;&#34;
-        return self.reset_bulk(1)[0]
-
-    @classmethod
-    def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.simulators.Factory[T]&#34;:
-        &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
-
-        Args and kwargs are passed along to the class constructor. However, if other
-        behavior is required, feel free to override this method and return a factory
-        class of your choice.&#34;&#34;&#34;
-        return ai.simulators.Factory[T](cls, *args, **kwargs)</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.simulators._connect_four.ConnectFour</li>
-<li>ai.simulators._tictactoe.TicTacToe</li>
+<li><a title="ai.simulators.ConnectFour" href="#ai.simulators.ConnectFour">ConnectFour</a></li>
+<li><a title="ai.simulators.Grid" href="#ai.simulators.Grid">Grid</a></li>
+<li><a title="ai.simulators.TicTacToe" href="#ai.simulators.TicTacToe">TicTacToe</a></li>
 </ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.simulators.Base.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> ai.simulators._factory.Factory[~T]</span>
+<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> <a title="ai.simulators.Factory" href="#ai.simulators.Factory">Factory</a>[~T]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates and returns a factory object that spawns simulators when called.</p>
@@ -189,19 +99,19 @@ class of your choice.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.simulators.Factory[T]&#34;:
+def get_factory(cls: T, *args, **kwargs) -&gt; &#34;simulators.Factory[T]&#34;:
     &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
 
     Args and kwargs are passed along to the class constructor. However, if other
     behavior is required, feel free to override this method and return a factory
     class of your choice.&#34;&#34;&#34;
-    return ai.simulators.Factory[T](cls, *args, **kwargs)</code></pre>
+    return simulators.Factory[T](cls, *args, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="ai.simulators.Base.action_space"><code class="name">var <span class="ident">action_space</span> : ai.simulators.action_spaces._base.Base</code></dt>
+<dt id="ai.simulators.Base.action_space"><code class="name">var <span class="ident">action_space</span> : <a title="ai.simulators.action_spaces.Base" href="action_spaces/index.html#ai.simulators.action_spaces.Base">Base</a></code></dt>
 <dd>
 <div class="desc"><p>The action space class used by this simulator.</p></div>
 <details class="source">
@@ -210,26 +120,57 @@ def get_factory(cls: T, *args, **kwargs) -&gt; &#34;ai.simulators.Factory[T]&#34
 </summary>
 <pre><code class="python">@property
 @abstractmethod
-def action_space(self) -&gt; action_spaces.Base:
+def action_space(self) -&gt; simulators.action_spaces.Base:
     &#34;&#34;&#34;The action space class used by this simulator.&#34;&#34;&#34;
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="ai.simulators.Base.deterministic"><code class="name">var <span class="ident">deterministic</span> : bool</code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Whether or not the simulator instance is deterministic or stochastic.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def deterministic(self) -&gt; bool:
+    &#34;&#34;&#34;Whether or not the simulator instance is deterministic or stochastic.&#34;&#34;&#34;
     return self._deterministic</code></pre>
 </details>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="ai.simulators.Base.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Disposes resources used by the simulator.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def close(self):
+    &#34;&#34;&#34;Disposes resources used by the simulator.&#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="ai.simulators.Base.render"><code class="name flex">
+<span>def <span class="ident">render</span></span>(<span>self, state: numpy.ndarray)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Renders the given state.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def render(self, state: np.ndarray):
+    &#34;&#34;&#34;Renders the given state.&#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
 <dt id="ai.simulators.Base.reset"><code class="name flex">
 <span>def <span class="ident">reset</span></span>(<span>self) ‑> numpy.ndarray</span>
 </code></dt>
@@ -388,165 +329,16 @@ Then, if a winning action is rewarded with <code>+1</code> and a losing action i
 <dd>Flag indicating if this simulator instance is
 considered deterministic or not.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ConnectFour(Base):
-    &#34;&#34;&#34;Connect four (four in a row) game simulator.
-
-    States are given by a single `np.ndarray` of shape `(43, )`. The first 42 elements
-    denote the game board in row-major order (board is of shape `(6, 7)`). Each board
-    element is in `{-1, 0, 1}`, where `-1` and `1` denote occupied cells and `0` empty
-    cells. The last element in the state vector (i.e. element index 42) is either `+1`
-    or `-1`, denoting the player who is about to play.
-
-    Actions are discrete in `{0, 1, ..., 6}`, denoting, from the left, which column to
-    place the next marker in.
-
-    Rewards are given at the end of a game round, i.e. intermediate rewards are zero.
-    Then, if a winning action is rewarded with `+1` and a losing action is rewarded with
-    `-1`.&#34;&#34;&#34;
-
-    def __init__(self) -&gt; None:
-        super().__init__(True)
-        self._action_space = action_spaces.ConnectFour()
-
-    def reset_bulk(self, n: int) -&gt; np.ndarray:
-        states = np.zeros((n, 7 * 6 + 1))
-        states[:, -1] = 1.0
-        return states
-
-    @property
-    def action_space(self) -&gt; action_spaces.ConnectFour:
-        return self._action_space
-
-    def _compute_rewards(self, states: np.ndarray, players: np.ndarray) -&gt; np.ndarray:
-
-        players = 4 * players.reshape((-1, 1, 1))
-
-        win_horisontal = convolve(states, np.ones((1, 1, 4)), mode=&#34;valid&#34;) == players
-        win_horisontal = np.any(np.any(win_horisontal, axis=2), axis=1)
-
-        win_vertical = convolve(states, np.ones((1, 4, 1)), mode=&#34;valid&#34;) == players
-        win_vertical = np.any(np.any(win_vertical, axis=2), axis=1)
-
-        win_diagonal = (
-            convolve(states, np.diag(np.ones(4)).reshape((1, 4, 4)), mode=&#34;valid&#34;)
-            == players
-        )
-        win_diagonal = np.any(np.any(win_diagonal, axis=2), axis=1)
-
-        win_xdiagonal = (
-            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode=&#34;valid&#34;)
-            == players
-        )
-        win_xdiagonal = np.any(np.any(win_xdiagonal, axis=2), axis=1)
-
-        win = win_horisontal | win_vertical | win_diagonal | win_xdiagonal
-
-        loss_horisontal = convolve(states, np.ones((1, 1, 4)), mode=&#34;valid&#34;) == -players
-        loss_horisontal = np.any(np.any(loss_horisontal, axis=2), axis=1)
-
-        loss_vertical = convolve(states, np.ones((1, 4, 1)), mode=&#34;valid&#34;) == -players
-        loss_vertical = np.any(np.any(loss_vertical, axis=2), axis=1)
-
-        loss_diagonal = (
-            convolve(states, np.diag(np.ones(4)).reshape((1, 4, 4)), mode=&#34;valid&#34;)
-            == -players
-        )
-        loss_diagonal = np.any(np.any(loss_diagonal, axis=2), axis=1)
-
-        loss_xdiagonal = (
-            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode=&#34;valid&#34;)
-            == -players
-        )
-        loss_xdiagonal = np.any(np.any(loss_xdiagonal, axis=2), axis=1)
-
-        loss = loss_horisontal | loss_vertical | loss_diagonal | loss_xdiagonal
-
-        rewards = np.zeros(states.shape[0])
-        rewards[win] = 1.0
-        rewards[loss] = -1.0
-
-        return rewards
-
-    def step_bulk(
-        self, states: np.ndarray, actions: np.ndarray
-    ) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
-
-        next_states = states.copy()
-        batchvec = np.arange(next_states.shape[0])
-        players = next_states[:, -1]
-
-        next_states = next_states[:, :-1].reshape((-1, 6, 7))
-        heights = (next_states != 0).sum(axis=1)
-
-        if np.any(heights[batchvec, actions] &gt;= 6):
-            raise ValueError(&#34;Cannot place a piece in an already full column&#34;)
-
-        next_states[batchvec, 5 - heights[batchvec, actions], actions] = players[
-            batchvec
-        ]
-        heights[batchvec, actions] += 1
-        rewards = self._compute_rewards(next_states, players)
-        terminals = (rewards != 0) | np.all(heights == 6, axis=1)
-
-        next_states = next_states.reshape((-1, 6 * 7))
-        next_states = np.concatenate((next_states, -players.reshape((-1, 1))), axis=1)
-
-        return (
-            next_states,
-            rewards,
-            terminals,
-            [{} for _ in range(next_states.shape[0])],
-        )
-
-    def render(self, state: np.ndarray, output_fn: Callable[[str], None] = print):
-        &#34;&#34;&#34;Renders the game board to a string and then outputs it to the given
-        output function.
-
-        Args:
-            state (np.ndarray): State to render
-            output_fn (Callable[[str], None], optional): Output function, accepting one
-            string argument. Defaults to `print`.
-        &#34;&#34;&#34;
-
-        def tile(value) -&gt; str:
-            if value == 0:
-                return &#34; &#34;
-            elif value == 1:
-                return &#34;X&#34;
-            elif value == -1:
-                return &#34;O&#34;
-            else:
-                raise ValueError(f&#34;Unexpected value {value}&#34;)
-
-        def print_line(i: int):
-            output_fn(&#34; | &#34;.join(tile(state[7 * i + j]) for j in range(7)))
-
-        output_fn(&#34; | &#34;.join(str(x) for x in range(7)))
-        for i in range(6):
-            print_line(i)</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>ai.simulators._base.Base</li>
+<li><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Instance variables</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="ai.simulators.ConnectFour.action_space"><code class="name">var <span class="ident">action_space</span> : ai.simulators.action_spaces._connect_four.ConnectFour</code></dt>
+<dt id="ai.simulators.ConnectFour.ActionSpace"><code class="name">var <span class="ident">ActionSpace</span></code></dt>
 <dd>
-<div class="desc"><p>The action space class used by this simulator.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def action_space(self) -&gt; action_spaces.ConnectFour:
-    return self._action_space</code></pre>
-</details>
+<div class="desc"><p>Action space of the ConnectFour simulator.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -597,86 +389,22 @@ output function.</p>
         print_line(i)</code></pre>
 </details>
 </dd>
-<dt id="ai.simulators.ConnectFour.reset_bulk"><code class="name flex">
-<span>def <span class="ident">reset_bulk</span></span>(<span>self, n: int) ‑> numpy.ndarray</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Provides multiple new environment states.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of states to generate.</dd>
 </dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>np.ndarray</code></dt>
-<dd>Initial states, stacked in the first dimension.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def reset_bulk(self, n: int) -&gt; np.ndarray:
-    states = np.zeros((n, 7 * 6 + 1))
-    states[:, -1] = 1.0
-    return states</code></pre>
-</details>
-</dd>
-<dt id="ai.simulators.ConnectFour.step_bulk"><code class="name flex">
-<span>def <span class="ident">step_bulk</span></span>(<span>self, states: numpy.ndarray, actions: numpy.ndarray) ‑> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, List[Dict]]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Executes a bulk of actions in multiple states.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>states</code></strong> :&ensp;<code>np.ndarray</code></dt>
-<dd>States, in batch format.</dd>
-<dt><strong><code>actions</code></strong> :&ensp;<code>np.ndarray</code></dt>
-<dd>Integer vector of action indices.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]</code></dt>
-<dd>Tuple of</dd>
-</dl>
-<p>next states, rewards, terminal flags, and debugging dictionaries.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def step_bulk(
-    self, states: np.ndarray, actions: np.ndarray
-) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
-
-    next_states = states.copy()
-    batchvec = np.arange(next_states.shape[0])
-    players = next_states[:, -1]
-
-    next_states = next_states[:, :-1].reshape((-1, 6, 7))
-    heights = (next_states != 0).sum(axis=1)
-
-    if np.any(heights[batchvec, actions] &gt;= 6):
-        raise ValueError(&#34;Cannot place a piece in an already full column&#34;)
-
-    next_states[batchvec, 5 - heights[batchvec, actions], actions] = players[
-        batchvec
-    ]
-    heights[batchvec, actions] += 1
-    rewards = self._compute_rewards(next_states, players)
-    terminals = (rewards != 0) | np.all(heights == 6, axis=1)
-
-    next_states = next_states.reshape((-1, 6 * 7))
-    next_states = np.concatenate((next_states, -players.reshape((-1, 1))), axis=1)
-
-    return (
-        next_states,
-        rewards,
-        terminals,
-        [{} for _ in range(next_states.shape[0])],
-    )</code></pre>
-</details>
-</dd>
-</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
+<li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
+<li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
+<li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
+<li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>
+<li><code><a title="ai.simulators.Base.step_bulk" href="#ai.simulators.Base.step_bulk">step_bulk</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="ai.simulators.Factory"><code class="flex name class">
 <span>class <span class="ident">Factory</span></span>
@@ -691,31 +419,52 @@ output function.</p>
 </dl>
 <p><em>args, </em>*kwargs: arguments and key-word arguments passed to the simulator
 <strong>init</strong> method.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Factory(Generic[T]):
-    &#34;&#34;&#34;Factories are callable objects that spawn simulator instances.&#34;&#34;&#34;
-
-    def __init__(self, cls: T, *args, **kwargs):
-        &#34;&#34;&#34;
-        Args:
-            cls (T): Simulator class.
-            *args, **kwargs: arguments and key-word arguments passed to the simulator
-                __init__ method.
-        &#34;&#34;&#34;
-        super().__init__()
-        self._cls = cls
-        self._args = args
-        self._kwargs = kwargs
-
-    def __call__(self) -&gt; T:
-        return self._cls(*self._args, **self._kwargs)</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="ai.simulators.Grid"><code class="flex name class">
+<span>class <span class="ident">Grid</span></span>
+<span>(</span><span>dim: int, sizes: Sequence[int])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Simple grid navigation environment. Agents can move in either direction in all
+dimensions and need to reach a goal state.</p>
+<p>States are given by two vectors, specifying the grid coordinates of the agent and
+goal respectively. A grid of dimension <code>N</code> therefore has a state shape of
+<code>(2, N)</code>. On reset, start state and goal state are sampled uniformly across the
+grid. Steps can be taken in one dimension only, and the action space is discrete
+with size <code>2N</code>. Action indices <code>2k</code> moves the agent in the positive direction of
+dimension <code>k</code>, and <code>2k+1</code> in the negative direction. Rewards are given as 1 whenever
+the goal is reached, otherwise 0.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>dim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimension of the grid world.</dd>
+<dt><strong><code>sizes</code></strong> :&ensp;<code>Sequence[int]</code></dt>
+<dd>Sizes of each dimension.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
+<li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
+<li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.simulators.Base.render" href="#ai.simulators.Base.render">render</a></code></li>
+<li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
+<li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
+<li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>
+<li><code><a title="ai.simulators.Base.step_bulk" href="#ai.simulators.Base.step_bulk">step_bulk</a></code></li>
+</ul>
+</li>
 </ul>
 </dd>
 <dt id="ai.simulators.TicTacToe"><code class="flex name class">
@@ -739,150 +488,16 @@ Then, if a winning action is rewarded with <code>+1</code> and a losing action i
 <dd>Flag indicating if this simulator instance is
 considered deterministic or not.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class TicTacToe(Base):
-
-    &#34;&#34;&#34;TicTacToe (connect three, or three in a row) simulator.
-
-    States are given by a single `np.ndarray` of shape `(10, )`. The first 9 elements
-    denote the game board in row-major order (board is of shape `(3, 3)`). Each board
-    element is in `{-1, 0, 1}`, where `-1` and `1` denote occupied cells and `0` empty
-    cells. The last element in the state vector (i.e. element index 9) is either `+1`
-    or `-1`, denoting the player who is about to play.
-
-    Actions discrete in `{0, 1, ..., 8}`, denoting, in row-major order, which cell to
-    place the next marker in.
-
-    Rewards are given at the end of a game round, i.e. intermediate rewards are zero.
-    Then, if a winning action is rewarded with `+1` and a losing action is rewarded with
-    `-1`.&#34;&#34;&#34;
-
-    def __init__(self) -&gt; None:
-        super().__init__(True)
-        self._action_space = action_spaces.TicTacToe()
-
-    @property
-    def action_space(self) -&gt; action_spaces.TicTacToe:
-        return self._action_space
-
-    def reset_bulk(self, n: int) -&gt; np.ndarray:
-        states = np.zeros((n, 10))
-        states[:, -1] = 1.0
-        return states
-
-    def _check_win(self, states: np.ndarray) -&gt; np.ndarray:
-        batchvec = np.arange(states.shape[0])
-        repeated_batchvec = np.repeat(batchvec, 3)
-        tiled_diag_indices = np.tile(_DIAG_INDICES, batchvec.shape[0])
-        tiled_cross_diag_indices = np.tile(_CROSS_DIAG_INDICES, batchvec.shape[0])
-
-        player = np.reshape(states[batchvec, -1], (-1, 1))
-        own_marks = states[:, :-1] == player
-
-        row_win = np.any(np.all(np.reshape(own_marks, (-1, 3, 3)), axis=2), axis=1)
-        col_win = np.any(np.all(np.reshape(own_marks, (-1, 3, 3)), axis=1), axis=1)
-        diagwin = np.all(
-            np.reshape(own_marks[repeated_batchvec, tiled_diag_indices], (-1, 3)),
-            axis=1,
-        )
-        crossdiagwin = np.all(
-            np.reshape(own_marks[repeated_batchvec, tiled_cross_diag_indices], (-1, 3)),
-            axis=1,
-        )
-
-        return row_win | col_win | diagwin | crossdiagwin
-
-    def _check_loss(self, states: np.ndarray) -&gt; np.ndarray:
-        states = states.copy()
-        states[:, -1] = -states[:, -1]
-        return self._check_win(states)
-
-    def step_bulk(
-        self, states: np.ndarray, actions: np.ndarray
-    ) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
-        states = states
-
-        if np.any(self._check_loss(states)) or np.any(self._check_win(states)):
-            raise ValueError(&#34;Cannot step from a state already in a win condition.&#34;)
-
-        next_states = states.copy()
-        batchvec = np.arange(next_states.shape[0])
-
-        if np.any(next_states[batchvec, actions] != 0.0):
-            raise ValueError(&#34;Cannot place a piece at an already occupied spot&#34;)
-
-        next_states[batchvec, actions] = next_states[batchvec, -1]
-
-        rewards = np.zeros(next_states.shape[0])
-        win = self._check_win(next_states)
-        rewards[win] = 1.0
-        loss = self._check_loss(next_states)
-        rewards[loss] = -1.0
-
-        terminals = win | loss | np.all(next_states != 0, axis=1)
-
-        next_states[batchvec, -1] = -states[batchvec, -1]
-
-        return (
-            next_states,
-            rewards,
-            terminals,
-            [{} for _ in range(next_states.shape[0])],
-        )
-
-    def render(self, state: np.ndarray, output_fn: Callable[[str], None] = print):
-        &#34;&#34;&#34;Renders the game board and action index map to a string that is then output
-        through the given output function.
-
-        Args:
-            state (np.ndarray): State to render
-            output_fn (Callable[[str], None], optional): Output function, called with
-            the generated string. Defaults to `print`.
-        &#34;&#34;&#34;
-
-        def tile(value) -&gt; str:
-            if value == 0:
-                return &#34; &#34;
-            elif value == 1:
-                return &#34;X&#34;
-            elif value == -1:
-                return &#34;O&#34;
-            else:
-                raise ValueError(f&#34;Unexpected value {value}&#34;)
-
-        output_fn(
-            f&#34;&#34;&#34;
-| --- | --- | --- |         | --- | --- | --- |
-|  {tile(state[0])}  |  {tile(state[1])}  |  {tile(state[2])}  |     |  0  |  1  |  2  |
-| --- | --- | --- |         | --- | --- | --- |
-|  {tile(state[3])}  |  {tile(state[4])}  |  {tile(state[5])}  |     |  3  |  4  |  5  |
-| --- | --- | --- |         | --- | --- | --- |
-|  {tile(state[6])}  |  {tile(state[7])}  |  {tile(state[8])}  |     |  6  |  7  |  8  |
-| --- | --- | --- |         | --- | --- | --- |
-        &#34;&#34;&#34;
-        )</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>ai.simulators._base.Base</li>
+<li><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Instance variables</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="ai.simulators.TicTacToe.action_space"><code class="name">var <span class="ident">action_space</span> : ai.simulators.action_spaces._tic_tac_toe.TicTacToe</code></dt>
+<dt id="ai.simulators.TicTacToe.ActionSpace"><code class="name">var <span class="ident">ActionSpace</span></code></dt>
 <dd>
-<div class="desc"><p>The action space class used by this simulator.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def action_space(self) -&gt; action_spaces.TicTacToe:
-    return self._action_space</code></pre>
-</details>
+<div class="desc"><p>Action space for the TicTacToe simulator.</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -938,88 +553,22 @@ through the given output function.</p>
         )</code></pre>
 </details>
 </dd>
-<dt id="ai.simulators.TicTacToe.reset_bulk"><code class="name flex">
-<span>def <span class="ident">reset_bulk</span></span>(<span>self, n: int) ‑> numpy.ndarray</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Provides multiple new environment states.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
-<dd>Number of states to generate.</dd>
 </dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>np.ndarray</code></dt>
-<dd>Initial states, stacked in the first dimension.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def reset_bulk(self, n: int) -&gt; np.ndarray:
-    states = np.zeros((n, 10))
-    states[:, -1] = 1.0
-    return states</code></pre>
-</details>
-</dd>
-<dt id="ai.simulators.TicTacToe.step_bulk"><code class="name flex">
-<span>def <span class="ident">step_bulk</span></span>(<span>self, states: numpy.ndarray, actions: numpy.ndarray) ‑> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, List[Dict]]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Executes a bulk of actions in multiple states.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>states</code></strong> :&ensp;<code>np.ndarray</code></dt>
-<dd>States, in batch format.</dd>
-<dt><strong><code>actions</code></strong> :&ensp;<code>np.ndarray</code></dt>
-<dd>Integer vector of action indices.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]</code></dt>
-<dd>Tuple of</dd>
-</dl>
-<p>next states, rewards, terminal flags, and debugging dictionaries.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def step_bulk(
-    self, states: np.ndarray, actions: np.ndarray
-) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, List[Dict]]:
-    states = states
-
-    if np.any(self._check_loss(states)) or np.any(self._check_win(states)):
-        raise ValueError(&#34;Cannot step from a state already in a win condition.&#34;)
-
-    next_states = states.copy()
-    batchvec = np.arange(next_states.shape[0])
-
-    if np.any(next_states[batchvec, actions] != 0.0):
-        raise ValueError(&#34;Cannot place a piece at an already occupied spot&#34;)
-
-    next_states[batchvec, actions] = next_states[batchvec, -1]
-
-    rewards = np.zeros(next_states.shape[0])
-    win = self._check_win(next_states)
-    rewards[win] = 1.0
-    loss = self._check_loss(next_states)
-    rewards[loss] = -1.0
-
-    terminals = win | loss | np.all(next_states != 0, axis=1)
-
-    next_states[batchvec, -1] = -states[batchvec, -1]
-
-    return (
-        next_states,
-        rewards,
-        terminals,
-        [{} for _ in range(next_states.shape[0])],
-    )</code></pre>
-</details>
-</dd>
-</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
+<li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
+<li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
+<li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
+<li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>
+<li><code><a title="ai.simulators.Base.step_bulk" href="#ai.simulators.Base.step_bulk">step_bulk</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -1046,8 +595,10 @@ through the given output function.</p>
 <h4><code><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></code></h4>
 <ul class="two-column">
 <li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
 <li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
 <li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.simulators.Base.render" href="#ai.simulators.Base.render">render</a></code></li>
 <li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
 <li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
 <li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>
@@ -1057,22 +608,21 @@ through the given output function.</p>
 <li>
 <h4><code><a title="ai.simulators.ConnectFour" href="#ai.simulators.ConnectFour">ConnectFour</a></code></h4>
 <ul class="">
-<li><code><a title="ai.simulators.ConnectFour.action_space" href="#ai.simulators.ConnectFour.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.ConnectFour.ActionSpace" href="#ai.simulators.ConnectFour.ActionSpace">ActionSpace</a></code></li>
 <li><code><a title="ai.simulators.ConnectFour.render" href="#ai.simulators.ConnectFour.render">render</a></code></li>
-<li><code><a title="ai.simulators.ConnectFour.reset_bulk" href="#ai.simulators.ConnectFour.reset_bulk">reset_bulk</a></code></li>
-<li><code><a title="ai.simulators.ConnectFour.step_bulk" href="#ai.simulators.ConnectFour.step_bulk">step_bulk</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="ai.simulators.Factory" href="#ai.simulators.Factory">Factory</a></code></h4>
 </li>
 <li>
+<h4><code><a title="ai.simulators.Grid" href="#ai.simulators.Grid">Grid</a></code></h4>
+</li>
+<li>
 <h4><code><a title="ai.simulators.TicTacToe" href="#ai.simulators.TicTacToe">TicTacToe</a></code></h4>
 <ul class="">
-<li><code><a title="ai.simulators.TicTacToe.action_space" href="#ai.simulators.TicTacToe.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.TicTacToe.ActionSpace" href="#ai.simulators.TicTacToe.ActionSpace">ActionSpace</a></code></li>
 <li><code><a title="ai.simulators.TicTacToe.render" href="#ai.simulators.TicTacToe.render">render</a></code></li>
-<li><code><a title="ai.simulators.TicTacToe.reset_bulk" href="#ai.simulators.TicTacToe.reset_bulk">reset_bulk</a></code></li>
-<li><code><a title="ai.simulators.TicTacToe.step_bulk" href="#ai.simulators.TicTacToe.step_bulk">step_bulk</a></code></li>
 </ul>
 </li>
 </ul>

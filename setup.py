@@ -10,7 +10,7 @@ setuptools.setup(
     description="Collection of AI algorithms and agents.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jakkes/RL_Projects",
+    url="https://github.com/jakkes/AI_Projects",
     packages=setuptools.find_packages(),
     classifiers=(
         "Programming Language :: Python :: 3",
@@ -22,8 +22,10 @@ setuptools.setup(
         "scipy~=1.6.1",
         "tensorboard~=2.4.1",
         "gym~=0.18.0",
+        "typed-argument-parser~=1.6.2",
+        "python-linq~=1.4.1"
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.7, <3.9",
 )
 
 # Publish

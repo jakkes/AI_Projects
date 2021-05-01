@@ -3,13 +3,11 @@ from typing import Callable, Tuple, List, Dict
 import numpy as np
 from scipy.signal import convolve
 
-from ai.utils.np import cross_diag
-from . import action_spaces
-from ._base import Base
-from ._factory import Factory
+import ai.utils.np as np_utils
+import ai.simulators as simulators
 
 
-class ConnectFour(Base):
+class ConnectFour(simulators.Base):
     """Connect four (four in a row) game simulator.
 
     States are given by a single `np.ndarray` of shape `(43, )`. The first 42 elements
@@ -25,17 +23,30 @@ class ConnectFour(Base):
     Then, if a winning action is rewarded with `+1` and a losing action is rewarded with
     `-1`."""
 
+    class ActionSpace(simulators.action_spaces.Discrete):
+        """Action space of the ConnectFour simulator."""
+
+        @property
+        def size(cls) -> int:
+            return 7
+
+        def action_mask_bulk(self, states: np.ndarray) -> np.ndarray:
+            return (states[:, :-1].reshape((-1, 6, 7)) != 0).sum(1) < 6
+
     def __init__(self) -> None:
         super().__init__(True)
-        self._action_space = action_spaces.ConnectFour()
+        self._action_space = ConnectFour.ActionSpace()
 
     def reset_bulk(self, n: int) -> np.ndarray:
         states = np.zeros((n, 7 * 6 + 1))
         states[:, -1] = 1.0
         return states
 
+    def close(self):
+        pass
+
     @property
-    def action_space(self) -> action_spaces.ConnectFour:
+    def action_space(self) -> "ConnectFour.ActionSpace":
         return self._action_space
 
     def _compute_rewards(self, states: np.ndarray, players: np.ndarray) -> np.ndarray:
@@ -55,7 +66,7 @@ class ConnectFour(Base):
         win_diagonal = np.any(np.any(win_diagonal, axis=2), axis=1)
 
         win_xdiagonal = (
-            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, np_utils.cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == players
         )
         win_xdiagonal = np.any(np.any(win_xdiagonal, axis=2), axis=1)
@@ -75,7 +86,7 @@ class ConnectFour(Base):
         loss_diagonal = np.any(np.any(loss_diagonal, axis=2), axis=1)
 
         loss_xdiagonal = (
-            convolve(states, cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
+            convolve(states, np_utils.cross_diag(np.ones(4)).reshape((1, 4, 4)), mode="valid")
             == -players
         )
         loss_xdiagonal = np.any(np.any(loss_xdiagonal, axis=2), axis=1)

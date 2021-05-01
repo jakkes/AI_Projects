@@ -46,7 +46,7 @@ __all__ = [&#34;SummaryWriterServer&#34;]</code></pre>
 <dl>
 <dt id="ai.utils.logging.SummaryWriterServer"><code class="flex name class">
 <span>class <span class="ident">SummaryWriterServer</span></span>
-<span>(</span><span>filename_suffix: str, data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe9fe622810>>)</span>
+<span>(</span><span>filename_suffix: str, data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f12d334b4d0>>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process handling a summary writer.</p>
@@ -57,64 +57,16 @@ __all__ = [&#34;SummaryWriterServer&#34;]</code></pre>
 <dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
 <dd>Queue from which logging data is gathered.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class SummaryWriterServer(ABC):
-    &#34;&#34;&#34;Process handling a summary writer.&#34;&#34;&#34;
-
-    def __init__(self, filename_suffix: str, data_queue: Queue):
-        &#34;&#34;&#34;
-        Args:
-            filename_suffix (str): Filename suffix of the SummaryWriter.
-            data_queue (Queue): Queue from which logging data is gathered.
-        &#34;&#34;&#34;
-        self._data_queue = data_queue
-        self._filename_suffix = filename_suffix
-        self._stop_signal = Event()
-        self._process: Process = None
-
-    @abstractmethod
-    def log(self, summary_writer: SummaryWriter, data: Any):
-        &#34;&#34;&#34;This method is called whenever data is retrieved from the data queue.
-
-        Args:
-            summary_writer (SummaryWriter): Summary writer used by this server.
-            data (Any): Data, defined by the publishing entity.
-        &#34;&#34;&#34;
-        raise NotImplementedError
-
-    def _runner(self):
-        summary_writer = SummaryWriter(comment=self._filename_suffix)
-        while not self._stop_signal.is_set():
-            try:
-                data = self._data_queue.get(timeout=5)
-            except Empty:
-                continue
-            self.log(summary_writer, data)
-
-    def start(self):
-        &#34;&#34;&#34;Starts the logging server.&#34;&#34;&#34;
-        self._process = Process(target=self._runner, daemon=True)
-        self._process.start()
-
-    def terminate(self):
-        &#34;&#34;&#34;Stops the logging server.&#34;&#34;&#34;
-        self._stop_signal.set()
-
-    def join(self):
-        &#34;&#34;&#34;Blocks until the logging server has been stopped.&#34;&#34;&#34;
-        self._process.join()</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.agents.alpha_zero._core.loggers.LearnerLogger</li>
-<li>ai.agents.alpha_zero._core.loggers.SelfPlayLogger</li>
+<li>ai.agents.a3c.trainer._logger.Logger</li>
+<li><a title="ai.agents.alpha_zero.LearnerLogger" href="../../agents/alpha_zero/index.html#ai.agents.alpha_zero.LearnerLogger">LearnerLogger</a></li>
+<li><a title="ai.agents.alpha_zero.SelfPlayLogger" href="../../agents/alpha_zero/index.html#ai.agents.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></li>
+<li>ai.agents.dqn.rainbow.trainers.basic._logger.Logger</li>
 </ul>
 <h3>Methods</h3>
 <dl>

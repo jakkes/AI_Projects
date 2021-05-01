@@ -2,11 +2,12 @@
 implementations of it."""
 
 
-from ._tictactoe import TicTacToe
-from ._base import Base
-from ._connect_four import ConnectFour
-from ._factory import Factory
 from . import action_spaces
+from ._base import Base
+from ._factory import Factory
+from ._connect_four import ConnectFour
+from ._tictactoe import TicTacToe
+from ._grid import Grid
 
 
-__all__ = ["TicTacToe", "Base", "ConnectFour", "action_spaces", "Factory"]
+__all__ = ["TicTacToe", "Base", "ConnectFour", "Factory", "action_spaces", "Grid"]

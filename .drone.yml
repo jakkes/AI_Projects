@@ -4,20 +4,19 @@ type: docker
 name: default
 
 steps:
-- name: docs
+
+- name: test and docs
   image: python:3.7-slim
   commands:
-  - pip install . pdoc3
+  - pip install pdoc3
+  - pip install -r requirements.txt
+  - pytest
   - rm -rf ./docs/ai/
   - pdoc3 ./ai --html -o docs
+
 - name: push
   image: alpine/git
-  environment:
-    KEY:
-      from_secret: PRIVATEKEY
   commands:
-  - mkdir $HOME/.ssh
-  - echo "$KEY" > $HOME/.ssh/id_rsa
   - git add docs
   - git config user.name drone
   - git config user.email drone

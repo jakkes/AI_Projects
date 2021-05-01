@@ -31,10 +31,9 @@
 
 from ._base import Base
 from ._discrete import Discrete
-from ._discrete_gym_wrapper import DiscreteGymWrapper
 
 
-__all__ = [&#34;Base&#34;, &#34;Discrete&#34;, &#34;DiscreteGymWrapper&#34;]</code></pre>
+__all__ = [&#34;Base&#34;, &#34;Discrete&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -51,70 +50,18 @@ __all__ = [&#34;Base&#34;, &#34;Discrete&#34;, &#34;DiscreteGymWrapper&#34;]</co
 </code></dt>
 <dd>
 <div class="desc"><p>Base environment action space.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Base(ABC):
-    &#34;&#34;&#34;Base environment action space.&#34;&#34;&#34;
-
-    def as_type(self, t: T) -&gt; T:
-        &#34;&#34;&#34;Casts the action space to the specific type.
-
-        Args:
-            t (T): Type to which the space should be cast
-
-        Raises:
-            RuntimeError: If the object is not castable to the requested type.
-
-        Returns:
-            T: The same object.
-        &#34;&#34;&#34;
-        if not isinstance(self, t):
-            raise RuntimeError(f&#34;Failed casting {self} to {t}&#34;)
-        return self
-
-    def as_discrete(self) -&gt; &#34;ai.environments.action_spaces.Discrete&#34;:
-        &#34;&#34;&#34;Casts this object to a discrete action space. This operation is equivalent
-        to `as_type(action_spaces.Discrete)`.&#34;&#34;&#34;
-        return self.as_type(ai.environments.action_spaces.Discrete)
-
-    @abstractmethod
-    def sample(self) -&gt; Any:
-        &#34;&#34;&#34;Samples an action from the action space.
-
-        Returns:
-            Any: An action.
-        &#34;&#34;&#34;
-        raise NotImplementedError
-
-    @abstractmethod
-    def contains(self, action: Any) -&gt; bool:
-        &#34;&#34;&#34;Determines if the given action is in the action space or not.
-
-        Args:
-            action (Any): Action.
-
-        Returns:
-            bool: True if the given action is legal, otherwise False.
-        &#34;&#34;&#34;
-        raise NotImplementedError
-
-    def __contains__(self, action: Any) -&gt; bool:
-        return self.contains(action)</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.environments.action_spaces._discrete.Discrete</li>
+<li><a title="ai.environments.action_spaces.Discrete" href="#ai.environments.action_spaces.Discrete">Discrete</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="ai.environments.action_spaces.Base.as_discrete"><code class="name flex">
-<span>def <span class="ident">as_discrete</span></span>(<span>self) ‑> ai.environments.action_spaces._discrete.Discrete</span>
+<span>def <span class="ident">as_discrete</span></span>(<span>self) ‑> <a title="ai.environments.action_spaces.Discrete" href="#ai.environments.action_spaces.Discrete">Discrete</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Casts this object to a discrete action space. This operation is equivalent
@@ -237,47 +184,14 @@ def sample(self) -&gt; Any:
 Moreover, all action are not necessarily legal in every state. Legal actions are
 given by the action mask, a boolean vector whose elements at legal action indices
 are <code>True</code> and illegal action indices <code>False</code>.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Discrete(Base):
-    &#34;&#34;&#34;Discrete action space.
-
-    Discrete action spaces identify actions using the an integer and have a fixed size.
-    Moreover, all action are not necessarily legal in every state. Legal actions are
-    given by the action mask, a boolean vector whose elements at legal action indices
-    are `True` and illegal action indices `False`.&#34;&#34;&#34;
-
-    @property
-    @abstractmethod
-    def size(self) -&gt; int:
-        &#34;&#34;&#34;The size of the discrete action space.&#34;&#34;&#34;
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def action_mask(self) -&gt; np.ndarray:
-        &#34;&#34;&#34;The boolean action mask of the current environmental state. Legal actions
-        are marked with `True` and illegal actions with `False`.&#34;&#34;&#34;
-        raise NotImplementedError
-
-    def sample(self) -&gt; int:
-        return np.random.choice(np.arange(self._size)[self.action_mask])
-
-    def contains(self, action: int) -&gt; bool:
-        if not isinstance(action, (int, np.integer)):
-            return False
-        return self.action_mask[action]</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>ai.environments.action_spaces._base.Base</li>
+<li><a title="ai.environments.action_spaces.Base" href="#ai.environments.action_spaces.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.environments.action_spaces._discrete_gym_wrapper.DiscreteGymWrapper</li>
+<li>ai.environments._gym_wrapper.GymWrapper.ActionSpace</li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
@@ -312,120 +226,17 @@ def size(self) -&gt; int:
 </details>
 </dd>
 </dl>
-<h3>Methods</h3>
-<dl>
-<dt id="ai.environments.action_spaces.Discrete.contains"><code class="name flex">
-<span>def <span class="ident">contains</span></span>(<span>self, action: int) ‑> bool</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Determines if the given action is in the action space or not.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>action</code></strong> :&ensp;<code>Any</code></dt>
-<dd>Action.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>bool</code></dt>
-<dd>True if the given action is legal, otherwise False.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def contains(self, action: int) -&gt; bool:
-    if not isinstance(action, (int, np.integer)):
-        return False
-    return self.action_mask[action]</code></pre>
-</details>
-</dd>
-<dt id="ai.environments.action_spaces.Discrete.sample"><code class="name flex">
-<span>def <span class="ident">sample</span></span>(<span>self) ‑> int</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Samples an action from the action space.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>Any</code></dt>
-<dd>An action.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sample(self) -&gt; int:
-    return np.random.choice(np.arange(self._size)[self.action_mask])</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="ai.environments.action_spaces.DiscreteGymWrapper"><code class="flex name class">
-<span>class <span class="ident">DiscreteGymWrapper</span></span>
-<span>(</span><span>space: gym.spaces.discrete.Discrete)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Discrete action space that wraps a discrete openAI Gym action space.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>space</code></strong> :&ensp;<code>spaces.Discrete</code></dt>
-<dd>Space to wrap.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class DiscreteGymWrapper(action_spaces.Discrete):
-    &#34;&#34;&#34;Discrete action space that wraps a discrete openAI Gym action space.&#34;&#34;&#34;
-
-    def __init__(self, space: spaces.Discrete):
-        &#34;&#34;&#34;
-        Args:
-            space (spaces.Discrete): Space to wrap.
-        &#34;&#34;&#34;
-        self._size = space.n
-
-    @property
-    def size(self) -&gt; int:
-        return self._size
-
-    @property
-    def action_mask(self) -&gt; np.ndarray:
-        return np.ones((self.size, ), dtype=np.bool_)</code></pre>
-</details>
-<h3>Ancestors</h3>
+<h3>Inherited members</h3>
 <ul class="hlist">
-<li>ai.environments.action_spaces._discrete.Discrete</li>
-<li>ai.environments.action_spaces._base.Base</li>
-<li>abc.ABC</li>
+<li><code><b><a title="ai.environments.action_spaces.Base" href="#ai.environments.action_spaces.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.environments.action_spaces.Base.as_discrete" href="#ai.environments.action_spaces.Base.as_discrete">as_discrete</a></code></li>
+<li><code><a title="ai.environments.action_spaces.Base.as_type" href="#ai.environments.action_spaces.Base.as_type">as_type</a></code></li>
+<li><code><a title="ai.environments.action_spaces.Base.contains" href="#ai.environments.action_spaces.Base.contains">contains</a></code></li>
+<li><code><a title="ai.environments.action_spaces.Base.sample" href="#ai.environments.action_spaces.Base.sample">sample</a></code></li>
 </ul>
-<h3>Instance variables</h3>
-<dl>
-<dt id="ai.environments.action_spaces.DiscreteGymWrapper.action_mask"><code class="name">var <span class="ident">action_mask</span> : numpy.ndarray</code></dt>
-<dd>
-<div class="desc"><p>The boolean action mask of the current environmental state. Legal actions
-are marked with <code>True</code> and illegal actions with <code>False</code>.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def action_mask(self) -&gt; np.ndarray:
-    return np.ones((self.size, ), dtype=np.bool_)</code></pre>
-</details>
-</dd>
-<dt id="ai.environments.action_spaces.DiscreteGymWrapper.size"><code class="name">var <span class="ident">size</span> : int</code></dt>
-<dd>
-<div class="desc"><p>The size of the discrete action space.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def size(self) -&gt; int:
-    return self._size</code></pre>
-</details>
-</dd>
-</dl>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -456,16 +267,7 @@ def size(self) -&gt; int:
 <h4><code><a title="ai.environments.action_spaces.Discrete" href="#ai.environments.action_spaces.Discrete">Discrete</a></code></h4>
 <ul class="">
 <li><code><a title="ai.environments.action_spaces.Discrete.action_mask" href="#ai.environments.action_spaces.Discrete.action_mask">action_mask</a></code></li>
-<li><code><a title="ai.environments.action_spaces.Discrete.contains" href="#ai.environments.action_spaces.Discrete.contains">contains</a></code></li>
-<li><code><a title="ai.environments.action_spaces.Discrete.sample" href="#ai.environments.action_spaces.Discrete.sample">sample</a></code></li>
 <li><code><a title="ai.environments.action_spaces.Discrete.size" href="#ai.environments.action_spaces.Discrete.size">size</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="ai.environments.action_spaces.DiscreteGymWrapper" href="#ai.environments.action_spaces.DiscreteGymWrapper">DiscreteGymWrapper</a></code></h4>
-<ul class="">
-<li><code><a title="ai.environments.action_spaces.DiscreteGymWrapper.action_mask" href="#ai.environments.action_spaces.DiscreteGymWrapper.action_mask">action_mask</a></code></li>
-<li><code><a title="ai.environments.action_spaces.DiscreteGymWrapper.size" href="#ai.environments.action_spaces.DiscreteGymWrapper.size">size</a></code></li>
 </ul>
 </li>
 </ul>

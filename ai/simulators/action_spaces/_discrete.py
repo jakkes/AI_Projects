@@ -2,10 +2,10 @@ from abc import abstractmethod
 
 import numpy as np
 
-from ._base import Base
+import ai.simulators.action_spaces as action_spaces
 
 
-class Discrete(Base):
+class Discrete(action_spaces.Base):
     """Discrete action space.
 
     Discrete action spaces identify actions using the an integer and have a fixed size.
@@ -44,7 +44,7 @@ class Discrete(Base):
         raise NotImplementedError
 
     def sample(self, state: np.ndarray) -> int:
-        return np.random.choice(np.arange(self.size())[self.action_mask(state)])
+        return np.random.choice(np.arange(self.size)[self.action_mask(state)])
 
     def contains(self, state: np.ndarray, action: int) -> bool:
         if not isinstance(action, (int, np.integer)):
