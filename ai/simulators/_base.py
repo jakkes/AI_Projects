@@ -99,10 +99,10 @@ class Base(ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_factory(cls: T, *args, **kwargs) -> "simulators.Factory[T]":
+    def get_factory(cls, *args, **kwargs) -> "simulators.Factory":
         """Creates and returns a factory object that spawns simulators when called.
 
         Args and kwargs are passed along to the class constructor. However, if other
         behavior is required, feel free to override this method and return a factory
         class of your choice."""
-        return simulators.Factory[T](cls, *args, **kwargs)
+        return simulators.Factory(cls, *args, **kwargs)
