@@ -211,17 +211,17 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 </dd>
 <dt id="ai.environments.Factory"><code class="flex name class">
 <span>class <span class="ident">Factory</span></span>
-<span>(</span><span>cls: <a title="ai.environments.Base" href="#ai.environments.Base">Base</a>, *args, **kwargs)</span>
+<span>(</span><span>cls: Type[<a title="ai.environments.Base" href="#ai.environments.Base">Base</a>], *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Factories are callable objects that spawn environment instances.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>cls</code></strong> :&ensp;<code>T</code></dt>
+<dt><strong><code>cls</code></strong> :&ensp;<code>Type[environments.Base]</code></dt>
 <dd>Environment class.</dd>
 </dl>
-<p><em>args, </em>*kwargs: arguments and key-word arguments passed to the environment
-<strong>init</strong> method.</p></div>
+<p><code>*args, **kwargs</code>: arguments and key-word arguments passed to the
+environment <code>__init__</code> method.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li>ai.environments._gym_wrapper.GymWrapper.Factory</li>

@@ -87,7 +87,7 @@ considered deterministic or not.</dd>
 <h3>Static methods</h3>
 <dl>
 <dt id="ai.simulators.Base.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> <a title="ai.simulators.Factory" href="#ai.simulators.Factory">Factory</a>[~T]</span>
+<span>def <span class="ident">get_factory</span></span>(<span>*args, **kwargs) ‑> <a title="ai.simulators.Factory" href="#ai.simulators.Factory">Factory</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates and returns a factory object that spawns simulators when called.</p>
@@ -99,13 +99,13 @@ class of your choice.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def get_factory(cls: T, *args, **kwargs) -&gt; &#34;simulators.Factory[T]&#34;:
+def get_factory(cls, *args, **kwargs) -&gt; &#34;simulators.Factory&#34;:
     &#34;&#34;&#34;Creates and returns a factory object that spawns simulators when called.
 
     Args and kwargs are passed along to the class constructor. However, if other
     behavior is required, feel free to override this method and return a factory
     class of your choice.&#34;&#34;&#34;
-    return simulators.Factory[T](cls, *args, **kwargs)</code></pre>
+    return simulators.Factory(cls, *args, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
@@ -408,21 +408,17 @@ output function.</p>
 </dd>
 <dt id="ai.simulators.Factory"><code class="flex name class">
 <span>class <span class="ident">Factory</span></span>
-<span>(</span><span>cls: ~T, *args, **kwargs)</span>
+<span>(</span><span>cls: Type[<a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a>], *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Factories are callable objects that spawn simulator instances.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>cls</code></strong> :&ensp;<code>T</code></dt>
+<dt><strong><code>cls</code></strong> :&ensp;<code>Type[simulators.Base]</code></dt>
 <dd>Simulator class.</dd>
 </dl>
-<p><em>args, </em>*kwargs: arguments and key-word arguments passed to the simulator
-<strong>init</strong> method.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>typing.Generic</li>
-</ul>
+<p><code>*args, **kwargs</code>: arguments and key-word arguments passed to the simulator
+<code>__init__</code> method.</p></div>
 </dd>
 <dt id="ai.simulators.Grid"><code class="flex name class">
 <span>class <span class="ident">Grid</span></span>
