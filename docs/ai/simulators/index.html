@@ -39,9 +39,18 @@ from ._factory import Factory
 from ._connect_four import ConnectFour
 from ._tictactoe import TicTacToe
 from ._grid import Grid
+from ._cart_pole import CartPole
 
 
-__all__ = [&#34;TicTacToe&#34;, &#34;Base&#34;, &#34;ConnectFour&#34;, &#34;Factory&#34;, &#34;action_spaces&#34;, &#34;Grid&#34;]</code></pre>
+__all__ = [
+    &#34;TicTacToe&#34;,
+    &#34;Base&#34;,
+    &#34;ConnectFour&#34;,
+    &#34;Factory&#34;,
+    &#34;action_spaces&#34;,
+    &#34;Grid&#34;,
+    &#34;CartPole&#34;,
+]</code></pre>
 </details>
 </section>
 <section>
@@ -80,6 +89,7 @@ considered deterministic or not.</dd>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="ai.simulators.CartPole" href="#ai.simulators.CartPole">CartPole</a></li>
 <li><a title="ai.simulators.ConnectFour" href="#ai.simulators.ConnectFour">ConnectFour</a></li>
 <li><a title="ai.simulators.Grid" href="#ai.simulators.Grid">Grid</a></li>
 <li><a title="ai.simulators.TicTacToe" href="#ai.simulators.TicTacToe">TicTacToe</a></li>
@@ -307,6 +317,59 @@ def step_bulk(
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="ai.simulators.CartPole"><code class="flex name class">
+<span>class <span class="ident">CartPole</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Simulator implementation of the inverted pendulum (aka CartPole).</p>
+<p>State is given by a vector in R^5 with elements indicating cart position, cart
+velocity, pole angular deviation from center, pole angular velocity, and steps made.</p>
+<p>Action space is discrete and of size two. Action 0 applies a force in the positive
+direction (positive relative to cart position), and action 1 negative.</p>
+<p>Rewards are given as 1 for each step. Episodes are terminated when either 200 steps
+have passed, or the cart position is greater than 2.4 from the start location, or
+the pole deviation is greater than 12 degrees.</p>
+<p>This simulator is based on <a href="https://github.com/openai/gym/blob/a5a6ae6bc0a5cfc0ff1ce9be723d59593c165022/gym/envs/classic_control/cartpole.py">https://github.com/openai/gym/blob/a5a6ae6bc0a5cfc0ff1ce9be723d59593c165022/gym/envs/classic_control/cartpole.py</a>
+# noqa</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>deterministic</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Flag indicating if this simulator instance is
+considered deterministic or not.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="ai.simulators.CartPole.ActionSpace"><code class="name">var <span class="ident">ActionSpace</span></code></dt>
+<dd>
+<div class="desc"><p>Discrete action space.</p>
+<p>Discrete action spaces identify actions using the an integer and have a fixed size.
+Moreover, all action are not necessarily legal in every state. Legal actions are
+given by the action mask, a boolean vector whose elements at legal action indices
+are <code>True</code> and illegal action indices <code>False</code>.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.simulators.Base" href="#ai.simulators.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.simulators.Base.action_space" href="#ai.simulators.Base.action_space">action_space</a></code></li>
+<li><code><a title="ai.simulators.Base.close" href="#ai.simulators.Base.close">close</a></code></li>
+<li><code><a title="ai.simulators.Base.deterministic" href="#ai.simulators.Base.deterministic">deterministic</a></code></li>
+<li><code><a title="ai.simulators.Base.get_factory" href="#ai.simulators.Base.get_factory">get_factory</a></code></li>
+<li><code><a title="ai.simulators.Base.render" href="#ai.simulators.Base.render">render</a></code></li>
+<li><code><a title="ai.simulators.Base.reset" href="#ai.simulators.Base.reset">reset</a></code></li>
+<li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
+<li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>
+<li><code><a title="ai.simulators.Base.step_bulk" href="#ai.simulators.Base.step_bulk">step_bulk</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="ai.simulators.ConnectFour"><code class="flex name class">
 <span>class <span class="ident">ConnectFour</span></span>
@@ -599,6 +662,12 @@ through the given output function.</p>
 <li><code><a title="ai.simulators.Base.reset_bulk" href="#ai.simulators.Base.reset_bulk">reset_bulk</a></code></li>
 <li><code><a title="ai.simulators.Base.step" href="#ai.simulators.Base.step">step</a></code></li>
 <li><code><a title="ai.simulators.Base.step_bulk" href="#ai.simulators.Base.step_bulk">step_bulk</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.simulators.CartPole" href="#ai.simulators.CartPole">CartPole</a></code></h4>
+<ul class="">
+<li><code><a title="ai.simulators.CartPole.ActionSpace" href="#ai.simulators.CartPole.ActionSpace">ActionSpace</a></code></li>
 </ul>
 </li>
 <li>
