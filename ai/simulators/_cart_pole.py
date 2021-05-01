@@ -36,9 +36,9 @@ class CartPole(simulators.Base):
         self._gravity = 9.8
         self._masscart = 1.0
         self._masspole = 0.1
-        self._total_mass = self.masspole + self.masscart
+        self._total_mass = self._masspole + self._masscart
         self._length = 0.5  # actually half the pole's length
-        self._polemass_length = self.masspole * self.length
+        self._polemass_length = self._masspole * self._length
         self._force_mag = 10.0
         self._tau = 0.02  # seconds between state updates
 
@@ -55,6 +55,7 @@ class CartPole(simulators.Base):
     def reset_bulk(self, n: int) -> np.ndarray:
         states = np.random.uniform(low=-0.05, high=0.05, size=(n, 5))
         states[:, 4] = 0
+        return states
 
     def step_bulk(
         self, states: np.ndarray, actions: np.ndarray
@@ -84,12 +85,17 @@ class CartPole(simulators.Base):
         next_states[:, 4] += 1
 
         terminals = (
-            next_states[:, 0]
-            < -self._x_threshold | next_states[:, 0]
-            > self._x_threshold | next_states[:, 2]
-            < -self._theta_threshold_radians | next_states[:, 2]
-            > self._theta_threshold_radians
+            (next_states[:, 0] < -self._x_threshold)
+            | (next_states[:, 0] > self._x_threshold)
+            | (next_states[:, 2] < -self._theta_threshold_radians)
+            | (next_states[:, 2] > self._theta_threshold_radians)
         )
         rewards = np.ones(actions.shape, dtype=np.float32)
 
         return next_states, rewards, terminals, [{} for _ in actions]
+
+    def close(self):
+        return super().close()
+
+    def render(self, state: np.ndarray):
+        raise NotImplementedError

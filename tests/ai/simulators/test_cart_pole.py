@@ -7,4 +7,4 @@ def test_cart_pole():
     state = sim.reset()
     terminal = False
     while not terminal:
-        state, _, terminal, _ = sim.step(sim.action_space.sample(state))
+        state, _, terminal, _ = sim.step(state, sim.action_space.sample(state))
