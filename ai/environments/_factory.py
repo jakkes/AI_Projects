@@ -1,5 +1,4 @@
-from typing import Generic, TypeVar
-
+from typing import Type
 
 import ai.environments as environments
 
@@ -7,10 +6,14 @@ import ai.environments as environments
 class Factory():
     """Factories are callable objects that spawn environment instances."""
 
-    def __init__(self, cls: environments.Base, *args, **kwargs):
+    __pdoc__ = {
+        "Factory.__call__": True
+    }
+
+    def __init__(self, cls: Type[environments.Base], *args, **kwargs):
         """
         Args:
-            cls (T): Environment class.
+            cls (Type[environments.Base]): Environment class.
             `*args, **kwargs`: arguments and key-word arguments passed to the
                 environment `__init__` method.
         """
@@ -20,4 +23,9 @@ class Factory():
         self._kwargs = kwargs
 
     def __call__(self) -> environments.Base:
+        """Spawns and returns an environment instance.
+
+        Returns:
+            environments.Base: Instance of the environment.
+        """
         return self._cls(*self._args, **self._kwargs)
