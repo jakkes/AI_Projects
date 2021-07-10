@@ -18,12 +18,12 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ),
     install_requires=[
-        "torch~=1.8.1",
+        "torch~=1.9.0",
         "scipy~=1.6.1",
         "tensorboard~=2.4.1",
         "gym~=0.18.0",
         "typed-argument-parser~=1.6.2",
-        "python-linq~=1.4.1"
+        "python-linq~=2.0.0"
     ],
     python_requires=">=3.7, <3.9",
 )

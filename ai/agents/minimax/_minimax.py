@@ -1,5 +1,5 @@
 import numpy as np
-from python_linq import From
+from linq import Query
 
 import ai.simulators as simulators
 import ai.agents.minimax as minimax
@@ -93,6 +93,6 @@ def minimax(
 
     action_space = simulator.action_space.as_discrete
     actions = np.arange(action_space.size)[action_space.action_mask(state)]
-    return From(actions).argmax(
+    return Query(actions).argmax(
         lambda a: value_of_action(a)
     )
