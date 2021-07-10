@@ -1,12 +1,12 @@
 import torch
 
-import ai.agents as agents
+import ai.rl as rl
 
 
 def test_simple():
     shapes = ((1,), (2,))
     dtypes = (torch.float32, torch.float32)
-    collector = agents.utils.NStepRewardCollector(3, 0.75, shapes, dtypes)
+    collector = rl.utils.NStepRewardCollector(3, 0.75, shapes, dtypes)
 
     for _ in range(3):
         out = collector.step(
@@ -29,7 +29,7 @@ def test_simple():
 def test_n_step_3():
     shapes = ((),)
     dtypes = (torch.long,)
-    collector = agents.utils.NStepRewardCollector(3, 0.5, shapes, dtypes)
+    collector = rl.utils.NStepRewardCollector(3, 0.5, shapes, dtypes)
 
     all_states = torch.arange(20)
 
@@ -53,7 +53,7 @@ def test_n_step_3():
 def test_terminal():
     shapes = ((),)
     dtypes = (torch.long,)
-    collector = agents.utils.NStepRewardCollector(3, 0.5, shapes, dtypes)
+    collector = rl.utils.NStepRewardCollector(3, 0.5, shapes, dtypes)
 
     all_states = torch.arange(100)
 
@@ -105,7 +105,7 @@ def test_terminal():
 def test_n_step_1():
     shapes = ((),)
     dtypes = (torch.long,)
-    collector = agents.utils.NStepRewardCollector(1, 0.5, shapes, dtypes)
+    collector = rl.utils.NStepRewardCollector(1, 0.5, shapes, dtypes)
 
     all_states = torch.arange(20)
 
@@ -129,7 +129,7 @@ def test_n_step_1():
 def test_clear():
     shapes = ((),)
     dtypes = (torch.long,)
-    collector = agents.utils.NStepRewardCollector(3, 0.5, shapes, dtypes)
+    collector = rl.utils.NStepRewardCollector(3, 0.5, shapes, dtypes)
 
     all_states = torch.arange(20)
 

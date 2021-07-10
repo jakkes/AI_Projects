@@ -6,7 +6,7 @@ from torch.multiprocessing import Queue
 
 
 import ai.environments as environments
-import ai.agents.a3c.trainer as trainer
+import ai.rl.a3c.trainer as trainer
 from ._worker import Worker
 from ._logger import Logger
 

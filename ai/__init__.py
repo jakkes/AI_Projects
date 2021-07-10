@@ -2,10 +2,10 @@ import queue
 import os
 from types import ModuleType
 from multiprocessing import set_start_method, get_start_method
-from . import environments, simulators, utils, agents
+from . import environments, simulators, utils, rl, search
 
 
-__all__ = ["environments", "simulators", "utils", "agents"]
+__all__ = ["environments", "simulators", "utils", "rl", "search"]
 __version__ = "0.0.4"
 
 try:

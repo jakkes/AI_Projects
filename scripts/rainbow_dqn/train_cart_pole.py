@@ -2,7 +2,7 @@ import tap
 from torch import optim
 
 import ai.environments as environments
-import ai.agents.dqn.rainbow as rainbow
+import ai.rl.dqn.rainbow as rainbow
 
 
 class ArgumentParser(tap.Tap):

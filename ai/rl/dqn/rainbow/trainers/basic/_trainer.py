@@ -3,8 +3,8 @@ import numpy as np
 import torch
 from multiprocessing import Queue
 
-import ai.agents as agents
-import ai.agents.dqn.rainbow as rainbow
+import ai.rl as rl
+import ai.rl.dqn.rainbow as rainbow
 import ai.environments as environments
 from ._config import Config
 from ._logger import Logger
@@ -33,7 +33,7 @@ class Trainer:
         self._logging_server = Logger(self._logging_queue)
         self._agent.set_logging_queue(self._logging_queue)
 
-        self._reward_collector = agents.utils.NStepRewardCollector(
+        self._reward_collector = rl.utils.NStepRewardCollector(
             config.n_step,
             agent.config.discount_factor,
             (agent.config.state_shape, (), (agent.config.action_space_size,)),

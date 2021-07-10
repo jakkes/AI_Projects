@@ -7,7 +7,7 @@ from torch import nn
 import numpy as np
 
 import ai.simulators as simulators
-import ai.agents.alpha_zero._core.mcts as mcts
+import ai.rl.alpha_zero._core.mcts as mcts
 
 
 class MCTSNode:

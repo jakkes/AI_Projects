@@ -8,7 +8,7 @@ from numpy import ndarray
 import torch
 from torch import nn, optim, Tensor
 
-import ai.agents.utils.buffers as buffers
+import ai.rl.utils.buffers as buffers
 from ._agent_config import AgentConfig
 
 

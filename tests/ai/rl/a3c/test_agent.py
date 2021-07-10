@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from torch import nn
 
-import ai.agents.a3c as a3c
+import ai.rl.a3c as a3c
 
 
 class Net(nn.Module):

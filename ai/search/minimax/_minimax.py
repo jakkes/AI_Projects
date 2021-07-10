@@ -2,7 +2,7 @@ import numpy as np
 from linq import Query
 
 import ai.simulators as simulators
-import ai.agents.minimax as minimax
+import ai.search.minimax as minimax
 
 
 def _alphabeta(

@@ -1,7 +1,7 @@
 from torch import nn, optim
 
 import ai
-import ai.agents.a3c as a3c
+import ai.rl.a3c as a3c
 
 
 class Network(nn.Module):

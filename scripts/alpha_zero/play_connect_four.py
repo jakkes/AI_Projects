@@ -6,7 +6,7 @@ import numpy as np
 from torch import nn, jit
 
 import ai.simulators as simulators
-import ai.agents.alpha_zero as alpha_zero
+import ai.rl.alpha_zero as alpha_zero
 
 
 parser = ArgumentParser()
