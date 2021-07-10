@@ -6,7 +6,7 @@ name: default
 steps:
 
 - name: test and docs
-  image: python:3.7-slim
+  image: python:3.8-slim
   commands:
   - pip install pdoc3
   - pip install -r requirements.txt
