@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>ai.agents.a3c API documentation</title>
-<meta name="description" content="Asynchronous Advantage Actor Critic (A3C)." />
+<title>ai.rl.dqn API documentation</title>
+<meta name="description" content="DQN-based algorithms." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,30 +19,27 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ai.agents.a3c</code></h1>
+<h1 class="title">Module <code>ai.rl.dqn</code></h1>
 </header>
 <section id="section-intro">
-<p>Asynchronous Advantage Actor Critic (A3C).</p>
+<p>DQN-based algorithms.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Asynchronous Advantage Actor Critic (A3C).&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;DQN-based algorithms.&#34;&#34;&#34;
 
+from . import rainbow
 
-from ._agent import Agent
-from . import trainer
-
-
-__all__ = [&#34;trainer&#34;, &#34;Agent&#34;]</code></pre>
+__all__ = [&#34;rainbow&#34;]</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="ai.agents.a3c.trainer" href="trainer/index.html">ai.agents.a3c.trainer</a></code></dt>
+<dt><code class="name"><a title="ai.rl.dqn.rainbow" href="rainbow/index.html">ai.rl.dqn.rainbow</a></code></dt>
 <dd>
-<div class="desc"><p>Trainer module for A3C.</p></div>
+<div class="desc"><p>Rainbow DQN.</p></div>
 </dd>
 </dl>
 </section>
@@ -51,109 +48,6 @@ __all__ = [&#34;trainer&#34;, &#34;Agent&#34;]</code></pre>
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="ai.agents.a3c.Agent"><code class="flex name class">
-<span>class <span class="ident">Agent</span></span>
-<span>(</span><span>network: torch.nn.modules.module.Module, state_dtype: torch.dtype = torch.float32)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>A3C agent. This agent wraps a network to be used for inference.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
-<dd>Network with two output heads, policy logits and state
-value.</dd>
-<dt><strong><code>state_dtype</code></strong> :&ensp;<code>torch.dtype</code>, optional</dt>
-<dd>Data type of states to be fed into the
-network. Defaults to <code>torch.float32</code>.</dd>
-</dl></div>
-<h3>Methods</h3>
-<dl>
-<dt id="ai.agents.a3c.Agent.act"><code class="name flex">
-<span>def <span class="ident">act</span></span>(<span>self, state: Union[numpy.ndarray, torch.Tensor], action_mask: Union[numpy.ndarray, torch.Tensor]) ‑> int</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns an action, given the state and action mask.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>state</code></strong> :&ensp;<code>Union[np.ndarray, torch.Tensor]</code></dt>
-<dd>State.</dd>
-<dt><strong><code>action_mask</code></strong> :&ensp;<code>Union[np.ndarray, torch.Tensor]</code></dt>
-<dd>Action mask, indicating legal
-actions.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>int</code></dt>
-<dd>Action index.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def act(self, state: Union[np.ndarray, torch.Tensor], action_mask: Union[np.ndarray, torch.Tensor]) -&gt; int:
-    &#34;&#34;&#34;Returns an action, given the state and action mask.
-
-    Args:
-        state (Union[np.ndarray, torch.Tensor]): State.
-        action_mask (Union[np.ndarray, torch.Tensor]): Action mask, indicating legal
-            actions.
-
-    Returns:
-        int: Action index.
-    &#34;&#34;&#34;
-    state = torch.as_tensor(state, dtype=self._state_dtype)
-    action_mask = torch.as_tensor(action_mask, dtype=torch.bool)
-    return self.act_bulk(state.unsqueeze(0), action_mask.unsqueeze(0)).item()</code></pre>
-</details>
-</dd>
-<dt id="ai.agents.a3c.Agent.act_bulk"><code class="name flex">
-<span>def <span class="ident">act_bulk</span></span>(<span>self, states: Union[numpy.ndarray, torch.Tensor], action_masks: Union[numpy.ndarray, torch.Tensor]) ‑> torch.Tensor</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns a set of actions for the given states and action masks.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>states</code></strong> :&ensp;<code>Union[np.ndarray, torch.Tensor]</code></dt>
-<dd>States.</dd>
-<dt><strong><code>action_masks</code></strong> :&ensp;<code>Union[np.ndarray, torch.Tensor]</code></dt>
-<dd>Action masks, indicating
-legal actions.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>torch.Tensor</code></dt>
-<dd>Tensor containing action indices, data type is <code>torch.long</code>.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def act_bulk(self, states: Union[np.ndarray, torch.Tensor], action_masks: Union[np.ndarray, torch.Tensor]) -&gt; torch.Tensor:
-    &#34;&#34;&#34;Returns a set of actions for the given states and action masks.
-
-    Args:
-        states (Union[np.ndarray, torch.Tensor]): States.
-        action_masks (Union[np.ndarray, torch.Tensor]): Action masks, indicating
-            legal actions.
-
-    Returns:
-        torch.Tensor: Tensor containing action indices, data type is `torch.long`.
-    &#34;&#34;&#34;
-    states = torch.as_tensor(states, dtype=self._state_dtype)
-    action_masks = torch.as_tensor(action_masks, dtype=torch.bool)
-
-    with torch.no_grad():
-        p, _ = self._network(states)
-    p[~action_masks] = -float(&#34;inf&#34;)
-    p = torch.softmax(p, dim=1)
-    return ai.utils.torch.random.choice(p)</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -164,23 +58,12 @@ legal actions.</dd>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="ai.agents" href="../index.html">ai.agents</a></code></li>
+<li><code><a title="ai.rl" href="../index.html">ai.rl</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="ai.agents.a3c.trainer" href="trainer/index.html">ai.agents.a3c.trainer</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="ai.agents.a3c.Agent" href="#ai.agents.a3c.Agent">Agent</a></code></h4>
-<ul class="">
-<li><code><a title="ai.agents.a3c.Agent.act" href="#ai.agents.a3c.Agent.act">act</a></code></li>
-<li><code><a title="ai.agents.a3c.Agent.act_bulk" href="#ai.agents.a3c.Agent.act_bulk">act_bulk</a></code></li>
-</ul>
-</li>
+<li><code><a title="ai.rl.dqn.rainbow" href="rainbow/index.html">ai.rl.dqn.rainbow</a></code></li>
 </ul>
 </li>
 </ul>

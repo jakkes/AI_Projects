@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>ai.agents.dqn.rainbow.trainers API documentation</title>
-<meta name="description" content="RainbowDQN trainers." />
+<title>ai.rl API documentation</title>
+<meta name="description" content="Module containing implementations of AI algorithms." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,30 +19,41 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ai.agents.dqn.rainbow.trainers</code></h1>
+<h1 class="title">Module <code>ai.rl</code></h1>
 </header>
 <section id="section-intro">
-<p>RainbowDQN trainers.</p>
+<p>Module containing implementations of AI algorithms.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;RainbowDQN trainers.&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;Module containing implementations of AI algorithms.&#34;&#34;&#34;
+
+from . import alpha_zero, utils, dqn, a3c
 
 
-from . import basic
-
-
-__all__ = [&#34;basic&#34;]</code></pre>
+__all__ = [&#34;alpha_zero&#34;, &#34;utils&#34;, &#34;dqn&#34;, &#34;a3c&#34;]</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="ai.agents.dqn.rainbow.trainers.basic" href="basic/index.html">ai.agents.dqn.rainbow.trainers.basic</a></code></dt>
+<dt><code class="name"><a title="ai.rl.a3c" href="a3c/index.html">ai.rl.a3c</a></code></dt>
 <dd>
-<div class="desc"><p>Basic sequential trainer. A training step is executed every _n_th environment
-step.</p></div>
+<div class="desc"><p>Asynchronous Advantage Actor Critic (A3C).</p></div>
+</dd>
+<dt><code class="name"><a title="ai.rl.alpha_zero" href="alpha_zero/index.html">ai.rl.alpha_zero</a></code></dt>
+<dd>
+<div class="desc"><p>Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search for
+zero sum games …</p></div>
+</dd>
+<dt><code class="name"><a title="ai.rl.dqn" href="dqn/index.html">ai.rl.dqn</a></code></dt>
+<dd>
+<div class="desc"><p>DQN-based algorithms.</p></div>
+</dd>
+<dt><code class="name"><a title="ai.rl.utils" href="utils/index.html">ai.rl.utils</a></code></dt>
+<dd>
+<div class="desc"><p>Agent utility methods.</p></div>
 </dd>
 </dl>
 </section>
@@ -61,12 +72,15 @@ step.</p></div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="ai.agents.dqn.rainbow" href="../index.html">ai.agents.dqn.rainbow</a></code></li>
+<li><code><a title="ai" href="../index.html">ai</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="ai.agents.dqn.rainbow.trainers.basic" href="basic/index.html">ai.agents.dqn.rainbow.trainers.basic</a></code></li>
+<li><code><a title="ai.rl.a3c" href="a3c/index.html">ai.rl.a3c</a></code></li>
+<li><code><a title="ai.rl.alpha_zero" href="alpha_zero/index.html">ai.rl.alpha_zero</a></code></li>
+<li><code><a title="ai.rl.dqn" href="dqn/index.html">ai.rl.dqn</a></code></li>
+<li><code><a title="ai.rl.utils" href="utils/index.html">ai.rl.utils</a></code></li>
 </ul>
 </li>
 </ul>
