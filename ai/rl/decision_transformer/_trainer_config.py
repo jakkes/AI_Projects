@@ -25,3 +25,10 @@ class TrainerConfig:
 
     inference_sequence_length: int
     """Length of sequences passed to models, known as K in the original paper."""
+
+    enable_float16: bool
+    """If True, training is run using `torch.float16` tensors, otherwise
+    `torch.float32`"""
+
+    enable_cuda: bool
+    """If True, training is run on GPU."""
