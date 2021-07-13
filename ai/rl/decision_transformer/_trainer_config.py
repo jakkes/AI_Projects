@@ -32,3 +32,7 @@ class TrainerConfig:
 
     enable_cuda: bool
     """If True, training is run on GPU."""
+
+    inference_batchsize: int
+    """Batch size of inference requests. Larger value reduces load on GPU, but increases
+    time between steps. Must be lower or equal to `number_of_actors`."""

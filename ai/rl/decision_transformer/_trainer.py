@@ -1,3 +1,4 @@
+import time
 import signal
 import threading
 from typing import List, Sequence, Tuple
@@ -5,7 +6,11 @@ from multiprocessing.connection import Connection
 
 import torch
 from torch import nn, optim, multiprocessing as mp
+from torch.functional import Tensor
 
+from numpy import inf
+
+import ai
 from ai import environments
 from . import exploration_strategies
 from ._trainer_config import TrainerConfig
@@ -75,7 +80,16 @@ class Trainer:
 
     def train(self):
         """Starts training. Blocks until training is terminated."""
-        pass
+        # inference =Inference(self._state_encoder, self._action_encoder, self._reward_encoder, self._positional_encoder)
+        inference = Inference(
+            self._state_encoder, self._action_encoder, self._reward_encoder, self._positional_encoder, self._action_decoder,
+            self._transformer, self._state_empty_embedding, self._action_empty_embedding,
+            self._reward_empty_embedding, self._empty_positional_embedding, self._environment,
+            self._exploration_strategy, self._config, mp.Queue()
+        )
+        inference.start()
+        while True:
+            time.sleep(1.0)
 
 
 class Inference(mp.Process):
@@ -118,6 +132,15 @@ class Inference(mp.Process):
 
         self._inference_threads: List[threading.Thread] = []
         self._sigterm_detected: threading.Event = None
+        self._add_lock = threading.Lock()
+
+        self._states: List[torch.Tensor] = []
+        self._action_masks: List[torch.Tensor] = []
+        self._actions: List[torch.Tensor] = []
+        self._rewards_to_go: List[torch.Tensor] = []
+        self._positions: List[torch.Tensor] = []
+        self._results: List[int] = []
+        self._executed_condition = threading.Condition(threading.Lock())
 
     @property
     def data_queue(self) -> mp.Queue:
@@ -154,13 +177,144 @@ class Inference(mp.Process):
         for thread in self._inference_threads:
             thread.start()
 
+    def _reset_inference_data(self):
+        self._states = []
+        self._action_masks = []
+        self._actions = []
+        self._rewards_to_go = []
+        self._positions = []
+        self._results: List[int] = []
+        self._executed_condition = threading.Condition(threading.Lock())
+
+    def _embed_sequences(self):
+        def embed(
+            data: Sequence[torch.Tensor],
+            lengths_cumsummed_start_0: torch.Tensor,
+            encoder: nn.Module,
+            offset=0,
+        ) -> Tuple[List[torch.Tensor], List[torch.Tensor], List[torch.Tensor]]:
+            embeddings = encoder(torch.cat(data))
+            return [
+                embeddings[
+                    lengths_cumsummed_start_0[i]
+                    + offset * i : lengths_cumsummed_start_0[i + 1]
+                    + offset * (i + 1)
+                ]
+                for i in range(lengths_cumsummed_start_0.shape[0] - 1)
+            ]
+
+        lengths = torch.tensor(x.shape[0] for x in self._states)
+        lengths = torch.cat((torch.tensor([0]), lengths))
+
+        state_embeddings = embed(self._states, lengths, self._state_encoder)
+        action_embeddings = embed(
+            self._actions, lengths, self._action_encoder, offset=-1
+        )
+        reward_embeddings = embed(self._rewards_to_go, lengths, self._reward_encoder)
+        positional_embeddings = embed(self._positions, lengths, self._positional_encoder)
+
+        return state_embeddings, action_embeddings, reward_embeddings, positional_embeddings
+
+    def _pad_embeddings(
+        self,
+        state_embeddings: List[torch.Tensor],
+        action_embeddings: List[torch.Tensor],
+        reward_embeddings: List[torch.Tensor],
+        positional_embeddings: List[torch.Tensor]
+    ):
+        def pad(
+            empty_embedding: torch.Tensor, embeddings: List[torch.Tensor]
+        ) -> torch.Tensor:
+            for i in range(len(embeddings)):
+                npad = self._config.inference_sequence_length - embeddings[i].shape[0]
+                if npad <= 0:
+                    continue
+
+                embeddings[i] = torch.cat(
+                    (empty_embedding.unsqueeze(0).expand((npad, -1)), embeddings[i])
+                )
+                return torch.stack(embeddings)
+
+        state_embeddings = pad(self._state_empty_embedding, state_embeddings)
+        action_embeddings = pad(self._action_empty_embedding, action_embeddings)
+        reward_embeddings = pad(self._reward_empty_embedding, reward_embeddings)
+        positional_embeddings = pad(self._empty_positional_embedding, positional_embeddings)
+
+        return state_embeddings, action_embeddings, reward_embeddings, positional_embeddings
+
+    def _combine_embeddings(
+        self, state_embeddings, action_embeddings, reward_embeddings, positional_embeddings
+    ):
+        embeddings = torch.stack(
+            (state_embeddings, action_embeddings, reward_embeddings), dim=2
+        )
+        positional_embeddings = positional_embeddings.unsqueeze(2)
+        embeddings = torch.cat((embeddings, positional_embeddings), dim=4)
+        # first sequence is (should be) an empty action embedding
+        return embeddings.view(embeddings.shape[0], -1, embeddings.shape[-1])[:, 1:]
+
+    def _get_actions(self, embeddings):
+        action_logits: torch.Tensor = self._action_decoder(
+            self._transformer(embeddings)
+        )
+        action_masks = torch.stack(self._action_masks)
+        action_logits[~action_masks] = -inf
+        return action_logits.argmax(1)
+
+    def _cut_sequences(self):
+        def cut(sequence: List[torch.Tensor]):
+            for i in range(len(sequence)):
+                sequence[i] = sequence[i][-self._config.inference_sequence_length :]
+
+        cut(self._states)
+        cut(self._actions)
+        cut(self._rewards_to_go)
+        cut(self._actions)
+
+    def _execute(self):
+        results = self._results
+        condition = self._executed_condition
+
+        with torch.no_grad():
+            self._cut_sequences()
+            actions = self._get_actions(
+                self._combine_embeddings(
+                    *self._pad_embeddings(
+                        *self._embed_sequences(),
+                    ),
+                ),
+            )
+        self._reset_inference_data()
+
+        for action in actions:
+            results.append(action.item())
+        with condition:
+            condition.notify_all()
+
     def get_action(
         self,
         states: torch.Tensor,
-        action_masks: torch.Tensor,
+        action_mask: torch.Tensor,
+        actions: torch.Tensor,
         reward_to_gos: torch.Tensor,
+        time_steps: torch.Tensor
     ) -> int:
-        raise NotImplementedError
+        with self._add_lock:
+            self._states.append(states)
+            self._action_masks.append(action_mask)
+            self._actions.append(actions)
+            self._rewards_to_go.append(reward_to_gos)
+            self._positions.append(time_steps)
+            i = len(self._states) - 1
+            results = self._results
+            condition = self._executed_condition
+
+            if len(self._states) >= self._config.inference_batchsize:
+                self._execute()
+
+        with condition:
+            condition.wait_for(lambda: len(results) > i)
+            return results[i]
 
 
 class InferenceLoop:
@@ -180,8 +334,11 @@ class InferenceLoop:
         self._first = True
 
         self._states = []
-        self._action_masks = []
+        self._actions = []
+        self._action_mask = None
         self._rewards = []
+        self._time_steps = []
+        self._time_step = 0
         self._reward_to_gos = [0.0]
 
     def run(self):
@@ -196,14 +353,16 @@ class InferenceLoop:
 
     def _prepare_step(self, state, action_mask):
         self._states.append(state)
-        self._action_masks.append(action_mask)
+        self._action_mask = action_mask
+        self._time_steps.append(self._time_step)
+        self._time_step += 1
 
     def _handle_terminal(self):
         if not self._first:
             self._inference.data_queue.put(
                 (
                     torch.stack(self._states),
-                    torch.stack(self._action_masks),
+                    self._action_mask,
                     torch.tensor(self._actions),
                     torch.tensor(self._rewards, dtype=self._dtype),
                 )
@@ -212,9 +371,11 @@ class InferenceLoop:
             self._first = False
 
         self._states = []
-        self._action_masks = []
+        self._action_mask = None
         self._actions = []
         self._rewards = []
+        self._time_steps = []
+        self._time_step = 0
         self._reward_to_gos = [self._inference.exploration_strategy.reward_to_go()]
 
     def _handle_data(self):
@@ -229,8 +390,10 @@ class InferenceLoop:
     def _get_action(self):
         return self._inference.get_action(
             torch.stack(self._states),
-            torch.stack(self._action_masks),
+            self._action_mask,
+            torch.tensor(self._actions),
             torch.tensor(self._reward_to_gos, dtype=self._dtype),
+            torch.tensor(self._time_steps)
         )
 
     def _execute_action(self, action):
