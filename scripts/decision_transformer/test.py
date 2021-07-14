@@ -13,7 +13,7 @@ class Transformer(nn.Module):
         super().__init__()
 
     def forward(self, x):
-        return torch.randn(x.shape[0], 4, dtype=torch.float16)
+        return torch.randn(x.shape[0], 4, dtype=torch.float16, device="cuda")
 
 
 class StateEncoder(nn.Module):
@@ -31,7 +31,7 @@ class ActionEncoder(nn.Module):
         self.linear = nn.Linear(1, 4)
 
     def forward(self, x):
-        return self.linear(x.unsqueeze(1).float16())
+        return self.linear(x.unsqueeze(1).half())
 
 
 class RewardEncoder(nn.Module):
@@ -49,7 +49,7 @@ class PositionEncoder(nn.Module):
         self.linear = nn.Linear(1, 4)
 
     def forward(self, x):
-        return self.linear(x.unsqueeze(1).float16())
+        return self.linear(x.unsqueeze(1).half())
 
 
 class ActionDecoder(nn.Module):
