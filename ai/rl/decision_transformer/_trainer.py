@@ -17,6 +17,28 @@ from . import exploration_strategies
 from ._trainer_config import TrainerConfig
 
 
+REPLAY_FEEDER_STEPS = 5
+
+
+@torch.jit.script
+def _to_batches(embeddings: torch.Tensor, lengths: torch.Tensor, inference_sequence_length: int):
+    
+    sequences = []
+
+    for i, l in enumerate(lengths):
+        for j in range(int(l)):
+            sequences.append(embeddings[i, 3*j:3*(j+inference_sequence_length)-1])
+
+    return torch.stack(sequences, dim=0)
+
+@torch.jit.script
+def _actions_to_batches(actions: torch.Tensor, lengths: torch.Tensor):
+    out_actions = []
+    for i, l in enumerate(lengths):
+        out_actions.append(actions[i, :l])
+    return torch.cat(out_actions)
+
+
 class Trainer:
     """Trainer object, training a Decision Transformer model."""
 
@@ -40,24 +62,16 @@ class Trainer:
         self._device = torch.device("cuda" if config.enable_cuda else "cpu")
         self._dtype = torch.float16 if config.enable_float16 else torch.float32
 
-        self._state_encoder = state_encoder.to(self._dtype).to(self._device)
-        self._action_encoder = action_encoder.to(self._dtype).to(self._device)
-        self._reward_encoder = reward_encoder.to(self._dtype).to(self._device)
-        self._positional_encoder = positional_encoder.to(self._dtype).to(self._device)
-        self._action_decoder = action_decoder.to(self._dtype).to(self._device)
-        self._transformer = transformer.to(self._dtype).to(self._device)
-        self._state_empty_embedding = state_empty_embedding.to(self._dtype).to(
-            self._device
-        )
-        self._action_empty_embedding = action_empty_embedding.to(self._dtype).to(
-            self._device
-        )
-        self._reward_empty_embedding = reward_empty_embedding.to(self._dtype).to(
-            self._device
-        )
-        self._empty_positional_embedding = position_empty_embedding.to(self._dtype).to(
-            self._device
-        )
+        self._state_encoder = state_encoder
+        self._action_encoder = action_encoder
+        self._reward_encoder = reward_encoder
+        self._positional_encoder = positional_encoder
+        self._action_decoder = action_decoder
+        self._transformer = transformer
+        self._state_empty_embedding = state_empty_embedding
+        self._action_empty_embedding = action_empty_embedding
+        self._reward_empty_embedding = reward_empty_embedding
+        self._empty_positional_embedding = position_empty_embedding
         self._optimizer = optimizer
         self._config = config
         self._exploration_strategy = exploration_strategy
@@ -107,7 +121,7 @@ class Trainer:
             self._exploration_strategy,
             self._config,
             data_queue,
-            self._optimizer
+            self._optimizer,
         )
         training.start()
 
@@ -117,7 +131,7 @@ class Trainer:
             and not self._stop_training.is_set()
         ):
             time.sleep(1.0)
-        
+
         inference.stop()
         training.stop()
 
@@ -142,7 +156,7 @@ class Training(threading.Thread):
         exploration_strategy: exploration_strategies.Base,
         config: TrainerConfig,
         data_queue: mp.Queue,
-        optimizer: optim.Optimizer
+        optimizer: optim.Optimizer,
     ):
         super().__init__()
         self._device = torch.device("cuda" if config.enable_cuda else "cpu")
@@ -162,31 +176,45 @@ class Training(threading.Thread):
         self._exploration_strategy = exploration_strategy
         self._environment = environment
         self._data_queue = data_queue
+        self._optimizer = optimizer
 
         self._sigterm_detected: threading.Event = threading.Event()
         self._train_steps: int = 0
         self._replay = ai.rl.utils.buffers.Uniform(
             self._config.replay_capacity,
             (
-                (self._config.max_episode_steps, ) + self._config.state_shape,  # State
-                (self._config.max_episode_steps, self._config.action_size), # Action mask
-                (self._config.max_episode_steps, ), # Action
-                (self._config.max_episode_steps, ), # Reward
-                ()  # Sequence length
+                (self._config.max_episode_steps,) + self._config.state_shape,  # State
+                (
+                    self._config.max_episode_steps,
+                    self._config.action_size,
+                ),  # Action mask
+                (self._config.max_episode_steps,),  # Action
+                (self._config.max_episode_steps,),  # Reward
+                (),  # Sequence length
             ),
-            (
-                self._dtype, torch.bool, torch.long, self._dtype, torch.long
-            )
+            (self._dtype, torch.bool, torch.long, self._dtype, torch.long),
         )
         self._replay_lock = threading.Lock()
+        self._replay_feeder_thread: threading.Thread = None
+        self._loss_fn = nn.CrossEntropyLoss()
 
     def _replay_feeder(self):
         data = [
-            torch.zeros(100, self._config.max_episode_steps, *self._config.state_shape, dtype=self._dtype),
-            torch.zeros(100, self._config.max_episode_steps, self._config.action_size, dtype=torch.bool),
-            torch.zeros(100, self._config.max_episode_steps, dtype=torch.long),
-            torch.zeros(100, self._config.max_episode_steps, dtype=self._dtype),
-            torch.zeros(100, dtype=torch.long),
+            torch.zeros(
+                REPLAY_FEEDER_STEPS,
+                self._config.max_episode_steps,
+                *self._config.state_shape,
+                dtype=self._dtype,
+            ),
+            torch.zeros(
+                REPLAY_FEEDER_STEPS,
+                self._config.max_episode_steps,
+                self._config.action_size,
+                dtype=torch.bool,
+            ),
+            torch.zeros(REPLAY_FEEDER_STEPS, self._config.max_episode_steps, dtype=torch.long),
+            torch.zeros(REPLAY_FEEDER_STEPS, self._config.max_episode_steps, dtype=self._dtype),
+            torch.zeros(REPLAY_FEEDER_STEPS, dtype=torch.long),
         ]
         i = 0
         while not self._sigterm_detected.is_set():
@@ -199,8 +227,8 @@ class Training(threading.Thread):
                 i += 1
             except queue.Empty:
                 continue
-            
-            if i < 100:
+
+            if i < REPLAY_FEEDER_STEPS:
                 continue
 
             with self._replay_lock:
@@ -208,14 +236,93 @@ class Training(threading.Thread):
 
             self._exploration_strategy.update(data[3])
             data = [torch.zeros_like(x) for x in data]
-            
+
             i = 0
+
+    def _block_until_large_enough_buffer(self):
+        while not self._sigterm_detected.wait(1.0):
+            if self._replay.size >= self._config.min_replay_size:
+                return
+
+    def _train_step(self):
+        with self._replay_lock:
+            (
+                (states, action_masks, actions, rewards, lengths),
+                _,
+                _,
+            ) = self._replay.sample(self._config.batch_size)
+        embeddings = self._embed_sequences(states, actions, rewards)
+        embeddings = self._pad_embeddings(*embeddings)
+        embeddings = self._combine_embeddings(*embeddings)
+        embeddings = _to_batches(embeddings, lengths, self._config.inference_sequence_length)
+        target_actions = _actions_to_batches(actions.to(self._device), lengths)
+        action_masks = _actions_to_batches(action_masks.to(self._device), lengths)
+        action_logits = self._get_action_logits(embeddings, action_masks)
+
+        loss = self._loss_fn(action_logits, target_actions)
+        self._optimizer.zero_grad()
+        loss.backward()
+        self._optimizer.step()
+
+    def _combine_embeddings(self, states, actions, rewards, positions):
+        embeddings = torch.stack(
+            (actions, states, rewards), dim=2
+        )
+        embeddings += positions.unsqueeze(2)
+        # first sequence is (should be) an empty action embedding
+        return embeddings.view(embeddings.shape[0], -1, embeddings.shape[-1])[:, 1:]
+
+    def _embed_sequences(self, states, actions, rewards):
+        states = self._state_encoder(states.to(self._device))
+        actions = self._action_encoder(actions.to(self._device))
+        rewards: torch.Tensor = rewards.to(self._device)
+        rewards_to_go = rewards.sum(-1, keepdim=True).expand_as(rewards).clone()
+        rewards_to_go[..., 1:] -= rewards[..., 1:]
+        rewards_to_go = self._reward_encoder(rewards_to_go)
+        positions = self._positional_encoder(torch.arange(self._config.max_episode_steps, device=self._device))
+        return states, actions, rewards_to_go, positions
+
+    def _get_action_logits(self, embeddings, action_masks):
+        action_logits: torch.Tensor = self._action_decoder(
+            self._transformer(embeddings)
+        )
+        action_logits[~action_masks] = -inf
+        return action_logits
+
+    def _pad_embeddings(self, states, actions, rewards, positions):
+        def _pad(embeddings, empty_embedding, offset=1):
+            return torch.cat(
+                (
+                    empty_embedding.view(1, 1, -1).expand(
+                        embeddings.shape[0], self._config.inference_sequence_length - offset, -1
+                    ),
+                    embeddings,
+                ),
+                dim=1,
+            )
+
+        states = _pad(states, self._state_empty_embedding)
+        actions = _pad(actions, self._action_empty_embedding)
+        rewards = _pad(rewards, self._reward_empty_embedding)
+        positions = _pad(positions.unsqueeze(0), self._empty_positional_embedding)
+
+        return states, actions, rewards, positions
+
+    def _trainer(self):
+        self._block_until_large_enough_buffer()
+        while not self._sigterm_detected.is_set():
+            self._train_step()
 
     def stop(self):
         self._sigterm_detected.set()
 
     def run(self) -> None:
-        return super().run()
+        self._replay_feeder_thread = threading.Thread(target=self._replay_feeder)
+        self._replay_feeder_thread.start()
+
+        self._trainer()
+
+        self._replay_feeder_thread.join()
 
 
 class Inference(threading.Thread):

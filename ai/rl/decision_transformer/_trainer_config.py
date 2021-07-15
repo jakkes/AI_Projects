@@ -10,6 +10,9 @@ class TrainerConfig:
     action_size: int
     """Size of action space, i.e. number of available actions in total."""
 
+    batch_size: int
+    """Number of sequences to use during each update step."""
+
     max_episode_steps: int
     """Maximum number of steps one episode may consist of. This parameter has an
     immediate effect on memory usage, as the replay buffer is scaled accordingly."""
