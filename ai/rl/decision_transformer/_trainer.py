@@ -336,7 +336,7 @@ class Training(threading.Thread):
         self._replay_feeder_thread.join()
 
     class _Logger(ai.utils.logging.SummaryWriterServer):
-        def __init__(self, data_queue: Queue):
+        def __init__(self, data_queue: mp.Queue):
             super().__init__("training", data_queue)
 
         def log(self, summary_writer: SummaryWriter, data: Any):
@@ -413,7 +413,7 @@ class Inference(threading.Thread):
         )
         actor.start()
         try:
-            InferenceLoop(conn, self, self._sigterm_detected, self._dtype).run()
+            InferenceLoop(conn, self, self._sigterm_detected, self._dtype, self._logging_queue).run()
         finally:
             actor.terminate()
             actor.join(30)
