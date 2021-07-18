@@ -268,8 +268,6 @@ class Training(threading.Thread):
 
         self._logger_data_queue.put({"loss": loss.item()})
 
-        print(loss.item())
-
     def _combine_embeddings(self, states, actions, rewards, positions):
         embeddings = torch.stack(
             (actions, states, rewards), dim=2
@@ -340,7 +338,7 @@ class Training(threading.Thread):
             super().__init__("training", data_queue)
 
         def log(self, summary_writer: SummaryWriter, data: Any):
-            summary_writer.add_scalars(data)
+            summary_writer.add_scalars("Training", data)
 
 
 class Inference(threading.Thread):
@@ -464,7 +462,7 @@ class Inference(threading.Thread):
             ]
 
         lengths = torch.tensor([x.shape[0] for x in self._states])
-        lengths = torch.cat((torch.tensor([0]), lengths))
+        lengths = torch.cat((torch.tensor([0]), lengths.cumsum(0)))
 
         state_embeddings = embed(self._states, lengths, self._state_encoder)
         action_embeddings = embed(
@@ -494,8 +492,8 @@ class Inference(threading.Thread):
         ) -> torch.Tensor:
             for i in range(len(embeddings)):
                 npad = self._config.inference_sequence_length - embeddings[i].shape[0]
-                if npad <= 0:
-                    continue
+                if npad < 0:
+                    raise RuntimeError()
 
                 embeddings[i] = torch.cat(
                     (empty_embedding.unsqueeze(0).expand((npad, -1)), embeddings[i])
@@ -681,13 +679,18 @@ class InferenceLoop:
         self._execute_action(self._get_action())
 
     def _get_action(self):
-        return self._inference.get_action(
+        action = self._inference.get_action(
             torch.stack(self._states),
             self._action_mask,
             torch.tensor(self._actions),
             torch.tensor(self._reward_to_gos, dtype=self._dtype),
             torch.tensor(self._time_steps),
         )
+        weights = torch.zeros(self._action_mask.shape)
+        weights[self._action_mask] = 1.0
+        random_action = ai.utils.torch.random.choice(weights)
+
+        return random_action if torch.rand(1) < 0.1 else action
 
     def _execute_action(self, action):
         self._actions.append(action)

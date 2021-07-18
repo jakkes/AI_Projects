@@ -44,7 +44,7 @@ class ActionEncoder(nn.Module):
         )
 
     def forward(self, x):
-        return self.seq(x.unsqueeze(-1).half())
+        return self.seq(x.float().unsqueeze(-1))
 
 
 class RewardEncoder(nn.Module):
@@ -66,7 +66,7 @@ class PositionEncoder(nn.Module):
         )
 
     def forward(self, x):
-        return self.seq(x.unsqueeze(-1).half())
+        return self.seq(x.float().unsqueeze(-1))
 
 
 class ActionDecoder(nn.Module):
@@ -82,15 +82,15 @@ class ActionDecoder(nn.Module):
 
 def main():
     config = df.TrainerConfig(
-        (4,), 2, 16, 200, 16, 10000, 1000, 1200, 15, True, True, 8
+        (4,), 2, 8, 200, 8, 10000, 1000, 1200, 15, False, False, 8
     )
-    transformer = Transformer().half().cuda()
-    action_decoder = ActionDecoder().half().cuda()
-    state_encoder = StateEncoder().half().cuda()
-    action_encoder = ActionEncoder().half().cuda()
-    reward_encoder = RewardEncoder().half().cuda()
-    postion_encoder = PositionEncoder().half().cuda()
-    empty_embeddings = [torch.randn(8).half().cuda().requires_grad_() for _ in range(4)]
+    transformer = Transformer()
+    action_decoder = ActionDecoder()
+    state_encoder = StateEncoder()
+    action_encoder = ActionEncoder()
+    reward_encoder = RewardEncoder()
+    postion_encoder = PositionEncoder()
+    empty_embeddings = [torch.randn(8).requires_grad_() for _ in range(4)]
     optimizer = torch.optim.Adam(
         itertools.chain(
             transformer.parameters(),
