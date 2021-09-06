@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>ai.rl.alpha_zero API documentation</title>
 <meta name="description" content="Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search for
 zero sum games …" />
@@ -314,7 +314,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </dd>
 <dt id="ai.rl.alpha_zero.LearnerLogger"><code class="flex name class">
 <span>class <span class="ident">LearnerLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f876c8c90a0>>)</span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f8fc80643a0>>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Logging server for the <code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code>.</p>
@@ -342,7 +342,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </dd>
 <dt id="ai.rl.alpha_zero.LearnerWorker"><code class="flex name class">
 <span>class <span class="ident">LearnerWorker</span></span>
-<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: <a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f876c8c90a0>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f876c8c90a0>> = None, save_path: str = None, save_period: int = -1)</span>
+<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: <a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f8fc80643a0>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f8fc80643a0>> = None, save_path: str = None, save_period: int = -1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>
@@ -496,7 +496,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
 <p>Defaults to None.</p></div>
 <h3>Instance variables</h3>
 <dl>
-<dt id="ai.rl.alpha_zero.MCTSNode.action"><code class="name">var <span class="ident">action</span> : Union[int, NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.action"><code class="name">var <span class="ident">action</span> : Optional[int]</code></dt>
 <dd>
 <div class="desc"><p>The action that led to this node. If this node is the root, then this value
 is <code>None</code>.</p></div>
@@ -538,7 +538,7 @@ def action_policy(self) -&gt; np.ndarray:
     return distribution / np.sum(distribution)</code></pre>
 </details>
 </dd>
-<dt id="ai.rl.alpha_zero.MCTSNode.children"><code class="name">var <span class="ident">children</span> : Union[List[Union[<a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a>, NoneType]], NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.children"><code class="name">var <span class="ident">children</span> : Optional[List[Optional[<a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a>]]]</code></dt>
 <dd>
 <div class="desc"><p>The children of this node. If this node has not been expanded, then
 <code>None</code> is returned, otherwise the list of (possible children) is returned. If
@@ -599,7 +599,7 @@ def is_terminal(self) -&gt; bool:
     return self._terminal</code></pre>
 </details>
 </dd>
-<dt id="ai.rl.alpha_zero.MCTSNode.parent"><code class="name">var <span class="ident">parent</span> : Union[<a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a>, NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.parent"><code class="name">var <span class="ident">parent</span> : Optional[<a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a>]</code></dt>
 <dd>
 <div class="desc"><p>The parent of this node.</p></div>
 <details class="source">
@@ -612,7 +612,7 @@ def parent(self) -&gt; Optional[MCTSNode]:
     return self._parent</code></pre>
 </details>
 </dd>
-<dt id="ai.rl.alpha_zero.MCTSNode.reward"><code class="name">var <span class="ident">reward</span> : Union[bool, NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.reward"><code class="name">var <span class="ident">reward</span> : Optional[bool]</code></dt>
 <dd>
 <div class="desc"><p>The reward obtained on the transition into this node. If this node is the
 root, then this value is <code>None</code>.</p></div>
@@ -826,7 +826,7 @@ policy.</p>
 </dd>
 <dt id="ai.rl.alpha_zero.SelfPlayLogger"><code class="flex name class">
 <span>class <span class="ident">SelfPlayLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f876c8c90a0>>)</span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f8fc80643a0>>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Logging server for the <code><a title="ai.rl.alpha_zero.SelfPlayWorker" href="#ai.rl.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>.</p>
@@ -854,7 +854,7 @@ policy.</p>
 </dd>
 <dt id="ai.rl.alpha_zero.SelfPlayWorker"><code class="flex name class">
 <span>class <span class="ident">SelfPlayWorker</span></span>
-<span>(</span><span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, network: torch.nn.modules.module.Module, config: <a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f876c8c90a0>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f876c8c90a0>> = None)</span>
+<span>(</span><span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, network: torch.nn.modules.module.Module, config: <a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f8fc80643a0>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7f8fc80643a0>> = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>
@@ -867,7 +867,7 @@ policy.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="ai.rl.alpha_zero.SelfPlayWorker.run"><code class="name flex">
-<span>def <span class="ident">run</span></span>(<span>self) ‑> NoneType</span>
+<span>def <span class="ident">run</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Method to be run in sub-process; can be overridden in sub-class</p></div>
@@ -1044,7 +1044,7 @@ policy.</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>
