@@ -23,7 +23,7 @@ setuptools.setup(
         "tensorboard~=2.4.1",
         "gym~=0.18.0",
         "typed-argument-parser~=1.6.2",
-        "python-linq==2.0.3"
+        "python-linq~=2.0.3"
     ],
     python_requires=">=3.8, <3.9",
 )
