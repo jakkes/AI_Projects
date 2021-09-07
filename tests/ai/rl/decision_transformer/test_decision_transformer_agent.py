@@ -7,7 +7,7 @@ from ai.rl.decision_transformer._agent import interleave, evaluate_transformer, 
 
 
 def test_interleave():
-    rtgs = torch.rand(5, 5)
+    rtgs = torch.rand(5, 5, 3)
     states = torch.rand(5, 5, 3)
     actions = torch.rand(5, 4, 3)
 
