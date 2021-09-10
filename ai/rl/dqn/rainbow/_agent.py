@@ -51,6 +51,7 @@ class Agent:
                 acting. Saves memory by not initializing a replay buffer. Defaults to
                 False.
         """
+        self._config = config
         self._network = network
         self._target_network = copy.deepcopy(network)
         self._optimizer = optimizer
@@ -58,13 +59,13 @@ class Agent:
         if not inference_mode:
             self._initialize_not_inference_mode(config)
 
-        self._z = torch.linspace(config.v_min, config.v_max, steps=config.n_atoms)
+        self._z = torch.linspace(config.v_min, config.v_max, steps=config.n_atoms, device=self._config.network_device)
         self._dz = self._z[1] - self._z[0]
 
         self.discount_factor = config.discount_factor
         """Discount factor used during training."""
 
-        self._batch_vec = torch.arange(config.batch_size)
+        self._batch_vec = torch.arange(config.batch_size, device=self._config.network_device)
         if config.use_prioritized_experience_replay:
             self._beta_coeff = (config.beta_end - config.beta_start) / (
                 config.beta_t_end - config.beta_t_start
@@ -72,7 +73,6 @@ class Agent:
 
         self._train_steps = 0
         self._max_error = torch.tensor(1.0)
-        self._config = config
         self._logging_queue: queue.Queue = None
 
     def _initialize_not_inference_mode(self, config: AgentConfig):
@@ -129,15 +129,15 @@ class Agent:
             )
         next_distribution = target_distribution[self._batch_vec, next_greedy_actions]
 
-        m = torch.zeros(self._config.batch_size, self._config.n_atoms)
+        m = torch.zeros(self._config.batch_size, self._config.n_atoms, device=self._config.network_device)
         projection = (
             rewards.view(-1, 1)
             + ~terminals.view(-1, 1) * self.discount_factor * self._z.view(1, -1)
         ).clamp_(self._config.v_min, self._config.v_max)
         b = (projection - self._config.v_min) / self._dz
 
-        lower = b.floor().to(torch.long)
-        upper = b.ceil().to(torch.long)
+        lower = b.floor().to(torch.long).clamp_(0, self._config.n_atoms - 1)
+        upper = b.ceil().to(torch.long).clamp_(0, self._config.n_atoms - 1)
         lower[(upper > 0) * (lower == upper)] -= 1
         upper[(lower < (self._config.n_atoms - 1)) * (lower == upper)] += 1
 
@@ -272,12 +272,12 @@ class Agent:
         """
         with torch.no_grad():
             return _get_actions(
-                torch.as_tensor(states, dtype=torch.float32),
-                torch.as_tensor(action_masks, dtype=torch.bool),
+                torch.as_tensor(states, dtype=torch.float32, device=self._config.network_device),
+                torch.as_tensor(action_masks, dtype=torch.bool, device=self._config.network_device),
                 self._network,
                 self._config.use_distributional,
                 self._z,
-            )
+            ).cpu()
 
     def act_single(
         self, state: Union[Tensor, ndarray], action_mask: Union[Tensor, ndarray]
@@ -292,8 +292,8 @@ class Agent:
             int: Action index.
         """
         return self.act(
-            torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-            torch.as_tensor(action_mask, dtype=torch.bool).unsqueeze_(0),
+            torch.as_tensor(state, dtype=torch.float32, device=self._config.network_device).unsqueeze_(0),
+            torch.as_tensor(action_mask, dtype=torch.bool, device=self._config.network_device).unsqueeze_(0),
         )[0]
 
     def train_step(self):
@@ -304,6 +304,8 @@ class Agent:
             sample_probs,
             sample_ids,
         ) = self._buffer.sample(self._config.batch_size)
+
+        data = (x.to(self._config.network_device) for x in data)
 
         if self._config.use_distributional:
             loss = self._get_distributional_loss(*data)
@@ -380,15 +382,15 @@ class Agent:
             Tensor: Q-values.
         """
 
-        states = torch.as_tensor(states, dtype=torch.float32)
-        action_masks = torch.as_tensor(action_masks, dtype=torch.bool)
+        states = torch.as_tensor(states, dtype=torch.float32, device=self._config.network_device)
+        action_masks = torch.as_tensor(action_masks, dtype=torch.bool, device=self._config.network_device)
 
         with torch.no_grad():
             if self.config.use_distributional:
                 values = (self._z.view(1, 1, -1) * self._network(states)).sum(2)
             else:
                 values = self._network(states)
-            return _apply_masks(values, action_masks)
+            return _apply_masks(values, action_masks).cpu()
 
     def q_values_single(
         self, state: Union[Tensor, ndarray], action_mask: Union[Tensor, ndarray]
@@ -403,6 +405,6 @@ class Agent:
             Tensor: Q-values, illegal actions have value -inf.
         """
         return self.q_values(
-            torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-            torch.as_tensor(action_mask, dtype=torch.bool).unsqueeze_(0)
+            torch.as_tensor(state, dtype=torch.float32, device=self._config.network_device).unsqueeze_(0),
+            torch.as_tensor(action_mask, dtype=torch.bool, device=self._config.network_device).unsqueeze_(0)
         )[0]
