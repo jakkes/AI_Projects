@@ -130,9 +130,14 @@ def config(self) -&gt; AgentConfig:
     &#34;&#34;&#34;
     with torch.no_grad():
         return _get_actions(
-            torch.as_tensor(states, dtype=torch.float32, device=self._config.network_device),
-            torch.as_tensor(action_masks, dtype=torch.bool, device=self._config.network_device),
-            self._network,
+            torch.as_tensor(
+                action_masks, dtype=torch.bool, device=self._config.network_device
+            ),
+            self._network(
+                torch.as_tensor(
+                    states, dtype=torch.float32, device=self._config.network_device
+                )
+            ),
             self._config.use_distributional,
             self._z,
         ).cpu()</code></pre>
@@ -172,8 +177,12 @@ def config(self) -&gt; AgentConfig:
         int: Action index.
     &#34;&#34;&#34;
     return self.act(
-        torch.as_tensor(state, dtype=torch.float32, device=self._config.network_device).unsqueeze_(0),
-        torch.as_tensor(action_mask, dtype=torch.bool, device=self._config.network_device).unsqueeze_(0),
+        torch.as_tensor(
+            state, dtype=torch.float32, device=self._config.network_device
+        ).unsqueeze_(0),
+        torch.as_tensor(
+            action_mask, dtype=torch.bool, device=self._config.network_device
+        ).unsqueeze_(0),
     )[0]</code></pre>
 </details>
 </dd>
@@ -251,12 +260,26 @@ appropriate initialization value.</dd>
     errors[errors.isnan()] = self._max_error
     self._buffer.add(
         (
-            torch.as_tensor(states, dtype=torch.float32),
-            torch.as_tensor(actions, dtype=torch.long),
-            torch.as_tensor(rewards, dtype=torch.float32),
-            torch.as_tensor(terminals, dtype=torch.bool),
-            torch.as_tensor(next_states, dtype=torch.float32),
-            torch.as_tensor(next_action_masks, dtype=torch.bool),
+            torch.as_tensor(
+                states, dtype=torch.float32, device=self._config.replay_device
+            ),
+            torch.as_tensor(
+                actions, dtype=torch.long, device=self._config.replay_device
+            ),
+            torch.as_tensor(
+                rewards, dtype=torch.float32, device=self._config.replay_device
+            ),
+            torch.as_tensor(
+                terminals, dtype=torch.bool, device=self._config.replay_device
+            ),
+            torch.as_tensor(
+                next_states, dtype=torch.float32, device=self._config.replay_device
+            ),
+            torch.as_tensor(
+                next_action_masks,
+                dtype=torch.bool,
+                device=self._config.replay_device,
+            ),
         ),
         errors,
     )</code></pre>
@@ -312,13 +335,25 @@ initialization value.</dd>
             initialization value.
     &#34;&#34;&#34;
     self.observe(
-        torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-        torch.tensor([action], dtype=torch.long),
-        torch.tensor([reward], dtype=torch.float32),
-        torch.tensor([terminal], dtype=torch.bool),
-        torch.as_tensor(next_state, dtype=torch.float32).unsqueeze_(0),
-        torch.as_tensor(next_action_mask, dtype=torch.bool).unsqueeze_(0),
-        torch.tensor([error], dtype=torch.float32),
+        torch.as_tensor(
+            state, dtype=torch.float32, device=self._config.replay_device
+        ).unsqueeze_(0),
+        torch.tensor([action], dtype=torch.long, device=self._config.replay_device),
+        torch.tensor(
+            [reward], dtype=torch.float32, device=self._config.replay_device
+        ),
+        torch.tensor(
+            [terminal], dtype=torch.bool, device=self._config.replay_device
+        ),
+        torch.as_tensor(
+            next_state, dtype=torch.float32, device=self._config.replay_device
+        ).unsqueeze_(0),
+        torch.as_tensor(
+            next_action_mask, dtype=torch.bool, device=self._config.replay_device
+        ).unsqueeze_(0),
+        torch.tensor(
+            [error], dtype=torch.float32, device=self._config.replay_device
+        ),
     )</code></pre>
 </details>
 </dd>
@@ -358,8 +393,12 @@ a values -inf.</p>
         Tensor: Q-values.
     &#34;&#34;&#34;
 
-    states = torch.as_tensor(states, dtype=torch.float32, device=self._config.network_device)
-    action_masks = torch.as_tensor(action_masks, dtype=torch.bool, device=self._config.network_device)
+    states = torch.as_tensor(
+        states, dtype=torch.float32, device=self._config.network_device
+    )
+    action_masks = torch.as_tensor(
+        action_masks, dtype=torch.bool, device=self._config.network_device
+    )
 
     with torch.no_grad():
         if self.config.use_distributional:
@@ -403,8 +442,12 @@ a values -inf.</p>
         Tensor: Q-values, illegal actions have value -inf.
     &#34;&#34;&#34;
     return self.q_values(
-        torch.as_tensor(state, dtype=torch.float32, device=self._config.network_device).unsqueeze_(0),
-        torch.as_tensor(action_mask, dtype=torch.bool, device=self._config.network_device).unsqueeze_(0)
+        torch.as_tensor(
+            state, dtype=torch.float32, device=self._config.network_device
+        ).unsqueeze_(0),
+        torch.as_tensor(
+            action_mask, dtype=torch.bool, device=self._config.network_device
+        ).unsqueeze_(0),
     )[0]</code></pre>
 </details>
 </dd>
@@ -489,8 +532,11 @@ i.e. JSON representable. List of logging fields are given below.</p>
     else:
         loss = loss.mean()
     loss.backward()
+    grad_norm = None
     if self.config.gradient_norm &gt; 0:
-        nn.utils.clip_grad_norm_(self._network.parameters(), self.config.gradient_norm)
+        grad_norm = nn.utils.clip_grad_norm_(
+            self._network.parameters(), self.config.gradient_norm
+        )
     self._optimizer.step()
 
     self._train_steps += 1
@@ -499,8 +545,16 @@ i.e. JSON representable. List of logging fields are given below.</p>
 
     if self._logging_queue is not None:
         self._logging_queue.put(
-            {&#34;loss&#34;: loss.detach().item(), &#34;max_error&#34;: self._max_error.item()}
-        )</code></pre>
+            logging.items.Scalar(&#34;RainbowAgent/Loss&#34;, loss.detach().item())
+        )
+        self._logging_queue.put(
+            logging.items.Scalar(&#34;RainbowAgent/Max error&#34;, self._max_error.item())
+        )
+
+        if grad_norm is not None:
+            self._logging_queue.put(
+                logging.items.Scalar(&#34;RainbowAgent/Gradient norm&#34;, grad_norm.item())
+            )</code></pre>
 </details>
 </dd>
 </dl>
