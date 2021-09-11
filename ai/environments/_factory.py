@@ -1,3 +1,4 @@
+import queue
 from typing import Type
 
 import ai.environments as environments
@@ -21,6 +22,17 @@ class Factory():
         self._cls = cls
         self._args = args
         self._kwargs = kwargs
+        self._logging_queue: queue.Queue = None
+
+    def set_logging_queue(self, q: queue.Queue):
+        """Sets the logging queue, into which logitems are passed by the environment.
+        When environments are spawned through this factory object, their logging queue
+        will be set to this value.
+
+        Args:
+            q (queue.Queue): Data queue. If `None`, logging is disabled.
+        """
+        self._logging_queue = q
 
     def __call__(self) -> environments.Base:
         """Spawns and returns an environment instance.
@@ -28,4 +40,7 @@ class Factory():
         Returns:
             environments.Base: Instance of the environment.
         """
-        return self._cls(*self._args, **self._kwargs)
+        env = self._cls(*self._args, **self._kwargs)
+        if self._logging_queue is not None:
+            env.set_logging_queue(self._logging_queue)
+        return env

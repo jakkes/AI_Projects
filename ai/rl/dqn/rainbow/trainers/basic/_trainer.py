@@ -6,8 +6,8 @@ from multiprocessing import Queue
 import ai.rl as rl
 import ai.rl.dqn.rainbow as rainbow
 import ai.environments as environments
+import ai.utils.logging as logging
 from ._config import Config
-from ._logger import Logger
 
 
 class Trainer:
@@ -30,8 +30,9 @@ class Trainer:
         self._env_factory = environment
 
         self._logging_queue = Queue(maxsize=2000)
-        self._logging_server = Logger(self._logging_queue)
+        self._logging_server = logging.SummaryWriterServer("RainbowTrainer", self._logging_queue)
         self._agent.set_logging_queue(self._logging_queue)
+        self._env_factory.set_logging_queue(self._logging_queue)
 
         self._reward_collector = rl.utils.NStepRewardCollector(
             config.n_step,
@@ -54,7 +55,7 @@ class Trainer:
         state = env.reset()
         mask = env.action_space.as_discrete().action_mask
         terminal = False
-        step = -1
+        step = 0
         total_reward = 0.0
         total_discounted_reward = 0.0
         start_value = self._agent.q_values_single(state, mask).max().item()
@@ -80,15 +81,10 @@ class Trainer:
             self._add_to_collector(state, action, mask, reward, terminal)
             state = next_state
             mask = env.action_space.as_discrete().action_mask
-
             self._train_step()
 
-        self._logging_queue.put({
-            "reward": total_reward,
-            "discounted_reward": total_discounted_reward,
-            "steps": step,
-            "start_value": start_value
-        })
+        self._logging_queue.put(logging.items.Scalar("Value/Start value", start_value))
+        self._logging_queue.put(logging.items.Scalar("Environment/Steps", step))
 
     def _add_to_collector(self, state, action, action_mask, reward, terminal):
         out = self._reward_collector.step(

@@ -1,8 +1,9 @@
 from abc import abstractmethod, ABC
 from queue import Empty
 from multiprocessing import Process, Queue, Event
-from typing import Any
 from torch.utils.tensorboard.writer import SummaryWriter
+
+import ai.utils.logging.items as logitems
 
 
 class SummaryWriterServer(ABC):
@@ -19,15 +20,14 @@ class SummaryWriterServer(ABC):
         self._stop_signal = Event()
         self._process: Process = None
 
-    @abstractmethod
-    def log(self, summary_writer: SummaryWriter, data: Any):
+    def log(self, summary_writer: SummaryWriter, data: logitems.Base):
         """This method is called whenever data is retrieved from the data queue.
 
         Args:
             summary_writer (SummaryWriter): Summary writer used by this server.
             data (Any): Data, defined by the publishing entity.
         """
-        raise NotImplementedError
+        data.log(summary_writer)
 
     def _runner(self):
         summary_writer = SummaryWriter(comment=self._filename_suffix)

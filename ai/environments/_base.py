@@ -1,3 +1,4 @@
+import queue
 from typing import Dict, Tuple
 from abc import ABC, abstractmethod
 
@@ -12,6 +13,11 @@ class Base(ABC):
     An environment is a stateful environment upon which action may be executed. It has
     an internal state that is modified by the action and (potentially only partially)
     observable from the outside."""
+
+    def __init__(self) -> None:
+        """ """
+        super().__init__()
+        self._logging_queue: queue.Queue = None
 
     @property
     @abstractmethod
@@ -59,3 +65,11 @@ class Base(ABC):
         behavior is required, feel free to override this method and return a factory
         class of your choice."""
         return environments.Factory(cls, *args, **kwargs)
+
+    def set_logging_queue(self, q: queue.Queue):
+        """Sets the logging queue, into which logitems are passed by the environment.
+
+        Args:
+            q (queue.Queue): Data queue. If `None`, logging is disabled.
+        """
+        self._logging_queue = q
