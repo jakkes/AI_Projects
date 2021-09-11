@@ -130,12 +130,12 @@ def config(self) -&gt; AgentConfig:
     &#34;&#34;&#34;
     with torch.no_grad():
         return _get_actions(
-            torch.as_tensor(states, dtype=torch.float32),
-            torch.as_tensor(action_masks, dtype=torch.bool),
+            torch.as_tensor(states, dtype=torch.float32, device=self._config.network_device),
+            torch.as_tensor(action_masks, dtype=torch.bool, device=self._config.network_device),
             self._network,
             self._config.use_distributional,
             self._z,
-        )</code></pre>
+        ).cpu()</code></pre>
 </details>
 </dd>
 <dt id="ai.rl.dqn.rainbow.Agent.act_single"><code class="name flex">
@@ -172,8 +172,8 @@ def config(self) -&gt; AgentConfig:
         int: Action index.
     &#34;&#34;&#34;
     return self.act(
-        torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-        torch.as_tensor(action_mask, dtype=torch.bool).unsqueeze_(0),
+        torch.as_tensor(state, dtype=torch.float32, device=self._config.network_device).unsqueeze_(0),
+        torch.as_tensor(action_mask, dtype=torch.bool, device=self._config.network_device).unsqueeze_(0),
     )[0]</code></pre>
 </details>
 </dd>
@@ -358,15 +358,15 @@ a values -inf.</p>
         Tensor: Q-values.
     &#34;&#34;&#34;
 
-    states = torch.as_tensor(states, dtype=torch.float32)
-    action_masks = torch.as_tensor(action_masks, dtype=torch.bool)
+    states = torch.as_tensor(states, dtype=torch.float32, device=self._config.network_device)
+    action_masks = torch.as_tensor(action_masks, dtype=torch.bool, device=self._config.network_device)
 
     with torch.no_grad():
         if self.config.use_distributional:
             values = (self._z.view(1, 1, -1) * self._network(states)).sum(2)
         else:
             values = self._network(states)
-        return _apply_masks(values, action_masks)</code></pre>
+        return _apply_masks(values, action_masks).cpu()</code></pre>
 </details>
 </dd>
 <dt id="ai.rl.dqn.rainbow.Agent.q_values_single"><code class="name flex">
@@ -403,8 +403,8 @@ a values -inf.</p>
         Tensor: Q-values, illegal actions have value -inf.
     &#34;&#34;&#34;
     return self.q_values(
-        torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-        torch.as_tensor(action_mask, dtype=torch.bool).unsqueeze_(0)
+        torch.as_tensor(state, dtype=torch.float32, device=self._config.network_device).unsqueeze_(0),
+        torch.as_tensor(action_mask, dtype=torch.bool, device=self._config.network_device).unsqueeze_(0)
     )[0]</code></pre>
 </details>
 </dd>
@@ -459,6 +459,8 @@ i.e. JSON representable. List of logging fields are given below.</p>
         sample_probs,
         sample_ids,
     ) = self._buffer.sample(self._config.batch_size)
+
+    data = (x.to(self._config.network_device) for x in data)
 
     if self._config.use_distributional:
         loss = self._get_distributional_loss(*data)
