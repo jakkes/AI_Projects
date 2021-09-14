@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>ai.utils.np API documentation</title>
-<meta name="description" content="Numpy specific utility methods." />
+<title>ai.rl.dqn.rainbow.trainers API documentation</title>
+<meta name="description" content="RainbowDQN trainers." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,66 +19,36 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ai.utils.np</code></h1>
+<h1 class="title">Module <code>ai.rl.dqn.rainbow.trainers</code></h1>
 </header>
 <section id="section-intro">
-<p>Numpy specific utility methods.</p>
+<p>RainbowDQN trainers.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Numpy specific utility methods.&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;RainbowDQN trainers.&#34;&#34;&#34;
 
-from ._cross_diag import cross_diag
 
-__all__ = [&#34;cross_diag&#34;]</code></pre>
+from . import basic
+
+
+__all__ = [&#34;basic&#34;]</code></pre>
 </details>
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt id="ai.utils.np.cross_diag"><code class="name flex">
-<span>def <span class="ident">cross_diag</span></span>(<span>values: numpy.ndarray) ‑> numpy.ndarray</span>
-</code></dt>
+<dt><code class="name"><a title="ai.rl.dqn.rainbow.trainers.basic" href="basic/index.html">ai.rl.dqn.rainbow.trainers.basic</a></code></dt>
 <dd>
-<div class="desc"><p>Returns a matrix with <code>values</code> placed on the cross diagonal.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>values</code></strong> :&ensp;<code>np.ndarray</code></dt>
-<dd>Values</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>np.ndarray</code></dt>
-<dd>Matrix with <code>values</code> on the cross diagonal. Shape is <code>(n, n)</code>, where
-<code>n</code> is the length of <code>values</code>.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def cross_diag(values: np.ndarray) -&gt; np.ndarray:
-    &#34;&#34;&#34;Returns a matrix with `values` placed on the cross diagonal.
-
-    Args:
-        values (np.ndarray): Values
-
-    Returns:
-        np.ndarray: Matrix with `values` on the cross diagonal. Shape is `(n, n)`, where
-            `n` is the length of `values`.
-    &#34;&#34;&#34;
-    n = values.shape[0]
-    i = np.arange(n)
-    re = np.zeros((n, n), dtype=values.dtype)
-    re[i, -i - 1] = values
-    return re</code></pre>
-</details>
+<div class="desc"><p>Basic sequential trainer. A training step is executed every _n_th environment
+step.</p></div>
 </dd>
 </dl>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 </section>
@@ -91,12 +61,12 @@ __all__ = [&#34;cross_diag&#34;]</code></pre>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="ai.utils" href="../index.html">ai.utils</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow" href="../index.html">ai.rl.dqn.rainbow</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="ai.utils.np.cross_diag" href="#ai.utils.np.cross_diag">cross_diag</a></code></li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.basic" href="basic/index.html">ai.rl.dqn.rainbow.trainers.basic</a></code></li>
 </ul>
 </li>
 </ul>

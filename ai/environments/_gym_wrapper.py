@@ -4,6 +4,7 @@ import numpy as np
 import gym
 from gym import spaces
 
+import ai.utils.logging as logging
 import ai.environments as environments
 
 
@@ -40,8 +41,10 @@ class GymWrapper(environments.Base):
         Args:
             env (gym.Env): Environment instance to wrap.
         """
+        super().__init__()
         self._env = env
         self._action_space = GymWrapper.ActionSpace(env.action_space)
+        self._episode_reward = 0.0
 
     @property
     def action_space(self) -> environments.action_spaces.Discrete:
@@ -49,9 +52,14 @@ class GymWrapper(environments.Base):
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict]:
         action = int(action)
-        return self._env.step(action)
+        state, reward, terminal, info = self._env.step(action)
+        self._episode_reward += reward
+        if terminal and self._logging_queue is not None:
+            self._logging_queue.put(logging.items.Scalar("Environment/Reward", self._episode_reward))
+        return state, reward, terminal, info
 
     def reset(self) -> np.ndarray:
+        self._episode_reward = 0.0
         return self._env.reset()
 
     def close(self):

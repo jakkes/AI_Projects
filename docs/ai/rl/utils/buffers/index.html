@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
-<title>ai.agents.utils.buffers API documentation</title>
+<meta name="generator" content="pdoc 0.10.0" />
+<title>ai.rl.utils.buffers API documentation</title>
 <meta name="description" content="Replay buffers." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ai.agents.utils.buffers</code></h1>
+<h1 class="title">Module <code>ai.rl.utils.buffers</code></h1>
 </header>
 <section id="section-intro">
 <p>Replay buffers.</p>
@@ -46,7 +46,7 @@ __all__ = [&#34;Base&#34;, &#34;Uniform&#34;, &#34;Weighted&#34;]</code></pre>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="ai.agents.utils.buffers.Base"><code class="flex name class">
+<dt id="ai.rl.utils.buffers.Base"><code class="flex name class">
 <span>class <span class="ident">Base</span></span>
 </code></dt>
 <dd>
@@ -57,12 +57,12 @@ __all__ = [&#34;Base&#34;, &#34;Uniform&#34;, &#34;Weighted&#34;]</code></pre>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="ai.agents.utils.buffers.Uniform" href="#ai.agents.utils.buffers.Uniform">Uniform</a></li>
-<li><a title="ai.agents.utils.buffers.Weighted" href="#ai.agents.utils.buffers.Weighted">Weighted</a></li>
+<li><a title="ai.rl.utils.buffers.Uniform" href="#ai.rl.utils.buffers.Uniform">Uniform</a></li>
+<li><a title="ai.rl.utils.buffers.Weighted" href="#ai.rl.utils.buffers.Weighted">Weighted</a></li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="ai.agents.utils.buffers.Base.size"><code class="name">var <span class="ident">size</span> : int</code></dt>
+<dt id="ai.rl.utils.buffers.Base.size"><code class="name">var <span class="ident">size</span> : int</code></dt>
 <dd>
 <div class="desc"><p>Size of the buffer.</p></div>
 <details class="source">
@@ -79,7 +79,7 @@ def size(self) -&gt; int:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="ai.agents.utils.buffers.Base.add"><code class="name flex">
+<dt id="ai.rl.utils.buffers.Base.add"><code class="name flex">
 <span>def <span class="ident">add</span></span>(<span>self, data: Tuple[torch.Tensor], weights: torch.Tensor) ‑> torch.Tensor</span>
 </code></dt>
 <dd>
@@ -114,7 +114,7 @@ def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor) -&gt; torch.Tens
     raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.utils.buffers.Base.get_all"><code class="name flex">
+<dt id="ai.rl.utils.buffers.Base.get_all"><code class="name flex">
 <span>def <span class="ident">get_all</span></span>(<span>self) ‑> Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]</span>
 </code></dt>
 <dd>
@@ -140,7 +140,7 @@ def get_all(self) -&gt; Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]:
     raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.utils.buffers.Base.sample"><code class="name flex">
+<dt id="ai.rl.utils.buffers.Base.sample"><code class="name flex">
 <span>def <span class="ident">sample</span></span>(<span>self, n: int) ‑> Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]</span>
 </code></dt>
 <dd>
@@ -174,7 +174,7 @@ def sample(self, n: int) -&gt; Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Te
     raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.utils.buffers.Base.update_weights"><code class="name flex">
+<dt id="ai.rl.utils.buffers.Base.update_weights"><code class="name flex">
 <span>def <span class="ident">update_weights</span></span>(<span>self, identifiers: torch.Tensor, weights: torch.Tensor)</span>
 </code></dt>
 <dd>
@@ -205,7 +205,7 @@ def update_weights(self, identifiers: torch.Tensor, weights: torch.Tensor):
 </dd>
 </dl>
 </dd>
-<dt id="ai.agents.utils.buffers.Uniform"><code class="flex name class">
+<dt id="ai.rl.utils.buffers.Uniform"><code class="flex name class">
 <span>class <span class="ident">Uniform</span></span>
 <span>(</span><span>capacity: int, shapes: Tuple[Tuple[int, ...]], dtypes: Tuple[torch.dtype], device: torch.device = device(type='cpu'))</span>
 </code></dt>
@@ -225,23 +225,23 @@ to CPU.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="ai.agents.utils.buffers.Base" href="#ai.agents.utils.buffers.Base">Base</a></li>
+<li><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="ai.agents.utils.buffers.Base" href="#ai.agents.utils.buffers.Base">Base</a></b></code>:
+<li><code><b><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></b></code>:
 <ul class="hlist">
-<li><code><a title="ai.agents.utils.buffers.Base.add" href="#ai.agents.utils.buffers.Base.add">add</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.get_all" href="#ai.agents.utils.buffers.Base.get_all">get_all</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.sample" href="#ai.agents.utils.buffers.Base.sample">sample</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.size" href="#ai.agents.utils.buffers.Base.size">size</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.update_weights" href="#ai.agents.utils.buffers.Base.update_weights">update_weights</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.add" href="#ai.rl.utils.buffers.Base.add">add</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.get_all" href="#ai.rl.utils.buffers.Base.get_all">get_all</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.sample" href="#ai.rl.utils.buffers.Base.sample">sample</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.size" href="#ai.rl.utils.buffers.Base.size">size</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.update_weights" href="#ai.rl.utils.buffers.Base.update_weights">update_weights</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="ai.agents.utils.buffers.Weighted"><code class="flex name class">
+<dt id="ai.rl.utils.buffers.Weighted"><code class="flex name class">
 <span>class <span class="ident">Weighted</span></span>
 <span>(</span><span>capacity: int, priority_exponent: float, shapes: Tuple[Tuple[int, ...]], dtypes: Tuple[torch.dtype], device: torch.device = device(type='cpu'))</span>
 </code></dt>
@@ -266,18 +266,18 @@ to CPU.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="ai.agents.utils.buffers.Base" href="#ai.agents.utils.buffers.Base">Base</a></li>
+<li><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="ai.agents.utils.buffers.Base" href="#ai.agents.utils.buffers.Base">Base</a></b></code>:
+<li><code><b><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></b></code>:
 <ul class="hlist">
-<li><code><a title="ai.agents.utils.buffers.Base.add" href="#ai.agents.utils.buffers.Base.add">add</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.get_all" href="#ai.agents.utils.buffers.Base.get_all">get_all</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.sample" href="#ai.agents.utils.buffers.Base.sample">sample</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.size" href="#ai.agents.utils.buffers.Base.size">size</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.update_weights" href="#ai.agents.utils.buffers.Base.update_weights">update_weights</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.add" href="#ai.rl.utils.buffers.Base.add">add</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.get_all" href="#ai.rl.utils.buffers.Base.get_all">get_all</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.sample" href="#ai.rl.utils.buffers.Base.sample">sample</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.size" href="#ai.rl.utils.buffers.Base.size">size</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.update_weights" href="#ai.rl.utils.buffers.Base.update_weights">update_weights</a></code></li>
 </ul>
 </li>
 </ul>
@@ -293,26 +293,26 @@ to CPU.</dd>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="ai.agents.utils" href="../index.html">ai.agents.utils</a></code></li>
+<li><code><a title="ai.rl.utils" href="../index.html">ai.rl.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="ai.agents.utils.buffers.Base" href="#ai.agents.utils.buffers.Base">Base</a></code></h4>
+<h4><code><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></code></h4>
 <ul class="">
-<li><code><a title="ai.agents.utils.buffers.Base.add" href="#ai.agents.utils.buffers.Base.add">add</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.get_all" href="#ai.agents.utils.buffers.Base.get_all">get_all</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.sample" href="#ai.agents.utils.buffers.Base.sample">sample</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.size" href="#ai.agents.utils.buffers.Base.size">size</a></code></li>
-<li><code><a title="ai.agents.utils.buffers.Base.update_weights" href="#ai.agents.utils.buffers.Base.update_weights">update_weights</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.add" href="#ai.rl.utils.buffers.Base.add">add</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.get_all" href="#ai.rl.utils.buffers.Base.get_all">get_all</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.sample" href="#ai.rl.utils.buffers.Base.sample">sample</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.size" href="#ai.rl.utils.buffers.Base.size">size</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.update_weights" href="#ai.rl.utils.buffers.Base.update_weights">update_weights</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="ai.agents.utils.buffers.Uniform" href="#ai.agents.utils.buffers.Uniform">Uniform</a></code></h4>
+<h4><code><a title="ai.rl.utils.buffers.Uniform" href="#ai.rl.utils.buffers.Uniform">Uniform</a></code></h4>
 </li>
 <li>
-<h4><code><a title="ai.agents.utils.buffers.Weighted" href="#ai.agents.utils.buffers.Weighted">Weighted</a></code></h4>
+<h4><code><a title="ai.rl.utils.buffers.Weighted" href="#ai.rl.utils.buffers.Weighted">Weighted</a></code></h4>
 </li>
 </ul>
 </li>
@@ -320,7 +320,7 @@ to CPU.</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>

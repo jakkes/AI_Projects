@@ -1,9 +1,16 @@
+import torch
 from typing import Tuple
 
 
 class AgentConfig:
     """RainbowDQN agent configuration."""
     def __init__(self) -> None:
+        """ """
+
+        self.huber_loss: bool = False
+        """If True, and `use_distributional` is False, then the huber loss function is
+        used, instead of MSE."""
+
         self.state_shape: Tuple[int, ...] = tuple()
         """Shape of the state space."""
 
@@ -59,3 +66,11 @@ class AgentConfig:
         self.gradient_norm: float = 20
         """Gradients are normed (L2) to this value, if larger. If this value is negative,
         no normalization is done."""
+
+        self.network_device: torch.device = torch.device("cpu")
+        """Device on which the network lives. Samples are moved to this device before
+        ran through the network. Defaults to CPU."""
+
+        self.replay_device: torch.device = torch.device("cpu")
+        """Device on which to store the replay buffer. Samples are automatically moved
+        to this device before added."""

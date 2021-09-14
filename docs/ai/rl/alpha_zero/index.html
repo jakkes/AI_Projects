@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
-<title>ai.agents.alpha_zero API documentation</title>
+<meta name="generator" content="pdoc 0.10.0" />
+<title>ai.rl.alpha_zero API documentation</title>
 <meta name="description" content="Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search for
 zero sum games …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -20,24 +20,24 @@ zero sum games …" />
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ai.agents.alpha_zero</code></h1>
+<h1 class="title">Module <code>ai.rl.alpha_zero</code></h1>
 </header>
 <section id="section-intro">
 <p>Implementation of the AlphaZero algorithm, based on Monte Carlo Tree Search for
 zero sum games.</p>
-<p>The AlphaZero algorithm consists of two core components: the <code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code> and the
-<code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>. The <code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>s generate rollouts of the policy that are then
-passed onto the <code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code> where network updates are performed. These are
-configurable by the <code><a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a></code> and <code><a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code>.</p>
+<p>The AlphaZero algorithm consists of two core components: the <code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code> and the
+<code><a title="ai.rl.alpha_zero.SelfPlayWorker" href="#ai.rl.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>. The <code><a title="ai.rl.alpha_zero.SelfPlayWorker" href="#ai.rl.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>s generate rollouts of the policy that are then
+passed onto the <code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code> where network updates are performed. These are
+configurable by the <code><a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a></code> and <code><a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code>.</p>
 <p>In addition to these, there are two logging servers used for visualization to
-tensorboard: <code><a title="ai.agents.alpha_zero.LearnerLogger" href="#ai.agents.alpha_zero.LearnerLogger">LearnerLogger</a></code> and <code><a title="ai.agents.alpha_zero.SelfPlayLogger" href="#ai.agents.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code>.</p>
-<p>For a basic implementation of the AlphaZero algorithm, see the <code><a title="ai.agents.alpha_zero.train" href="#ai.agents.alpha_zero.train">train()</a></code> method. This
+tensorboard: <code><a title="ai.rl.alpha_zero.LearnerLogger" href="#ai.rl.alpha_zero.LearnerLogger">LearnerLogger</a></code> and <code><a title="ai.rl.alpha_zero.SelfPlayLogger" href="#ai.rl.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code>.</p>
+<p>For a basic implementation of the AlphaZero algorithm, see the <code><a title="ai.rl.alpha_zero.train" href="#ai.rl.alpha_zero.train">train()</a></code> method. This
 method uses pure python multiprocessing. However, replacing the python queues by some
 other transportation protocol (implementing the queue interface) should allow the
 algorithm to run across multiple machines as well. If running across machines, network
-parameters must be communicated as well. In the <code><a title="ai.agents.alpha_zero.train" href="#ai.agents.alpha_zero.train">train()</a></code> method, the network is simply
+parameters must be communicated as well. In the <code><a title="ai.rl.alpha_zero.train" href="#ai.rl.alpha_zero.train">train()</a></code> method, the network is simply
 put into shared memory.</p>
-<p>When evaluating a model, use the <code><a title="ai.agents.alpha_zero.mcts" href="#ai.agents.alpha_zero.mcts">mcts()</a></code> method.</p>
+<p>When evaluating a model, use the <code><a title="ai.rl.alpha_zero.mcts" href="#ai.rl.alpha_zero.mcts">mcts()</a></code> method.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -89,7 +89,7 @@ __all__ = [
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="ai.agents.alpha_zero.networks" href="networks/index.html">ai.agents.alpha_zero.networks</a></code></dt>
+<dt><code class="name"><a title="ai.rl.alpha_zero.networks" href="networks/index.html">ai.rl.alpha_zero.networks</a></code></dt>
 <dd>
 <div class="desc"><p>Example implementations of networks for some simulators.</p></div>
 </dd>
@@ -100,8 +100,8 @@ __all__ = [
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="ai.agents.alpha_zero.mcts"><code class="name flex">
-<span>def <span class="ident">mcts</span></span>(<span>state: numpy.ndarray, action_mask: numpy.ndarray, simulator: <a title="ai.simulators.Base" href="../../simulators/index.html#ai.simulators.Base">Base</a>, network: torch.nn.modules.module.Module, config: <a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a>, root_node: <a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a> = None) ‑> <a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></span>
+<dt id="ai.rl.alpha_zero.mcts"><code class="name flex">
+<span>def <span class="ident">mcts</span></span>(<span>state: numpy.ndarray, action_mask: numpy.ndarray, simulator: <a title="ai.simulators.Base" href="../../simulators/index.html#ai.simulators.Base">Base</a>, network: torch.nn.modules.module.Module, config: <a title="ai.rl.alpha_zero.MCTSConfig" href="#ai.rl.alpha_zero.MCTSConfig">MCTSConfig</a>, root_node: <a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a> = None) ‑> <a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Runs the Monte Carlo Tree Search algorithm.</p>
@@ -115,11 +115,11 @@ __all__ = [
 <dd>Simulator.</dd>
 <dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
 <dd>Network.</dd>
-<dt><strong><code>config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a></code></dt>
+<dt><strong><code>config</code></strong> :&ensp;<code><a title="ai.rl.alpha_zero.MCTSConfig" href="#ai.rl.alpha_zero.MCTSConfig">MCTSConfig</a></code></dt>
 <dd>Configuration.</dd>
 <dt><strong><code>simulations</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>Number of MCTS steps. Defaults to 50.</dd>
-<dt><strong><code>root_node</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code>, optional</dt>
+<dt><strong><code>root_node</code></strong> :&ensp;<code><a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></code>, optional</dt>
 <dd>If not None, this node is used as root. Useful
 when the tree has previously been traversed, i.e. previously computed
 children are maintained instead of erasing the already computed tree.
@@ -127,7 +127,7 @@ Defaults to None.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code></dt>
+<dt><code><a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></code></dt>
 <dd>Root node.</dd>
 </dl></div>
 <details class="source">
@@ -186,8 +186,8 @@ Defaults to None.</dd>
     return root</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.train"><code class="name flex">
-<span>def <span class="ident">train</span></span>(<span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, self_play_workers: int, learner_config: <a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a>, self_play_config: <a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, save_path: str = None, save_period: int = -1, train_time: int = -1)</span>
+<dt id="ai.rl.alpha_zero.train"><code class="name flex">
+<span>def <span class="ident">train</span></span>(<span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, self_play_workers: int, learner_config: <a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a>, self_play_config: <a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, save_path: str = None, save_period: int = -1, train_time: int = -1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Starts training an AlphaZero model.</p>
@@ -198,9 +198,9 @@ Defaults to None.</dd>
 on which to train the model.</dd>
 <dt><strong><code>self_play_workers</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of self play workers to spawn.</dd>
-<dt><strong><code>learner_config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a></code></dt>
+<dt><strong><code>learner_config</code></strong> :&ensp;<code><a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a></code></dt>
 <dd>Configuration for the learner worker.</dd>
-<dt><strong><code>self_play_config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code></dt>
+<dt><strong><code>self_play_config</code></strong> :&ensp;<code><a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code></dt>
 <dd>Configuration for the self play worker.</dd>
 <dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
 <dd>Network.</dd>
@@ -306,18 +306,18 @@ training is run until the process is interupted. Defaults to -1.</dd>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="ai.agents.alpha_zero.LearnerConfig"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.LearnerConfig"><code class="flex name class">
 <span>class <span class="ident">LearnerConfig</span></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Configuration of the Learner process.</p></div>
 </dd>
-<dt id="ai.agents.alpha_zero.LearnerLogger"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.LearnerLogger"><code class="flex name class">
 <span>class <span class="ident">LearnerLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fbcbc0f10a0>>)</span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Logging server for the <code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code>.</p>
+<div class="desc"><p>Logging server for the <code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code>.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
@@ -340,9 +340,9 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </li>
 </ul>
 </dd>
-<dt id="ai.agents.alpha_zero.LearnerWorker"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.LearnerWorker"><code class="flex name class">
 <span>class <span class="ident">LearnerWorker</span></span>
-<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: <a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fbcbc0f10a0>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fbcbc0f10a0>> = None, save_path: str = None, save_period: int = -1)</span>
+<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: <a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>> = None, save_path: str = None, save_period: int = -1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>
@@ -354,7 +354,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="ai.agents.alpha_zero.LearnerWorker.run"><code class="name flex">
+<dt id="ai.rl.alpha_zero.LearnerWorker.run"><code class="name flex">
 <span>def <span class="ident">run</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -402,7 +402,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
             continue</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.LearnerWorker.save"><code class="name flex">
+<dt id="ai.rl.alpha_zero.LearnerWorker.save"><code class="name flex">
 <span>def <span class="ident">save</span></span>(<span>self, states: torch.Tensor, masks: torch.Tensor)</span>
 </code></dt>
 <dd>
@@ -422,7 +422,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
     jit.save(model, os.path.join(save_dir, &#34;network.pt&#34;))</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.LearnerWorker.train_step"><code class="name flex">
+<dt id="ai.rl.alpha_zero.LearnerWorker.train_step"><code class="name flex">
 <span>def <span class="ident">train_step</span></span>(<span>self, states: torch.Tensor, masks: torch.Tensor, policies: torch.Tensor, z: torch.Tensor)</span>
 </code></dt>
 <dd>
@@ -455,19 +455,19 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </dd>
 </dl>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSConfig"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.MCTSConfig"><code class="flex name class">
 <span>class <span class="ident">MCTSConfig</span></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Configuration for the Monte Carlo Tree Search.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></li>
+<li><a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></li>
 </ul>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.MCTSNode"><code class="flex name class">
 <span>class <span class="ident">MCTSNode</span></span>
-<span>(</span><span>state: np.ndarray, action_mask: np.ndarray, simulator: simulators.Base, network: nn.Module, parent: <a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a> = None, config: mcts.MCTSConfig = None, action: int = None, reward: float = None, terminal: bool = None)</span>
+<span>(</span><span>state: np.ndarray, action_mask: np.ndarray, simulator: simulators.Base, network: nn.Module, parent: <a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a> = None, config: mcts.MCTSConfig = None, action: int = None, reward: float = None, terminal: bool = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Node in the MCTS algorithm.</p>
@@ -481,9 +481,9 @@ training is run until the process is interupted. Defaults to -1.</dd>
 <dd>Simulator used in the roll out</dd>
 <dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
 <dd>Network used in the roll out</dd>
-<dt><strong><code>parent</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code>, optional</dt>
+<dt><strong><code>parent</code></strong> :&ensp;<code><a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></code>, optional</dt>
 <dd>Parent node. Defaults to None.</dd>
-<dt><strong><code>config</code></strong> :&ensp;<code><a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a></code>, optional</dt>
+<dt><strong><code>config</code></strong> :&ensp;<code><a title="ai.rl.alpha_zero.MCTSConfig" href="#ai.rl.alpha_zero.MCTSConfig">MCTSConfig</a></code>, optional</dt>
 <dd>Configuration of the MCTS. Defaults to None.</dd>
 <dt><strong><code>action</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>Action that led to this node. Defaults to None.</dd>
@@ -496,7 +496,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
 <p>Defaults to None.</p></div>
 <h3>Instance variables</h3>
 <dl>
-<dt id="ai.agents.alpha_zero.MCTSNode.action"><code class="name">var <span class="ident">action</span> : Union[int, NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.action"><code class="name">var <span class="ident">action</span> : Optional[int]</code></dt>
 <dd>
 <div class="desc"><p>The action that led to this node. If this node is the root, then this value
 is <code>None</code>.</p></div>
@@ -511,7 +511,7 @@ def action(self) -&gt; Optional[int]:
     return self._action</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.action_mask"><code class="name">var <span class="ident">action_mask</span> : numpy.ndarray</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.action_mask"><code class="name">var <span class="ident">action_mask</span> : numpy.ndarray</code></dt>
 <dd>
 <div class="desc"><p>The action mask of this node.</p></div>
 <details class="source">
@@ -524,7 +524,7 @@ def action_mask(self) -&gt; np.ndarray:
     return self._action_mask</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.action_policy"><code class="name">var <span class="ident">action_policy</span> : numpy.ndarray</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.action_policy"><code class="name">var <span class="ident">action_policy</span> : numpy.ndarray</code></dt>
 <dd>
 <div class="desc"><p>Action policy calculated in this node.</p></div>
 <details class="source">
@@ -538,11 +538,11 @@ def action_policy(self) -&gt; np.ndarray:
     return distribution / np.sum(distribution)</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.children"><code class="name">var <span class="ident">children</span> : Union[List[Union[<a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a>, NoneType]], NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.children"><code class="name">var <span class="ident">children</span> : Optional[List[Optional[<a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a>]]]</code></dt>
 <dd>
 <div class="desc"><p>The children of this node. If this node has not been expanded, then
 <code>None</code> is returned, otherwise the list of (possible children) is returned. If
-not None, the list consists of <code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code>s on indices representing legal
+not None, the list consists of <code><a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></code>s on indices representing legal
 actions. Illegal action indices are <code>None</code>. In other words, the child at index
 <code>i</code> corresponds to the node retrieved by action <code>i</code>.</p></div>
 <details class="source">
@@ -560,7 +560,7 @@ def children(self) -&gt; Optional[List[Optional[MCTSNode]]]:
     return self._children</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.is_leaf"><code class="name">var <span class="ident">is_leaf</span> : bool</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.is_leaf"><code class="name">var <span class="ident">is_leaf</span> : bool</code></dt>
 <dd>
 <div class="desc"><p>True if this node is a leaf node.</p></div>
 <details class="source">
@@ -573,7 +573,7 @@ def is_leaf(self) -&gt; bool:
     return self._children is None</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.is_root"><code class="name">var <span class="ident">is_root</span> : bool</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.is_root"><code class="name">var <span class="ident">is_root</span> : bool</code></dt>
 <dd>
 <div class="desc"><p>True if this node is the root.</p></div>
 <details class="source">
@@ -586,7 +586,7 @@ def is_root(self) -&gt; bool:
     return self._parent is None</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.is_terminal"><code class="name">var <span class="ident">is_terminal</span> : bool</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.is_terminal"><code class="name">var <span class="ident">is_terminal</span> : bool</code></dt>
 <dd>
 <div class="desc"><p>True if this node is a terminal state.</p></div>
 <details class="source">
@@ -599,7 +599,7 @@ def is_terminal(self) -&gt; bool:
     return self._terminal</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.parent"><code class="name">var <span class="ident">parent</span> : Union[<a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a>, NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.parent"><code class="name">var <span class="ident">parent</span> : Optional[<a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a>]</code></dt>
 <dd>
 <div class="desc"><p>The parent of this node.</p></div>
 <details class="source">
@@ -612,7 +612,7 @@ def parent(self) -&gt; Optional[MCTSNode]:
     return self._parent</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.reward"><code class="name">var <span class="ident">reward</span> : Union[bool, NoneType]</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.reward"><code class="name">var <span class="ident">reward</span> : Optional[bool]</code></dt>
 <dd>
 <div class="desc"><p>The reward obtained on the transition into this node. If this node is the
 root, then this value is <code>None</code>.</p></div>
@@ -627,7 +627,7 @@ def reward(self) -&gt; Optional[bool]:
     return self._reward</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.state"><code class="name">var <span class="ident">state</span> : numpy.ndarray</code></dt>
+<dt id="ai.rl.alpha_zero.MCTSNode.state"><code class="name">var <span class="ident">state</span> : numpy.ndarray</code></dt>
 <dd>
 <div class="desc"><p>The state of this node.</p></div>
 <details class="source">
@@ -643,7 +643,7 @@ def state(self) -&gt; np.ndarray:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="ai.agents.alpha_zero.MCTSNode.add_noise"><code class="name flex">
+<dt id="ai.rl.alpha_zero.MCTSNode.add_noise"><code class="name flex">
 <span>def <span class="ident">add_noise</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -662,7 +662,7 @@ def state(self) -&gt; np.ndarray:
     ] + self._config.epsilon * d</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.backup"><code class="name flex">
+<dt id="ai.rl.alpha_zero.MCTSNode.backup"><code class="name flex">
 <span>def <span class="ident">backup</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -686,7 +686,7 @@ def state(self) -&gt; np.ndarray:
         )</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.expand"><code class="name flex">
+<dt id="ai.rl.alpha_zero.MCTSNode.expand"><code class="name flex">
 <span>def <span class="ident">expand</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -741,7 +741,7 @@ no-op.</p></div>
     self._expanded = True</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.rootify"><code class="name flex">
+<dt id="ai.rl.alpha_zero.MCTSNode.rootify"><code class="name flex">
 <span>def <span class="ident">rootify</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -767,8 +767,8 @@ maintaining its children.</p></div>
         self.add_noise()</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.MCTSNode.select"><code class="name flex">
-<span>def <span class="ident">select</span></span>(<span>self) ‑> <a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></span>
+<dt id="ai.rl.alpha_zero.MCTSNode.select"><code class="name flex">
+<span>def <span class="ident">select</span></span>(<span>self) ‑> <a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Traverses one step in the tree from this node according to the selection
@@ -780,7 +780,7 @@ policy.</p>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code></dt>
+<dt><code><a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></code></dt>
 <dd>The node selected.</dd>
 </dl></div>
 <details class="source">
@@ -814,22 +814,22 @@ policy.</p>
 </dd>
 </dl>
 </dd>
-<dt id="ai.agents.alpha_zero.SelfPlayConfig"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.SelfPlayConfig"><code class="flex name class">
 <span>class <span class="ident">SelfPlayConfig</span></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Configuration for the self play worker.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a></li>
+<li><a title="ai.rl.alpha_zero.MCTSConfig" href="#ai.rl.alpha_zero.MCTSConfig">MCTSConfig</a></li>
 </ul>
 </dd>
-<dt id="ai.agents.alpha_zero.SelfPlayLogger"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.SelfPlayLogger"><code class="flex name class">
 <span>class <span class="ident">SelfPlayLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fbcbc0f10a0>>)</span>
+<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Logging server for the <code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>.</p>
+<div class="desc"><p>Logging server for the <code><a title="ai.rl.alpha_zero.SelfPlayWorker" href="#ai.rl.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
@@ -852,9 +852,9 @@ policy.</p>
 </li>
 </ul>
 </dd>
-<dt id="ai.agents.alpha_zero.SelfPlayWorker"><code class="flex name class">
+<dt id="ai.rl.alpha_zero.SelfPlayWorker"><code class="flex name class">
 <span>class <span class="ident">SelfPlayWorker</span></span>
-<span>(</span><span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, network: torch.nn.modules.module.Module, config: <a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fbcbc0f10a0>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fbcbc0f10a0>> = None)</span>
+<span>(</span><span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, network: torch.nn.modules.module.Module, config: <a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>> = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>
@@ -866,8 +866,8 @@ policy.</p>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="ai.agents.alpha_zero.SelfPlayWorker.run"><code class="name flex">
-<span>def <span class="ident">run</span></span>(<span>self) ‑> NoneType</span>
+<dt id="ai.rl.alpha_zero.SelfPlayWorker.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Method to be run in sub-process; can be overridden in sub-class</p></div>
@@ -884,7 +884,7 @@ policy.</p>
             continue</code></pre>
 </details>
 </dd>
-<dt id="ai.agents.alpha_zero.SelfPlayWorker.run_episode"><code class="name flex">
+<dt id="ai.rl.alpha_zero.SelfPlayWorker.run_episode"><code class="name flex">
 <span>def <span class="ident">run_episode</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -972,70 +972,70 @@ policy.</p>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="ai.agents" href="../index.html">ai.agents</a></code></li>
+<li><code><a title="ai.rl" href="../index.html">ai.rl</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="ai.agents.alpha_zero.networks" href="networks/index.html">ai.agents.alpha_zero.networks</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.networks" href="networks/index.html">ai.rl.alpha_zero.networks</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="ai.agents.alpha_zero.mcts" href="#ai.agents.alpha_zero.mcts">mcts</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.train" href="#ai.agents.alpha_zero.train">train</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.mcts" href="#ai.rl.alpha_zero.mcts">mcts</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.train" href="#ai.rl.alpha_zero.train">train</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.LearnerConfig" href="#ai.agents.alpha_zero.LearnerConfig">LearnerConfig</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a></code></h4>
 </li>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.LearnerLogger" href="#ai.agents.alpha_zero.LearnerLogger">LearnerLogger</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.LearnerLogger" href="#ai.rl.alpha_zero.LearnerLogger">LearnerLogger</a></code></h4>
 </li>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.LearnerWorker" href="#ai.agents.alpha_zero.LearnerWorker">LearnerWorker</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code></h4>
 <ul class="">
-<li><code><a title="ai.agents.alpha_zero.LearnerWorker.run" href="#ai.agents.alpha_zero.LearnerWorker.run">run</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.LearnerWorker.save" href="#ai.agents.alpha_zero.LearnerWorker.save">save</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.LearnerWorker.train_step" href="#ai.agents.alpha_zero.LearnerWorker.train_step">train_step</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.LearnerWorker.run" href="#ai.rl.alpha_zero.LearnerWorker.run">run</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.LearnerWorker.save" href="#ai.rl.alpha_zero.LearnerWorker.save">save</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.LearnerWorker.train_step" href="#ai.rl.alpha_zero.LearnerWorker.train_step">train_step</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.MCTSConfig" href="#ai.agents.alpha_zero.MCTSConfig">MCTSConfig</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.MCTSConfig" href="#ai.rl.alpha_zero.MCTSConfig">MCTSConfig</a></code></h4>
 </li>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.MCTSNode" href="#ai.agents.alpha_zero.MCTSNode">MCTSNode</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.MCTSNode" href="#ai.rl.alpha_zero.MCTSNode">MCTSNode</a></code></h4>
 <ul class="two-column">
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.action" href="#ai.agents.alpha_zero.MCTSNode.action">action</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.action_mask" href="#ai.agents.alpha_zero.MCTSNode.action_mask">action_mask</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.action_policy" href="#ai.agents.alpha_zero.MCTSNode.action_policy">action_policy</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.add_noise" href="#ai.agents.alpha_zero.MCTSNode.add_noise">add_noise</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.backup" href="#ai.agents.alpha_zero.MCTSNode.backup">backup</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.children" href="#ai.agents.alpha_zero.MCTSNode.children">children</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.expand" href="#ai.agents.alpha_zero.MCTSNode.expand">expand</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.is_leaf" href="#ai.agents.alpha_zero.MCTSNode.is_leaf">is_leaf</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.is_root" href="#ai.agents.alpha_zero.MCTSNode.is_root">is_root</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.is_terminal" href="#ai.agents.alpha_zero.MCTSNode.is_terminal">is_terminal</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.parent" href="#ai.agents.alpha_zero.MCTSNode.parent">parent</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.reward" href="#ai.agents.alpha_zero.MCTSNode.reward">reward</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.rootify" href="#ai.agents.alpha_zero.MCTSNode.rootify">rootify</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.select" href="#ai.agents.alpha_zero.MCTSNode.select">select</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.MCTSNode.state" href="#ai.agents.alpha_zero.MCTSNode.state">state</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.action" href="#ai.rl.alpha_zero.MCTSNode.action">action</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.action_mask" href="#ai.rl.alpha_zero.MCTSNode.action_mask">action_mask</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.action_policy" href="#ai.rl.alpha_zero.MCTSNode.action_policy">action_policy</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.add_noise" href="#ai.rl.alpha_zero.MCTSNode.add_noise">add_noise</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.backup" href="#ai.rl.alpha_zero.MCTSNode.backup">backup</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.children" href="#ai.rl.alpha_zero.MCTSNode.children">children</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.expand" href="#ai.rl.alpha_zero.MCTSNode.expand">expand</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.is_leaf" href="#ai.rl.alpha_zero.MCTSNode.is_leaf">is_leaf</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.is_root" href="#ai.rl.alpha_zero.MCTSNode.is_root">is_root</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.is_terminal" href="#ai.rl.alpha_zero.MCTSNode.is_terminal">is_terminal</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.parent" href="#ai.rl.alpha_zero.MCTSNode.parent">parent</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.reward" href="#ai.rl.alpha_zero.MCTSNode.reward">reward</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.rootify" href="#ai.rl.alpha_zero.MCTSNode.rootify">rootify</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.select" href="#ai.rl.alpha_zero.MCTSNode.select">select</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.MCTSNode.state" href="#ai.rl.alpha_zero.MCTSNode.state">state</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.SelfPlayConfig" href="#ai.agents.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code></h4>
 </li>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.SelfPlayLogger" href="#ai.agents.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.SelfPlayLogger" href="#ai.rl.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code></h4>
 </li>
 <li>
-<h4><code><a title="ai.agents.alpha_zero.SelfPlayWorker" href="#ai.agents.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code></h4>
+<h4><code><a title="ai.rl.alpha_zero.SelfPlayWorker" href="#ai.rl.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code></h4>
 <ul class="">
-<li><code><a title="ai.agents.alpha_zero.SelfPlayWorker.run" href="#ai.agents.alpha_zero.SelfPlayWorker.run">run</a></code></li>
-<li><code><a title="ai.agents.alpha_zero.SelfPlayWorker.run_episode" href="#ai.agents.alpha_zero.SelfPlayWorker.run_episode">run_episode</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.SelfPlayWorker.run" href="#ai.rl.alpha_zero.SelfPlayWorker.run">run</a></code></li>
+<li><code><a title="ai.rl.alpha_zero.SelfPlayWorker.run_episode" href="#ai.rl.alpha_zero.SelfPlayWorker.run_episode">run_episode</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1044,7 +1044,7 @@ policy.</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>

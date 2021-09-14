@@ -9,27 +9,73 @@ import torch
 from torch import nn, optim, Tensor
 
 import ai.rl.utils.buffers as buffers
+import ai.utils.logging as logging
 from ._agent_config import AgentConfig
 
 
+@torch.jit.script
 def _apply_masks(values: Tensor, masks: Tensor) -> Tensor:
     return torch.where(masks, values, torch.empty_like(values).fill_(-np.inf))
 
 
+@torch.jit.script
 def _get_actions(
-    states: Tensor,
     action_masks: Tensor,
-    network: nn.Module,
+    network_output: Tensor,
     use_distributional: bool,
     z: Tensor,
 ) -> Tensor:
     if use_distributional:
-        d = network(states)
+        d = network_output
         values = torch.sum(d * z.view(1, 1, -1), dim=2)
     else:
-        values = network(states)
+        values = network_output
     values = _apply_masks(values, action_masks)
     return values.argmax(dim=1)
+
+
+@torch.jit.script
+def _get_distributional_loss(
+    rewards: Tensor,
+    terminals: Tensor,
+    current_distribution: Tensor,
+    target_distribution: Tensor,
+    next_actions: Tensor,
+    batch_vector: Tensor,
+    z: Tensor,
+    dz: float,
+    device: torch.device,
+    batchsize: int,
+    n_atoms: int,
+    v_max: float,
+    v_min: float,
+    discount: float,
+):
+    next_distribution = target_distribution[batch_vector, next_actions]
+    m = torch.zeros(batchsize, n_atoms, device=device)
+
+    projection = (
+        rewards.view(-1, 1) + ~terminals.view(-1, 1) * discount * z.view(1, -1)
+    ).clamp_(v_min, v_max)
+    b = (projection - v_min) / dz
+
+    lower = b.floor().to(torch.long).clamp_(0, n_atoms - 1)
+    upper = b.ceil().to(torch.long).clamp_(0, n_atoms - 1)
+    lower[(upper > 0) * (lower == upper)] -= 1
+    upper[(lower < (n_atoms - 1)) * (lower == upper)] += 1
+
+    for batch in range(batchsize):
+        m[batch].put_(
+            lower[batch],
+            next_distribution[batch] * (upper[batch] - b[batch]),
+            accumulate=True,
+        )
+        m[batch].put_(
+            upper[batch],
+            next_distribution[batch] * (b[batch] - lower[batch]),
+            accumulate=True,
+        )
+    return -(m * current_distribution.add_(1e-6).log_()).sum(1)
 
 
 class Agent:
@@ -51,20 +97,33 @@ class Agent:
                 acting. Saves memory by not initializing a replay buffer. Defaults to
                 False.
         """
+        self._config = config
         self._network = network
         self._target_network = copy.deepcopy(network)
         self._optimizer = optimizer
         self._buffer = None
+        self._td_loss = (
+            torch.nn.HuberLoss(reduction="none")
+            if config.huber_loss
+            else torch.nn.MSELoss(reduction="none")
+        )
         if not inference_mode:
             self._initialize_not_inference_mode(config)
 
-        self._z = torch.linspace(config.v_min, config.v_max, steps=config.n_atoms)
+        self._z = torch.linspace(
+            config.v_min,
+            config.v_max,
+            steps=config.n_atoms,
+            device=self._config.network_device,
+        )
         self._dz = self._z[1] - self._z[0]
 
         self.discount_factor = config.discount_factor
         """Discount factor used during training."""
 
-        self._batch_vec = torch.arange(config.batch_size)
+        self._batch_vec = torch.arange(
+            config.batch_size, device=self._config.network_device
+        )
         if config.use_prioritized_experience_replay:
             self._beta_coeff = (config.beta_end - config.beta_start) / (
                 config.beta_t_end - config.beta_t_start
@@ -72,13 +131,12 @@ class Agent:
 
         self._train_steps = 0
         self._max_error = torch.tensor(1.0)
-        self._config = config
         self._logging_queue: queue.Queue = None
 
     def _initialize_not_inference_mode(self, config: AgentConfig):
         if self._optimizer is None:
             raise ValueError(
-                "Optimizer cannot be of NoneType when not running in inference mode."
+                "Optimizer cannot be `None` when not running in inference mode."
             )
 
         shapes = (
@@ -100,10 +158,16 @@ class Agent:
 
         if config.use_prioritized_experience_replay:
             self._buffer = buffers.Weighted(
-                config.replay_capacity, config.alpha, shapes, dtypes
+                config.replay_capacity,
+                config.alpha,
+                shapes,
+                dtypes,
+                self._config.replay_device,
             )
         else:
-            self._buffer = buffers.Uniform(config.replay_capacity, shapes, dtypes)
+            self._buffer = buffers.Uniform(
+                config.replay_capacity, shapes, dtypes, self._config.replay_device
+            )
 
     def _target_update(self):
         self._target_network.load_state_dict(self._network.state_dict())
@@ -121,38 +185,29 @@ class Agent:
         target_distribution = self._target_network(next_states)
         with torch.no_grad():
             next_greedy_actions = _get_actions(
-                next_states,
                 next_action_masks,
-                self._network if self._config.use_double else self._target_network,
+                (self._network if self._config.use_double else self._target_network)(
+                    next_states
+                ),
                 self._config.use_distributional,
                 self._z,
             )
-        next_distribution = target_distribution[self._batch_vec, next_greedy_actions]
-
-        m = torch.zeros(self._config.batch_size, self._config.n_atoms)
-        projection = (
-            rewards.view(-1, 1)
-            + ~terminals.view(-1, 1) * self.discount_factor * self._z.view(1, -1)
-        ).clamp_(self._config.v_min, self._config.v_max)
-        b = (projection - self._config.v_min) / self._dz
-
-        lower = b.floor().to(torch.long)
-        upper = b.ceil().to(torch.long)
-        lower[(upper > 0) * (lower == upper)] -= 1
-        upper[(lower < (self._config.n_atoms - 1)) * (lower == upper)] += 1
-
-        for batch in range(self._config.batch_size):
-            m[batch].put_(
-                lower[batch],
-                next_distribution[batch] * (upper[batch] - b[batch]),
-                accumulate=True,
-            )
-            m[batch].put_(
-                upper[batch],
-                next_distribution[batch] * (b[batch] - lower[batch]),
-                accumulate=True,
-            )
-        return -(m * current_distribution.add_(1e-6).log_()).sum(1)
+        return _get_distributional_loss(
+            rewards,
+            terminals,
+            current_distribution,
+            target_distribution,
+            next_greedy_actions,
+            self._batch_vec,
+            self._z,
+            self._dz,
+            self._config.network_device,
+            self._config.batch_size,
+            self._config.n_atoms,
+            self._config.v_max,
+            self._config.v_min,
+            self._config.discount_factor,
+        )
 
     def _get_td_loss(
         self,
@@ -167,9 +222,8 @@ class Agent:
         if self._config.use_double:
             with torch.no_grad():
                 next_greedy_actions = _get_actions(
-                    next_states,
                     next_action_masks,
-                    self._network,
+                    self._network(next_states),
                     self._config.use_distributional,
                     self._z,
                 )
@@ -178,11 +232,9 @@ class Agent:
                 ]
         else:
             target_values = self._target_network(next_states).max(dim=1).values
-        return torch.pow(
-            rewards
-            + ~terminals * self._config.discount_factor * target_values
-            - current_q_values,
-            2,
+        return self._td_loss(
+            current_q_values,
+            rewards + ~terminals * self._config.discount_factor * target_values,
         )
 
     @property
@@ -216,12 +268,26 @@ class Agent:
         errors[errors.isnan()] = self._max_error
         self._buffer.add(
             (
-                torch.as_tensor(states, dtype=torch.float32),
-                torch.as_tensor(actions, dtype=torch.long),
-                torch.as_tensor(rewards, dtype=torch.float32),
-                torch.as_tensor(terminals, dtype=torch.bool),
-                torch.as_tensor(next_states, dtype=torch.float32),
-                torch.as_tensor(next_action_masks, dtype=torch.bool),
+                torch.as_tensor(
+                    states, dtype=torch.float32, device=self._config.replay_device
+                ),
+                torch.as_tensor(
+                    actions, dtype=torch.long, device=self._config.replay_device
+                ),
+                torch.as_tensor(
+                    rewards, dtype=torch.float32, device=self._config.replay_device
+                ),
+                torch.as_tensor(
+                    terminals, dtype=torch.bool, device=self._config.replay_device
+                ),
+                torch.as_tensor(
+                    next_states, dtype=torch.float32, device=self._config.replay_device
+                ),
+                torch.as_tensor(
+                    next_action_masks,
+                    dtype=torch.bool,
+                    device=self._config.replay_device,
+                ),
             ),
             errors,
         )
@@ -249,13 +315,25 @@ class Agent:
                 initialization value.
         """
         self.observe(
-            torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-            torch.tensor([action], dtype=torch.long),
-            torch.tensor([reward], dtype=torch.float32),
-            torch.tensor([terminal], dtype=torch.bool),
-            torch.as_tensor(next_state, dtype=torch.float32).unsqueeze_(0),
-            torch.as_tensor(next_action_mask, dtype=torch.bool).unsqueeze_(0),
-            torch.tensor([error], dtype=torch.float32),
+            torch.as_tensor(
+                state, dtype=torch.float32, device=self._config.replay_device
+            ).unsqueeze_(0),
+            torch.tensor([action], dtype=torch.long, device=self._config.replay_device),
+            torch.tensor(
+                [reward], dtype=torch.float32, device=self._config.replay_device
+            ),
+            torch.tensor(
+                [terminal], dtype=torch.bool, device=self._config.replay_device
+            ),
+            torch.as_tensor(
+                next_state, dtype=torch.float32, device=self._config.replay_device
+            ).unsqueeze_(0),
+            torch.as_tensor(
+                next_action_mask, dtype=torch.bool, device=self._config.replay_device
+            ).unsqueeze_(0),
+            torch.tensor(
+                [error], dtype=torch.float32, device=self._config.replay_device
+            ),
         )
 
     def act(
@@ -272,12 +350,17 @@ class Agent:
         """
         with torch.no_grad():
             return _get_actions(
-                torch.as_tensor(states, dtype=torch.float32),
-                torch.as_tensor(action_masks, dtype=torch.bool),
-                self._network,
+                torch.as_tensor(
+                    action_masks, dtype=torch.bool, device=self._config.network_device
+                ),
+                self._network(
+                    torch.as_tensor(
+                        states, dtype=torch.float32, device=self._config.network_device
+                    )
+                ),
                 self._config.use_distributional,
                 self._z,
-            )
+            ).cpu()
 
     def act_single(
         self, state: Union[Tensor, ndarray], action_mask: Union[Tensor, ndarray]
@@ -292,8 +375,12 @@ class Agent:
             int: Action index.
         """
         return self.act(
-            torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-            torch.as_tensor(action_mask, dtype=torch.bool).unsqueeze_(0),
+            torch.as_tensor(
+                state, dtype=torch.float32, device=self._config.network_device
+            ).unsqueeze_(0),
+            torch.as_tensor(
+                action_mask, dtype=torch.bool, device=self._config.network_device
+            ).unsqueeze_(0),
         )[0]
 
     def train_step(self):
@@ -304,6 +391,8 @@ class Agent:
             sample_probs,
             sample_ids,
         ) = self._buffer.sample(self._config.batch_size)
+
+        data = (x.to(self._config.network_device) for x in data)
 
         if self._config.use_distributional:
             loss = self._get_distributional_loss(*data)
@@ -332,8 +421,11 @@ class Agent:
         else:
             loss = loss.mean()
         loss.backward()
+        grad_norm = None
         if self.config.gradient_norm > 0:
-            nn.utils.clip_grad_norm_(self._network.parameters(), self.config.gradient_norm)
+            grad_norm = nn.utils.clip_grad_norm_(
+                self._network.parameters(), self.config.gradient_norm
+            )
         self._optimizer.step()
 
         self._train_steps += 1
@@ -342,8 +434,16 @@ class Agent:
 
         if self._logging_queue is not None:
             self._logging_queue.put(
-                {"loss": loss.detach().item(), "max_error": self._max_error.item()}
+                logging.items.Scalar("RainbowAgent/Loss", loss.detach().item())
             )
+            self._logging_queue.put(
+                logging.items.Scalar("RainbowAgent/Max error", self._max_error.item())
+            )
+
+            if grad_norm is not None:
+                self._logging_queue.put(
+                    logging.items.Scalar("RainbowAgent/Gradient norm", grad_norm.item())
+                )
 
     def buffer_size(self) -> int:
         """
@@ -380,15 +480,19 @@ class Agent:
             Tensor: Q-values.
         """
 
-        states = torch.as_tensor(states, dtype=torch.float32)
-        action_masks = torch.as_tensor(action_masks, dtype=torch.bool)
+        states = torch.as_tensor(
+            states, dtype=torch.float32, device=self._config.network_device
+        )
+        action_masks = torch.as_tensor(
+            action_masks, dtype=torch.bool, device=self._config.network_device
+        )
 
         with torch.no_grad():
             if self.config.use_distributional:
                 values = (self._z.view(1, 1, -1) * self._network(states)).sum(2)
             else:
                 values = self._network(states)
-            return _apply_masks(values, action_masks)
+            return _apply_masks(values, action_masks).cpu()
 
     def q_values_single(
         self, state: Union[Tensor, ndarray], action_mask: Union[Tensor, ndarray]
@@ -403,6 +507,10 @@ class Agent:
             Tensor: Q-values, illegal actions have value -inf.
         """
         return self.q_values(
-            torch.as_tensor(state, dtype=torch.float32).unsqueeze_(0),
-            torch.as_tensor(action_mask, dtype=torch.bool).unsqueeze_(0)
+            torch.as_tensor(
+                state, dtype=torch.float32, device=self._config.network_device
+            ).unsqueeze_(0),
+            torch.as_tensor(
+                action_mask, dtype=torch.bool, device=self._config.network_device
+            ).unsqueeze_(0),
         )[0]
