@@ -2,18 +2,17 @@ import time
 import signal
 import threading
 import queue
-from typing import Any, List, Sequence, Tuple
+from typing import List, Sequence, Tuple
 from multiprocessing.connection import Connection
 
 import torch
 from torch import nn, optim, multiprocessing as mp
-from torch.functional import Tensor
 
 from numpy import inf
-from torch.utils.tensorboard.writer import SummaryWriter
 
 import ai
 from ai import environments
+from ai.utils import logging
 from . import exploration_strategies
 from ._trainer_config import TrainerConfig
 
@@ -78,6 +77,9 @@ class Trainer:
         self._exploration_strategy = exploration_strategy
         self._environment = environment
 
+        self._logging_queue = mp.Queue(maxsize=2000)
+        self._logging_server = logging.SummaryWriterServer("DecisionTransformer", self._logging_queue)
+
         self._stop_training = threading.Event()
 
     def stop(self):
@@ -87,6 +89,8 @@ class Trainer:
     def train(self):
         """Starts training. Blocks until training is terminated."""
         # inference =Inference(self._state_encoder, self._action_encoder, self._reward_encoder, self._positional_encoder)
+        self._logging_server.start()
+        
         data_queue = queue.Queue(10000)
 
         inference = Inference(
@@ -104,6 +108,7 @@ class Trainer:
             self._exploration_strategy,
             self._config,
             data_queue,
+            self._logging_queue
         )
         inference.start()
 
@@ -123,6 +128,7 @@ class Trainer:
             self._config,
             data_queue,
             self._optimizer,
+            self._logging_queue
         )
         training.start()
 
@@ -135,9 +141,12 @@ class Trainer:
 
         inference.stop()
         training.stop()
+        self._logging_server.terminate()
 
         inference.join()
         training.join()
+        self._logging_server.join()
+
 
 
 class Training(threading.Thread):
@@ -158,8 +167,9 @@ class Training(threading.Thread):
         config: TrainerConfig,
         data_queue: mp.Queue,
         optimizer: optim.Optimizer,
+        logging_queue: queue.Queue,
     ):
-        super().__init__()
+        super().__init__(daemon=True)
         self._device = torch.device("cuda" if config.enable_cuda else "cpu")
         self._dtype = torch.float16 if config.enable_float16 else torch.float32
 
@@ -198,7 +208,7 @@ class Training(threading.Thread):
         self._replay_lock = threading.Lock()
         self._replay_feeder_thread: threading.Thread = None
         self._loss_fn = nn.CrossEntropyLoss()
-        self._logger_data_queue = mp.Queue()
+        self._logging_queue = logging_queue
 
     def _replay_feeder(self):
         data = [
@@ -266,7 +276,8 @@ class Training(threading.Thread):
         loss.backward()
         self._optimizer.step()
 
-        self._logger_data_queue.put({"loss": loss.item()})
+        if self._logging_queue is not None:
+            self._logging_queue.put(logging.items.Scalar("Trainer/Loss", loss.item()))
 
     def _combine_embeddings(self, states, actions, rewards, positions):
         embeddings = torch.stack(
@@ -324,21 +335,9 @@ class Training(threading.Thread):
         self._replay_feeder_thread = threading.Thread(target=self._replay_feeder)
         self._replay_feeder_thread.start()
 
-        logger = Training._Logger(self._logger_data_queue)
-        logger.start()
-
         self._trainer()
 
-        logger.terminate()
-        logger.join()
         self._replay_feeder_thread.join()
-
-    class _Logger(ai.utils.logging.SummaryWriterServer):
-        def __init__(self, data_queue: mp.Queue):
-            super().__init__("training", data_queue)
-
-        def log(self, summary_writer: SummaryWriter, data: Any):
-            summary_writer.add_scalars("Training", data)
 
 
 class Inference(threading.Thread):
@@ -358,8 +357,9 @@ class Inference(threading.Thread):
         exploration_strategy: exploration_strategies.Base,
         config: TrainerConfig,
         data_queue: mp.Queue,
+        logging_queue: queue.Queue
     ):
-        super().__init__()
+        super().__init__(daemon=True)
 
         self._device = torch.device("cuda" if config.enable_cuda else "cpu")
         self._dtype = torch.float16 if config.enable_float16 else torch.float32
@@ -391,7 +391,7 @@ class Inference(threading.Thread):
         self._results: List[int] = []
         self._executed_condition = threading.Condition(threading.Lock())
 
-        self._logging_queue = mp.Queue()
+        self._logging_queue = logging_queue
 
     @property
     def data_queue(self) -> mp.Queue:
@@ -426,14 +426,8 @@ class Inference(threading.Thread):
         for thread in self._inference_threads:
             thread.start()
 
-        logger = Inference._Logger(self._logging_queue)
-        logger.start()
-
         while not self._sigterm_detected.wait(5.0):
             pass
-
-        logger.terminate()
-        logger.join()
 
     def _reset_inference_data(self):
         self._states = []
@@ -595,13 +589,6 @@ class Inference(threading.Thread):
             condition.wait_for(lambda: len(results) > i)
             return results[i]
 
-    class _Logger(ai.utils.logging.SummaryWriterServer):
-        def __init__(self, data_queue: mp.Queue):
-            super().__init__("inference_logs", data_queue)
-        
-        def log(self, summary_writer: SummaryWriter, data: Any):
-            summary_writer.add_scalars("Inference", data)
-
 
 class InferenceLoop:
     def __init__(
@@ -610,7 +597,7 @@ class InferenceLoop:
         inference: Inference,
         sigterm_detection: threading.Event,
         dtype: torch.dtype,
-        reward_logging_queue: mp.Queue
+        logging_queue: queue.Queue
     ):
         self._conn = connection
         self._inference = inference
@@ -628,7 +615,7 @@ class InferenceLoop:
         self._time_step = 0
         self._reward_to_gos = [0.0]
 
-        self._reward_logging_queue = reward_logging_queue
+        self._logging_queue = logging_queue
 
     def run(self):
         while not self._sigterm_detection.is_set():
@@ -656,8 +643,8 @@ class InferenceLoop:
                     torch.tensor(self._rewards, dtype=self._dtype),
                 )
             )
-            if self._reward_logging_queue is not None:
-                self._reward_logging_queue.put({"reward": sum(self._rewards)})
+            if self._logging_queue is not None:
+                self._logging_queue.put(logging.items.Scalar("Environment/Reward", sum(self._rewards)))
         else:
             self._first = False
 
@@ -668,6 +655,9 @@ class InferenceLoop:
         self._time_steps = []
         self._time_step = 0
         self._reward_to_gos = [self._inference.exploration_strategy.reward_to_go()]
+
+        if self._logging_queue is not None:
+            self._logging_queue.put(logging.items.Scalar("Environment/RewardToGo", self._reward_to_gos[0]))
 
     def _handle_data(self):
         state, action_mask, reward, self._terminal = self._conn.recv()

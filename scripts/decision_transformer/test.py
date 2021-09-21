@@ -85,22 +85,22 @@ def main():
         action_size=2,
         batch_size=8,
         max_episode_steps=200,
-        number_of_actors=1,
-        replay_capacity=10000,
-        min_replay_size=1000,
-        training_time=1200,
+        number_of_actors=6,
+        replay_capacity=100000,
+        min_replay_size=10000,
+        training_time=3600,
         inference_sequence_length=15,
         enable_float16=False,
-        enable_cuda=False,
-        inference_batchsize=8
+        enable_cuda=True,
+        inference_batchsize=3
     )
-    transformer = Transformer()
-    action_decoder = ActionDecoder()
-    state_encoder = StateEncoder()
-    action_encoder = ActionEncoder()
-    reward_encoder = RewardEncoder()
-    postion_encoder = PositionEncoder()
-    empty_embeddings = [torch.randn(8).requires_grad_() for _ in range(4)]
+    transformer = Transformer().cuda()
+    action_decoder = ActionDecoder().cuda()
+    state_encoder = StateEncoder().cuda()
+    action_encoder = ActionEncoder().cuda()
+    reward_encoder = RewardEncoder().cuda()
+    postion_encoder = PositionEncoder().cuda()
+    empty_embeddings = [torch.randn(8).cuda().requires_grad_() for _ in range(4)]
     optimizer = torch.optim.Adam(
         itertools.chain(
             transformer.parameters(),
@@ -129,9 +129,6 @@ def main():
         optimizer
     )
     trainer.train()
-
-    exploration_strategy_logger.terminate()
-    exploration_strategy_logger.join()
 
 
 if __name__ == "__main__":
