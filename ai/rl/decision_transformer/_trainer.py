@@ -281,20 +281,20 @@ class Training(threading.Thread):
 
     def _combine_embeddings(self, states, actions, rewards, positions):
         embeddings = torch.stack(
-            (actions, states, rewards), dim=2
+            (rewards, states, actions), dim=2
         )
         embeddings += positions.unsqueeze(2)
         # first sequence is (should be) an empty action embedding
-        return embeddings.view(embeddings.shape[0], -1, embeddings.shape[-1])[:, 1:]
+        return embeddings.view(embeddings.shape[0], -1, embeddings.shape[-1])
 
     def _embed_sequences(self, states, actions, rewards):
         states = self._state_encoder(states.to(self._device))
-        actions = self._action_encoder(actions.to(self._device))
+        actions = self._action_encoder(actions.to(self._device).to(self._dtype))
         rewards: torch.Tensor = rewards.to(self._device)
         rewards_to_go = rewards.sum(-1, keepdim=True).expand_as(rewards).clone()
         rewards_to_go[..., 1:] -= rewards[..., 1:]
         rewards_to_go = self._reward_encoder(rewards_to_go)
-        positions = self._positional_encoder(torch.arange(self._config.max_episode_steps, device=self._device))
+        positions = self._positional_encoder(torch.arange(self._config.max_episode_steps, device=self._device, dtype=self._dtype))
         return states, actions, rewards_to_go, positions
 
     def _get_action_logits(self, embeddings, action_masks):
@@ -445,7 +445,7 @@ class Inference(threading.Thread):
             encoder: nn.Module,
             offset=0,
         ) -> Tuple[List[torch.Tensor], List[torch.Tensor], List[torch.Tensor]]:
-            embeddings = encoder(torch.cat(data, dim=0))
+            embeddings = encoder(torch.cat(data, dim=0).to(self._dtype))
             return [
                 embeddings[
                     lengths_cumsummed_start_0[i]
