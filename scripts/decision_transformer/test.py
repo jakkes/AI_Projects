@@ -12,23 +12,6 @@ from ai.rl import decision_transformer as df
 EMBED_SPACE = 8
 
 
-class Transformer(nn.Module):
-    def __init__(self):
-        super().__init__()
-        
-        self._lstm = nn.LSTM(
-            input_size=EMBED_SPACE,
-            hidden_size=32,
-            num_layers=4,
-            batch_first=True,
-            proj_size=EMBED_SPACE
-        )
-
-    def forward(self, x):
-        h, c = self._lstm(x)
-        return h[:, -1]
-
-
 class StateEncoder(nn.Module):
     def __init__(self):
         super().__init__()
@@ -83,15 +66,18 @@ def main():
         batch_size=32,
         max_episode_steps=200,
         number_of_actors=6,
-        replay_capacity=10000,
-        min_replay_size=5000,
+        replay_capacity=100000,
+        min_replay_size=50000,
         training_time=3600,
         inference_sequence_length=15,
         enable_float16=True,
         enable_cuda=True,
         inference_batchsize=5
     )
-    transformer = Transformer().half().cuda()
+    transformer = nn.TransformerEncoder(
+        nn.TransformerEncoderLayer(EMBED_SPACE, 8, dim_feedforward=1024, batch_first=True),
+        3
+    ).half().cuda()
     action_decoder = ActionDecoder().half().cuda()
     state_encoder = StateEncoder().half().cuda()
     action_encoder = ActionEncoder().half().cuda()

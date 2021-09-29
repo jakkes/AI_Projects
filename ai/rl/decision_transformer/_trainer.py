@@ -249,6 +249,9 @@ class Training(threading.Thread):
             self._exploration_strategy.update(data[3])
             data = [torch.zeros_like(x) for x in data]
 
+            if self._logging_queue is not None:
+                self._logging_queue.put(logging.items.Scalar("Replay/Size", self._replay.size))
+
             i = 0
 
     def _block_until_large_enough_buffer(self):
@@ -299,7 +302,7 @@ class Training(threading.Thread):
 
     def _get_action_logits(self, embeddings, action_masks):
         action_logits: torch.Tensor = self._action_decoder(
-            self._transformer(embeddings)
+            self._transformer(embeddings)[:, -1]
         )
         action_logits[~action_masks] = -inf
         return action_logits
@@ -524,7 +527,7 @@ class Inference(threading.Thread):
 
     def _get_actions(self, embeddings):
         action_logits: torch.Tensor = self._action_decoder(
-            self._transformer(embeddings)
+            self._transformer(embeddings)[:, -1]
         )
         action_masks = torch.stack(self._action_masks)
         action_logits[~action_masks] = -inf
