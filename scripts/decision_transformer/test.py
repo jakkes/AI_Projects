@@ -15,6 +15,7 @@ EMBED_SPACE = 8
 class Transformer(nn.Module):
     def __init__(self):
         super().__init__()
+        
         self._lstm = nn.LSTM(
             input_size=EMBED_SPACE,
             hidden_size=32,

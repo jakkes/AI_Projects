@@ -4,6 +4,14 @@
 from . import exploration_strategies
 from ._trainer import Trainer
 from ._trainer_config import TrainerConfig
+from ._transformer import Transformer, Attention, MultiHeadAttention
 
 
-__all__ = ["exploration_strategies", "Trainer", "TrainerConfig"]
+__all__ = [
+    "exploration_strategies",
+    "Trainer",
+    "TrainerConfig",
+    "Transformer",
+    "Attention",
+    "MultiHeadAttention"
+]
