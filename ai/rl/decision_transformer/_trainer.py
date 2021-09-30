@@ -20,25 +20,6 @@ from ._trainer_config import TrainerConfig
 REPLAY_FEEDER_STEPS = 100
 
 
-@torch.jit.script
-def _to_batches(embeddings: torch.Tensor, lengths: torch.Tensor, inference_sequence_length: int):
-    
-    sequences = []
-
-    for i, l in enumerate(lengths):
-        for j in range(int(l)):
-            sequences.append(embeddings[i, 3*j:3*(j+inference_sequence_length)-1])
-
-    return torch.stack(sequences, dim=0)
-
-@torch.jit.script
-def _actions_to_batches(actions: torch.Tensor, lengths: torch.Tensor):
-    out_actions = []
-    for i, l in enumerate(lengths):
-        out_actions.append(actions[i, :l])
-    return torch.cat(out_actions)
-
-
 class Trainer:
     """Trainer object, training a Decision Transformer model."""
 
@@ -48,12 +29,8 @@ class Trainer:
         action_encoder: nn.Module,
         reward_encoder: nn.Module,
         positional_encoder: nn.Module,
-        transformer: nn.Module,
+        transformer: nn.TransformerEncoder,
         action_decoder: nn.Module,
-        state_empty_embedding: torch.Tensor,
-        action_empty_embedding: torch.Tensor,
-        reward_empty_embedding: torch.Tensor,
-        position_empty_embedding: torch.Tensor,
         environment: environments.Factory,
         exploration_strategy: exploration_strategies.Base,
         config: TrainerConfig,
@@ -68,10 +45,6 @@ class Trainer:
         self._positional_encoder = positional_encoder
         self._action_decoder = action_decoder
         self._transformer = transformer
-        self._state_empty_embedding = state_empty_embedding
-        self._action_empty_embedding = action_empty_embedding
-        self._reward_empty_embedding = reward_empty_embedding
-        self._empty_positional_embedding = position_empty_embedding
         self._optimizer = optimizer
         self._config = config
         self._exploration_strategy = exploration_strategy
@@ -100,10 +73,6 @@ class Trainer:
             self._positional_encoder,
             self._action_decoder,
             self._transformer,
-            self._state_empty_embedding,
-            self._action_empty_embedding,
-            self._reward_empty_embedding,
-            self._empty_positional_embedding,
             self._environment,
             self._exploration_strategy,
             self._config,
@@ -119,10 +88,6 @@ class Trainer:
             self._positional_encoder,
             self._action_decoder,
             self._transformer,
-            self._state_empty_embedding,
-            self._action_empty_embedding,
-            self._reward_empty_embedding,
-            self._empty_positional_embedding,
             self._environment,
             self._exploration_strategy,
             self._config,
@@ -157,11 +122,7 @@ class Training(threading.Thread):
         reward_encoder: nn.Module,
         positional_encoder: nn.Module,
         action_decoder: nn.Module,
-        transformer: nn.Module,
-        state_empty_embedding: torch.Tensor,
-        action_empty_embedding: torch.Tensor,
-        reward_empty_embedding: torch.Tensor,
-        position_empty_embedding: torch.Tensor,
+        transformer: nn.TransformerEncoder,
         environment: environments.Factory,
         exploration_strategy: exploration_strategies.Base,
         config: TrainerConfig,
@@ -179,10 +140,6 @@ class Training(threading.Thread):
         self._positional_encoder = positional_encoder
         self._action_decoder = action_decoder
         self._transformer = transformer
-        self._state_empty_embedding = state_empty_embedding
-        self._action_empty_embedding = action_empty_embedding
-        self._reward_empty_embedding = reward_empty_embedding
-        self._empty_positional_embedding = position_empty_embedding
         self._config = config
         self._exploration_strategy = exploration_strategy
         self._environment = environment
@@ -269,10 +226,10 @@ class Training(threading.Thread):
         embeddings = self._embed_sequences(states, actions, rewards)
         embeddings = self._pad_embeddings(*embeddings)
         embeddings = self._combine_embeddings(*embeddings)
-        embeddings = _to_batches(embeddings, lengths, self._config.inference_sequence_length)
-        target_actions = _actions_to_batches(actions.to(self._device), lengths)
-        action_masks = _actions_to_batches(action_masks.to(self._device), lengths)
-        action_logits = self._get_action_logits(embeddings, action_masks)
+        # target_actions = _actions_to_batches(actions.to(self._device), lengths)
+        # action_masks = _actions_to_batches(action_masks.to(self._device), lengths)
+        action_logits = self._get_action_logits(embeddings, action_masks, lengths)
+        target_actions = None
 
         loss = self._loss_fn(action_logits, target_actions)
         self._optimizer.zero_grad()
@@ -300,7 +257,11 @@ class Training(threading.Thread):
         positions = self._positional_encoder(torch.arange(self._config.max_episode_steps, device=self._device, dtype=self._dtype))
         return states, actions, rewards_to_go, positions
 
-    def _get_action_logits(self, embeddings, action_masks):
+    def _get_action_logits(self, embeddings, action_masks, lengths):
+        max_length = lengths.max()
+        embeddings = embeddings[:, :max_length]
+        action_masks = action_masks[:, :max_length]
+        self._transformer(embeddings, src_)
         action_logits: torch.Tensor = self._action_decoder(
             self._transformer(embeddings)[:, -1]
         )
