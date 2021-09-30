@@ -29,7 +29,7 @@ class Trainer:
         action_encoder: nn.Module,
         reward_encoder: nn.Module,
         positional_encoder: nn.Module,
-        transformer: nn.TransformerEncoder,
+        transformer: "ai.rl.decision_transformer.TransformerEncoder",
         action_decoder: nn.Module,
         environment: environments.Factory,
         exploration_strategy: exploration_strategies.Base,
@@ -100,9 +100,9 @@ class Trainer:
         start_time = time.perf_counter()
         while (
             time.perf_counter() - start_time < self._config.training_time
-            and not self._stop_training.is_set()
+            and not self._stop_training.wait(timeout=10.0)
         ):
-            time.sleep(1.0)
+            pass
 
         inference.stop()
         training.stop()
@@ -122,7 +122,7 @@ class Training(threading.Thread):
         reward_encoder: nn.Module,
         positional_encoder: nn.Module,
         action_decoder: nn.Module,
-        transformer: nn.TransformerEncoder,
+        transformer: "ai.rl.decision_transformer.TransformerEncoder",
         environment: environments.Factory,
         exploration_strategy: exploration_strategies.Base,
         config: TrainerConfig,
@@ -224,7 +224,6 @@ class Training(threading.Thread):
                 _,
             ) = self._replay.sample(self._config.batch_size)
         embeddings = self._embed_sequences(states, actions, rewards)
-        embeddings = self._pad_embeddings(*embeddings)
         embeddings = self._combine_embeddings(*embeddings)
         # target_actions = _actions_to_batches(actions.to(self._device), lengths)
         # action_masks = _actions_to_batches(action_masks.to(self._device), lengths)
@@ -259,33 +258,19 @@ class Training(threading.Thread):
 
     def _get_action_logits(self, embeddings, action_masks, lengths):
         max_length = lengths.max()
-        embeddings = embeddings[:, :max_length]
+        batch_vec = torch.arange(lengths.shape[0])
+        embeddings = embeddings[:, :max_length*3]
         action_masks = action_masks[:, :max_length]
-        self._transformer(embeddings, src_)
+
+        attention_mask = torch.ones(*embeddings.shape[:2], embeddings.shape[1])
+        torch.tril(attention_mask, out=attention_mask)
+
+        embeddings = self._transformer(embeddings, mask=attention_mask)
         action_logits: torch.Tensor = self._action_decoder(
-            self._transformer(embeddings)[:, -1]
+            self._transformer(embeddings, mask=attention_mask)[batch_vec, lengths-1]
         )
         action_logits[~action_masks] = -inf
         return action_logits
-
-    def _pad_embeddings(self, states, actions, rewards, positions):
-        def _pad(embeddings, empty_embedding, offset=1):
-            return torch.cat(
-                (
-                    empty_embedding.view(1, 1, -1).expand(
-                        embeddings.shape[0], self._config.inference_sequence_length - offset, -1
-                    ),
-                    embeddings,
-                ),
-                dim=1,
-            )
-
-        states = _pad(states, self._state_empty_embedding)
-        actions = _pad(actions, self._action_empty_embedding)
-        rewards = _pad(rewards, self._reward_empty_embedding)
-        positions = _pad(positions.unsqueeze(0), self._empty_positional_embedding)
-
-        return states, actions, rewards, positions
 
     def _trainer(self):
         self._block_until_large_enough_buffer()
@@ -312,11 +297,7 @@ class Inference(threading.Thread):
         reward_encoder: nn.Module,
         positional_encoder: nn.Module,
         action_decoder: nn.Module,
-        transformer: nn.Module,
-        state_empty_embedding: torch.Tensor,
-        action_empty_embedding: torch.Tensor,
-        reward_empty_embedding: torch.Tensor,
-        position_empty_embedding: torch.Tensor,
+        transformer: "ai.rl.decision_transformer.TransformerEncoder",
         environment: environments.Factory,
         exploration_strategy: exploration_strategies.Base,
         config: TrainerConfig,
@@ -334,10 +315,6 @@ class Inference(threading.Thread):
         self._positional_encoder = positional_encoder
         self._action_decoder = action_decoder
         self._transformer = transformer
-        self._state_empty_embedding = state_empty_embedding
-        self._action_empty_embedding = action_empty_embedding
-        self._reward_empty_embedding = reward_empty_embedding
-        self._empty_positional_embedding = position_empty_embedding
         self._config = config
         self._exploration_strategy = exploration_strategy
         self._environment = environment
@@ -429,40 +406,6 @@ class Inference(threading.Thread):
         reward_embeddings = embed(self._rewards_to_go, lengths, self._reward_encoder)
         positional_embeddings = embed(
             self._positions, lengths, self._positional_encoder
-        )
-
-        return (
-            state_embeddings,
-            action_embeddings,
-            reward_embeddings,
-            positional_embeddings,
-        )
-
-    def _pad_embeddings(
-        self,
-        state_embeddings: List[torch.Tensor],
-        action_embeddings: List[torch.Tensor],
-        reward_embeddings: List[torch.Tensor],
-        positional_embeddings: List[torch.Tensor],
-    ):
-        def pad(
-            empty_embedding: torch.Tensor, embeddings: List[torch.Tensor]
-        ) -> torch.Tensor:
-            for i in range(len(embeddings)):
-                npad = self._config.inference_sequence_length - embeddings[i].shape[0]
-                if npad < 0:
-                    raise RuntimeError()
-
-                embeddings[i] = torch.cat(
-                    (empty_embedding.unsqueeze(0).expand((npad, -1)), embeddings[i])
-                )
-            return torch.stack(embeddings)
-
-        state_embeddings = pad(self._state_empty_embedding, state_embeddings)
-        action_embeddings = pad(self._action_empty_embedding, action_embeddings)
-        reward_embeddings = pad(self._reward_empty_embedding, reward_embeddings)
-        positional_embeddings = pad(
-            self._empty_positional_embedding, positional_embeddings
         )
 
         return (
@@ -670,9 +613,6 @@ class Actor(mp.Process):
         self._stop_signal.set()
 
     def run(self) -> None:
-        self._stop_signal = threading.Event()
-        signal.signal(signal.SIGTERM, self._sigterm)
-
         env = self._environment()
         action_space = env.action_space.as_discrete()
 
