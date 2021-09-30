@@ -21,15 +21,15 @@ class Attention(nn.Module):
                 dim=-1,
             ).matmul(self.lin_v(x))
         else:
-            mask = ~mask
+            imask = ~mask
             presoftmax = (
                 self.lin_q(x)
                 .matmul(self.lin_k(x).transpose(-1, -2))
                 .div_(self.sqrt_d_k)
             )
-            presoftmax[mask] = -math.inf
+            presoftmax[imask] = -math.inf
             softmax = torch.softmax(presoftmax, dim=-1)
-            softmax[torch.where(torch.all(mask, dim=-1))] = 0
+            softmax[torch.where(torch.all(imask, dim=-1))] = 0
             return softmax.matmul(self.lin_v(x))
 
 
