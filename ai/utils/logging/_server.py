@@ -22,7 +22,7 @@ def run(port: Optional[int], name: str,  conn: Connection, fields: Mapping[str, 
     conn.close()
 
     while True:
-        if socket.poll(timeout=1.0, flags=zmq.POLLIN) != zmq.POLLIN:
+        if socket.poll(timeout=1000.0, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
         field, value = socket.recv_pyobj()
         fields[field].log(writer, value)
@@ -65,7 +65,8 @@ class Server:
         self._process = Process(target=run, args=(self._port, self._name, b, self._fields), daemon=True)
         self._process.start()
         for _ in range(15):
-            a.poll(timeout=1.0)
+            if a.poll(timeout=1.0):
+                break
         if not a.poll(timeout=0):
             raise RuntimeError(f"Failed starting logging server '{self._name}'.")
         self._port = a.recv()

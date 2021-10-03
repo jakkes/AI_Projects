@@ -21,7 +21,7 @@ When evaluating a model, use the `mcts` method.
 
 from ._core.learner_worker import LearnerWorker, LearnerConfig
 from ._core.self_play_worker import SelfPlayWorker, SelfPlayConfig
-from ._core.loggers import LearnerLogger, SelfPlayLogger
+from ._core.logger import Logger
 from ._core.mcts import mcts, MCTSConfig
 from ._core.mcts_node import MCTSNode
 from ._train import train
@@ -33,8 +33,7 @@ __all__ = [
     "LearnerConfig",
     "SelfPlayWorker",
     "SelfPlayConfig",
-    "LearnerLogger",
-    "SelfPlayLogger",
+    "Logger",
     "MCTSConfig",
     "MCTSNode",
     "train",

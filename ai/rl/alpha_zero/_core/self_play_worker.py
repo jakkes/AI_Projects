@@ -1,4 +1,3 @@
-import logging
 from queue import Full
 
 import numpy as np
@@ -8,19 +7,14 @@ from torch import nn
 from torch.multiprocessing import Process, Queue
 
 import ai.simulators as simulators
+import ai.utils.logging as logging
 
 from .mcts import mcts, MCTSConfig
 
 
-logger = logging.getLogger(__name__)
-
-
 class SelfPlayConfig(MCTSConfig):
     """Configuration for the self play worker."""
-
-    def __init__(self):
-        super().__init__()
-
+    pass
 
 class SelfPlayWorker(Process):
     def __init__(
@@ -29,14 +23,14 @@ class SelfPlayWorker(Process):
         network: nn.Module,
         config: SelfPlayConfig,
         sample_queue: Queue,
-        episode_logging_queue: Queue = None,
+        log_client: logging.Client = None,
     ):
         super().__init__(daemon=True)
         self.simulator = simulator()
         self.network = network
         self.config = config
         self.sample_queue = sample_queue
-        self.episode_logging_queue = episode_logging_queue
+        self.log_client = log_client
 
     def run_episode(self):
         states, action_masks, action_policies = [], [], []
@@ -84,13 +78,14 @@ class SelfPlayWorker(Process):
             action_mask = self.simulator.action_space.as_discrete.action_mask(state)
             root = root.children[action]
 
-        if self.episode_logging_queue is not None:
+        if self.log_client is not None:
             kl_div = -(
                 first_action_policy * torch.log_softmax(start_prior, dim=0).numpy()
             ).sum()
-            self.episode_logging_queue.put_nowait(
-                (abs(reward), start_value, kl_div, first_action)
-            )
+            self.log_client.log("Episode/Reward", reward)
+            self.log_client.log("Episode/Start value", start_value)
+            self.log_client.log("Episode/Start KL Div", kl_div)
+            self.log_client.log("Episode/First action", first_action)
 
         states = torch.as_tensor(np.stack(states), dtype=torch.float)
         action_masks = torch.as_tensor(np.stack(action_masks))
@@ -108,5 +103,4 @@ class SelfPlayWorker(Process):
             try:
                 self.sample_queue.put(self.run_episode(), timeout=5)
             except Full:
-                logger.warn("Sample queue full. Skipping...")
                 continue
