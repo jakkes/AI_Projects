@@ -30,7 +30,7 @@ class Trainer:
         self._env_factory = environment
 
         self._logging_queue = Queue(maxsize=2000)
-        self._logging_server = logging.SummaryWriterServer("RainbowTrainer", self._logging_queue)
+        self._logging_server = logging.Server("RainbowTrainer", self._logging_queue)
         self._agent.set_logging_queue(self._logging_queue)
         self._env_factory.set_logging_queue(self._logging_queue)
 

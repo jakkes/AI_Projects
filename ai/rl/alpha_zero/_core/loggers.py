@@ -1,10 +1,10 @@
 from typing import Any
 from torch.utils.tensorboard.writer import SummaryWriter
 from torch.multiprocessing import Queue
-from ai.utils.logging import SummaryWriterServer
+import ai.utils.logging as logging
 
 
-class LearnerLogger(SummaryWriterServer):
+class LearnerLogger(Server):
     """Logging server for the `LearnerWorker`."""
     def __init__(self, data_queue: Queue):
         """
@@ -19,7 +19,7 @@ class LearnerLogger(SummaryWriterServer):
         writer.add_scalar("Training/Loss", data, global_step=self.step)
 
 
-class SelfPlayLogger(SummaryWriterServer):
+class SelfPlayLogger(Server):
     """Logging server for the `SelfPlayWorker`."""
     def __init__(self, data_queue: Queue):
         """

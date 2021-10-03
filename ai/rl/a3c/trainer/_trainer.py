@@ -33,23 +33,38 @@ class Trainer:
                 optimizer class at initialization.
         """
         self._config = config
-        self._logging_queue = Queue()
+        self._environment = environment
+        self._optimizer_class = optimizer_class
+        self._optimizer_params = optimizer_params
+        self._network = network
         network.share_memory()
-        self._workers = [
-            Worker(config, environment, network, optimizer_class, optimizer_params, self._logging_queue)
-        ]
-        self._logger = Logger(self._logging_queue)
+        self._workers: List[Worker] = []
+        self._logger = Logger()
 
     def start(self):
         """Starts the training and blocks until it has finished."""
+
+        log_port = self._logger.start()
+
+        self._workers = [
+            Worker(
+                self._config,
+                self._environment,
+                self._network,
+                self._optimizer_class,
+                self._optimizer_params,
+                log_port,
+            )
+            for _ in range(self._config.workers)
+        ]
+
         for worker in self._workers:
             worker.start()
-        self._logger.start()
 
         start_time = perf_counter()
         while perf_counter() - start_time < self._config.train_time:
             sleep(5.0)
-        
+
         for worker in self._workers:
             worker.terminate()
         self._logger.terminate()
