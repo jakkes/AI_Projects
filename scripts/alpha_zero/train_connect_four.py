@@ -22,5 +22,5 @@ if __name__ == "__main__":
         optim.Adam(net.parameters(), lr=1e-3),
         save_path="models/alpha_zero/connect_four",
         save_period=60,
-        train_time=120,
+        train_time=300,
     )
