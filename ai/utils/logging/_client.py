@@ -1,3 +1,4 @@
+from typing import Any
 import zmq
 
 
@@ -15,3 +16,6 @@ class Client:
         self._host, self._port = data
         self._socket = zmq.Context.instance().socket(zmq.PUB)
         self._socket.connect(f"tcp://{self._host}:{self._port}")
+
+    def log(self, field: str, value: Any):
+        self._socket.send_pyobj((field, value))
