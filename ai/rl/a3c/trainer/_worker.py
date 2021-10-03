@@ -97,13 +97,15 @@ class Worker(Process):
                         for _, param in self._network.named_parameters()
                     )
                 )
+                
+                self._log_client.log("Agent/Loss", self._loss.detach().item())
+                self._log_client.log("Agent/Grad. magn.", gradmagn)
+                
                 self._optimizer.step()
                 self._steps = 0
                 self._loss = 0.0
                 self._reward_collector.clear()
 
-                self._log_client.log("Agent/Loss", self._loss.detach().item())
-                self._log_client.log("Agent/Grad. magn.", gradmagn)
 
     def _step(self):
         action, logits, value = _get_action_logit_value(

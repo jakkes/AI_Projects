@@ -24,7 +24,7 @@ def run(port: Optional[int], name: str,  conn: Connection, fields: Mapping[str, 
     while True:
         if socket.poll(timeout=1.0, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
-        field, value = socket.recv()
+        field, value = socket.recv_pyobj()
         fields[field].log(writer, value)
 
 
@@ -39,7 +39,6 @@ class Server:
             port (int, optional): Port on which the server will listen for logging
                 values. If `None`, then a random port is chosen.
         """
-        super().__init__(daemon=True)
         self._fields = {field.name: field for field in fields}
         self._writer: SummaryWriter = None
         self._port = port
@@ -64,6 +63,7 @@ class Server:
         """
         a, b = Pipe(duplex=False)
         self._process = Process(target=run, args=(self._port, self._name, b, self._fields), daemon=True)
+        self._process.start()
         for _ in range(15):
             a.poll(timeout=1.0)
         if not a.poll(timeout=0):
