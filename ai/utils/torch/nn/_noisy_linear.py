@@ -37,15 +37,15 @@ class NoisyLinear(nn.Linear):
         self.register_buffer("weps", torch.zeros(out_features, in_features))
         self.register_buffer("beps", torch.zeros(out_features))
 
+        self._device: torch.device = None
+
     def forward(self, x):
         """"""
         if self.training:
-            epsin = NoisyLinear.get_noise(self.in_features)
-            epsout = NoisyLinear.get_noise(self.out_features)
+            epsin = self.get_noise(self.in_features, self.noise_weight.dtype, self.noise_weight.device)
+            epsout = self.get_noise(self.out_features, self.noise_weight.dtype, self.noise_weight.device)
             self.weps = epsout.ger(epsin)
-            self.beps = self.get_noise(self.out_features)
-            # self.weps.copy_(epsout.ger(epsin))
-            # self.beps.copy_(self.get_noise(self.out_features))
+            self.beps = self.get_noise(self.out_features, self.noise_weight.dtype, self.noise_weight.device)
 
             return super().forward(x) + F.linear(
                 x, self.noise_weight * self.weps, self.noise_bias * self.beps
@@ -55,6 +55,6 @@ class NoisyLinear(nn.Linear):
 
     @staticmethod
     @torch.jit.script
-    def get_noise(size: int) -> Tensor:
-        x = torch.randn(size)
+    def get_noise(size: int, dtype: torch.dtype, device: torch.device) -> Tensor:
+        x = torch.randn(size, dtype=dtype, device=device)
         return x.sign() * x.abs().sqrt_()
