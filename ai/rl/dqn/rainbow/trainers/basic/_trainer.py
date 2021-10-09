@@ -29,10 +29,16 @@ class Trainer:
         self._config = config
         self._env_factory = environment
 
-        self._logging_queue = Queue(maxsize=2000)
-        self._logging_server = logging.Server("RainbowTrainer", self._logging_queue)
-        self._agent.set_logging_queue(self._logging_queue)
-        self._env_factory.set_logging_queue(self._logging_queue)
+        self._logging_server = logging.Server(
+            logging.field.Scalar("Environment/Reward"),
+            logging.field.Scalar("Value/Start value"),
+            logging.field.Scalar("Environment/Steps"),
+            logging.field.Scalar("RainbowAgent/Loss"),
+            logging.field.Scalar("RainbowAgent/Max error"),
+            logging.field.Scalar("RainbowAgent/Gradient norm"),
+            name="RainbowTrainer"
+        )
+        self._logging_client: logging.Client = None
 
         self._reward_collector = rl.utils.NStepRewardCollector(
             config.n_step,
@@ -83,8 +89,7 @@ class Trainer:
             mask = env.action_space.as_discrete().action_mask
             self._train_step()
 
-        self._logging_queue.put(logging.items.Scalar("Value/Start value", start_value))
-        self._logging_queue.put(logging.items.Scalar("Environment/Steps", step))
+        self._logging_client.log("Value/Start value", start_value)
 
     def _add_to_collector(self, state, action, action_mask, reward, terminal):
         out = self._reward_collector.step(
@@ -106,12 +111,13 @@ class Trainer:
     def start(self):
         """Starts training, according to the configuration."""
 
-        self._logging_server.start()
+        port = self._logging_server.start()
+        self._logging_client = logging.Client("127.0.0.1", port)
+        self._env_factory.set_logging_client(self._logging_client)
+        self._agent.set_logging_client(self._logging_client)
 
         env = self._env_factory()
         try:
             self._run(env)
         finally:
             env.close()
-            self._logging_server.terminate()
-            self._logging_server.join()
