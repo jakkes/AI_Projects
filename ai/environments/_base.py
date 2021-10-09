@@ -1,10 +1,10 @@
-import queue
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 from abc import ABC, abstractmethod
 
 import numpy as np
 
 import ai.environments as environments
+import ai.utils.logging as logging
 
 
 class Base(ABC):
@@ -17,7 +17,7 @@ class Base(ABC):
     def __init__(self) -> None:
         """ """
         super().__init__()
-        self._logging_queue: queue.Queue = None
+        self.__logging_client: logging.Client = None
 
     @property
     @abstractmethod
@@ -66,10 +66,13 @@ class Base(ABC):
         class of your choice."""
         return environments.Factory(cls, *args, **kwargs)
 
-    def set_logging_queue(self, q: queue.Queue):
-        """Sets the logging queue, into which logitems are passed by the environment.
 
-        Args:
-            q (queue.Queue): Data queue. If `None`, logging is disabled.
-        """
-        self._logging_queue = q
+    @property
+    def logging_client(self) -> Optional[logging.Client]:
+        """The logging client used by the environment. If `None`, logging is
+        disabled."""
+        return self.__logging_client
+
+    @logging_client.setter
+    def logging_client(self, client: logging.Client):
+        self.__logging_client = client
