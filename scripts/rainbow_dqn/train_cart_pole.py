@@ -7,7 +7,7 @@ import ai.rl.dqn.rainbow as rainbow
 
 
 class ArgumentParser(tap.Tap):
-    episodes: int = 100
+    episodes: int = 1000
     """Number of episodes to run the training for."""
 
     batch_size: int = 32
