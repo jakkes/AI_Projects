@@ -31,7 +31,10 @@ def run(port: Optional[int], name: str,  conn: Connection, fields: Mapping[str, 
             fields[field].log(writer, value)
         except KeyError:
             if field not in failed_keys:
-                warnings.warn(f"Failed logging field '{field}'.")
+                warnings.warn(
+                    f"Failed logging field '{field}'. Make sure these fields are "
+                    "configured by your logging server."
+                )
                 failed_keys.add(field)
 
 
@@ -47,7 +50,6 @@ class Server:
                 values. If `None`, then a random port is chosen.
         """
         self._fields = {field.name: field for field in fields}
-        self._writer: SummaryWriter = None
         self._port = port
         self._name = name
         self._process: Process = None
