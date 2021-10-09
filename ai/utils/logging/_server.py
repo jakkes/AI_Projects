@@ -1,9 +1,9 @@
-from typing import Any, Mapping, Optional
-import zmq
-from queue import Empty
-from multiprocessing import Process, Event
+import warnings
+from typing import  Mapping, Optional
+from multiprocessing import Process
 from multiprocessing.connection import Connection, Pipe
 
+import zmq
 from torch.utils.tensorboard.writer import SummaryWriter
 
 import ai.utils.logging as logging
@@ -21,11 +21,18 @@ def run(port: Optional[int], name: str,  conn: Connection, fields: Mapping[str, 
     conn.send(port)
     conn.close()
 
+    failed_keys = set()
+
     while True:
         if socket.poll(timeout=1000.0, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
         field, value = socket.recv_pyobj()
-        fields[field].log(writer, value)
+        try:
+            fields[field].log(writer, value)
+        except KeyError:
+            if field not in failed_keys:
+                warnings.warn(f"Failed logging field '{field}'.")
+                failed_keys.add(field)
 
 
 class Server:
