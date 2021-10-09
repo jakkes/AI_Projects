@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Optional
 
 import ai.environments as environments
 import ai.utils.logging as logging
