@@ -173,29 +173,6 @@ def reset(self) -&gt; np.ndarray:
     raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="ai.environments.Base.set_logging_queue"><code class="name flex">
-<span>def <span class="ident">set_logging_queue</span></span>(<span>self, q: queue.Queue)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Sets the logging queue, into which logitems are passed by the environment.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>q</code></strong> :&ensp;<code>queue.Queue</code></dt>
-<dd>Data queue. If <code>None</code>, logging is disabled.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_logging_queue(self, q: queue.Queue):
-    &#34;&#34;&#34;Sets the logging queue, into which logitems are passed by the environment.
-
-    Args:
-        q (queue.Queue): Data queue. If `None`, logging is disabled.
-    &#34;&#34;&#34;
-    self._logging_queue = q</code></pre>
-</details>
-</dd>
 <dt id="ai.environments.Base.step"><code class="name flex">
 <span>def <span class="ident">step</span></span>(<span>self, action: int) ‑> Tuple[numpy.ndarray, float, bool, Dict[~KT, ~VT]]</span>
 </code></dt>
@@ -247,50 +224,20 @@ def step(self, action: int) -&gt; Tuple[np.ndarray, float, bool, Dict]:
 environment <code>__init__</code> method.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>ai.environments._gym_wrapper.GymWrapper.Factory</li>
 <li>ai.environments._simulator_wrapper.SimulatorWrapper.Factory</li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="ai.environments.Factory.set_logging_queue"><code class="name flex">
-<span>def <span class="ident">set_logging_queue</span></span>(<span>self, q: queue.Queue)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Sets the logging queue, into which logitems are passed by the environment.
-When environments are spawned through this factory object, their logging queue
-will be set to this value.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>q</code></strong> :&ensp;<code>queue.Queue</code></dt>
-<dd>Data queue. If <code>None</code>, logging is disabled.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_logging_queue(self, q: queue.Queue):
-    &#34;&#34;&#34;Sets the logging queue, into which logitems are passed by the environment.
-    When environments are spawned through this factory object, their logging queue
-    will be set to this value.
-
-    Args:
-        q (queue.Queue): Data queue. If `None`, logging is disabled.
-    &#34;&#34;&#34;
-    self._logging_queue = q</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 <dt id="ai.environments.GymWrapper"><code class="flex name class">
 <span>class <span class="ident">GymWrapper</span></span>
-<span>(</span><span>env: gym.core.Env)</span>
+<span>(</span><span>env: Union[gym.core.Env, str])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Environment wrapper for openAI gym environments.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>env</code></strong> :&ensp;<code>gym.Env</code></dt>
-<dd>Environment instance to wrap.</dd>
+<dt><strong><code>env</code></strong> :&ensp;<code>Union[gym.Env, str]</code></dt>
+<dd>Environment instance to wrap, or the gym
+environment identifier..</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -303,30 +250,6 @@ will be set to this value.</p>
 <dd>
 <div class="desc"><p>Discrete action space that wraps a discrete openAI Gym action space.</p></div>
 </dd>
-<dt id="ai.environments.GymWrapper.Factory"><code class="name">var <span class="ident">Factory</span></code></dt>
-<dd>
-<div class="desc"><p>Factories are callable objects that spawn environment instances.</p></div>
-</dd>
-</dl>
-<h3>Static methods</h3>
-<dl>
-<dt id="ai.environments.GymWrapper.get_factory"><code class="name flex">
-<span>def <span class="ident">get_factory</span></span>(<span>env_id: str) ‑> ai.environments._gym_wrapper.GymWrapper.Factory</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Creates an environment factory that spawns the specific <code>env_id</code>. For
-possible values, see the openAI gym documentation.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def get_factory(cls, env_id: str) -&gt; &#34;GymWrapper.Factory&#34;:
-    &#34;&#34;&#34;Creates an environment factory that spawns the specific `env_id`. For
-    possible values, see the openAI gym documentation.&#34;&#34;&#34;
-    return GymWrapper.Factory(env_id)</code></pre>
-</details>
-</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -334,9 +257,9 @@ def get_factory(cls, env_id: str) -&gt; &#34;GymWrapper.Factory&#34;:
 <ul class="hlist">
 <li><code><a title="ai.environments.Base.action_space" href="#ai.environments.Base.action_space">action_space</a></code></li>
 <li><code><a title="ai.environments.Base.close" href="#ai.environments.Base.close">close</a></code></li>
+<li><code><a title="ai.environments.Base.get_factory" href="#ai.environments.Base.get_factory">get_factory</a></code></li>
 <li><code><a title="ai.environments.Base.render" href="#ai.environments.Base.render">render</a></code></li>
 <li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
-<li><code><a title="ai.environments.Base.set_logging_queue" href="#ai.environments.Base.set_logging_queue">set_logging_queue</a></code></li>
 <li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
 </ul>
 </li>
@@ -391,7 +314,6 @@ def get_factory(cls, factory: simulators.Factory) -&gt; &#34;SimulatorWrapper.Fa
 <li><code><a title="ai.environments.Base.close" href="#ai.environments.Base.close">close</a></code></li>
 <li><code><a title="ai.environments.Base.render" href="#ai.environments.Base.render">render</a></code></li>
 <li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
-<li><code><a title="ai.environments.Base.set_logging_queue" href="#ai.environments.Base.set_logging_queue">set_logging_queue</a></code></li>
 <li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
 </ul>
 </li>
@@ -426,22 +348,16 @@ def get_factory(cls, factory: simulators.Factory) -&gt; &#34;SimulatorWrapper.Fa
 <li><code><a title="ai.environments.Base.get_factory" href="#ai.environments.Base.get_factory">get_factory</a></code></li>
 <li><code><a title="ai.environments.Base.render" href="#ai.environments.Base.render">render</a></code></li>
 <li><code><a title="ai.environments.Base.reset" href="#ai.environments.Base.reset">reset</a></code></li>
-<li><code><a title="ai.environments.Base.set_logging_queue" href="#ai.environments.Base.set_logging_queue">set_logging_queue</a></code></li>
 <li><code><a title="ai.environments.Base.step" href="#ai.environments.Base.step">step</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="ai.environments.Factory" href="#ai.environments.Factory">Factory</a></code></h4>
-<ul class="">
-<li><code><a title="ai.environments.Factory.set_logging_queue" href="#ai.environments.Factory.set_logging_queue">set_logging_queue</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="ai.environments.GymWrapper" href="#ai.environments.GymWrapper">GymWrapper</a></code></h4>
 <ul class="">
 <li><code><a title="ai.environments.GymWrapper.ActionSpace" href="#ai.environments.GymWrapper.ActionSpace">ActionSpace</a></code></li>
-<li><code><a title="ai.environments.GymWrapper.Factory" href="#ai.environments.GymWrapper.Factory">Factory</a></code></li>
-<li><code><a title="ai.environments.GymWrapper.get_factory" href="#ai.environments.GymWrapper.get_factory">get_factory</a></code></li>
 </ul>
 </li>
 <li>

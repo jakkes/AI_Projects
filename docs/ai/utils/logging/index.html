@@ -30,18 +30,19 @@
 <pre><code class="python">&#34;&#34;&#34;Logging utilities.&#34;&#34;&#34;
 
 
-from . import items
-from ._summary_writer_server import SummaryWriterServer
+from . import field
+from ._server import Server
+from ._client import Client
 
-__all__ = [&#34;items&#34;, &#34;SummaryWriterServer&#34;]</code></pre>
+__all__ = [&#34;field&#34;, &#34;Server&#34;, &#34;Client&#34;]</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="ai.utils.logging.items" href="items/index.html">ai.utils.logging.items</a></code></dt>
+<dt><code class="name"><a title="ai.utils.logging.field" href="field/index.html">ai.utils.logging.field</a></code></dt>
 <dd>
-<div class="desc"><p>Logging items.</p></div>
+<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -52,98 +53,112 @@ __all__ = [&#34;items&#34;, &#34;SummaryWriterServer&#34;]</code></pre>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="ai.utils.logging.SummaryWriterServer"><code class="flex name class">
-<span>class <span class="ident">SummaryWriterServer</span></span>
-<span>(</span><span>filename_suffix: str, data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>)</span>
+<dt id="ai.utils.logging.Client"><code class="flex name class">
+<span>class <span class="ident">Client</span></span>
+<span>(</span><span>host: str, port: int)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.utils.logging.Client.log"><code class="name flex">
+<span>def <span class="ident">log</span></span>(<span>self, field: str, value: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def log(self, field: str, value: Any):
+    self._socket.send_pyobj((field, value))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ai.utils.logging.Server"><code class="flex name class">
+<span>class <span class="ident">Server</span></span>
+<span>(</span><span>*fields: <a title="ai.utils.logging.field.Base" href="field/index.html#ai.utils.logging.field.Base">Base</a>, name: str, port: int = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process handling a summary writer.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>filename_suffix</code></strong> :&ensp;<code>str</code></dt>
-<dd>Filename suffix of the SummaryWriter.</dd>
-<dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
-<dd>Queue from which logging data is gathered.</dd>
+<dt><strong><code>fields</code></strong> :&ensp;<code>logging.field.Base</code></dt>
+<dd>Logging fields.</dd>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the logger.</dd>
+<dt><strong><code>port</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Port on which the server will listen for logging
+values. If <code>None</code>, then a random port is chosen.</dd>
 </dl></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>abc.ABC</li>
-</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li>ai.rl.a3c.trainer._logger.Logger</li>
-<li><a title="ai.rl.alpha_zero.LearnerLogger" href="../../rl/alpha_zero/index.html#ai.rl.alpha_zero.LearnerLogger">LearnerLogger</a></li>
-<li><a title="ai.rl.alpha_zero.SelfPlayLogger" href="../../rl/alpha_zero/index.html#ai.rl.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></li>
+<li><a title="ai.rl.alpha_zero.Logger" href="../../rl/alpha_zero/index.html#ai.rl.alpha_zero.Logger">Logger</a></li>
 </ul>
-<h3>Methods</h3>
+<h3>Instance variables</h3>
 <dl>
-<dt id="ai.utils.logging.SummaryWriterServer.join"><code class="name flex">
-<span>def <span class="ident">join</span></span>(<span>self)</span>
-</code></dt>
+<dt id="ai.utils.logging.Server.port"><code class="name">var <span class="ident">port</span> : int</code></dt>
 <dd>
-<div class="desc"><p>Blocks until the logging server has been stopped.</p></div>
+<div class="desc"><p>Port on which the server is running.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def join(self):
-    &#34;&#34;&#34;Blocks until the logging server has been stopped.&#34;&#34;&#34;
-    self._process.join()</code></pre>
+<pre><code class="python">@property
+def port(self) -&gt; int:
+    &#34;&#34;&#34;Port on which the server is running.&#34;&#34;&#34;
+    return self._port</code></pre>
 </details>
 </dd>
-<dt id="ai.utils.logging.SummaryWriterServer.log"><code class="name flex">
-<span>def <span class="ident">log</span></span>(<span>self, summary_writer: torch.utils.tensorboard.writer.SummaryWriter, data: <a title="ai.utils.logging.items.Base" href="items/index.html#ai.utils.logging.items.Base">Base</a>)</span>
+<dt id="ai.utils.logging.Server.started"><code class="name">var <span class="ident">started</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>Returns whether the server was started.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def started(self) -&gt; bool:
+    &#34;&#34;&#34;Returns whether the server was started.&#34;&#34;&#34;
+    return self._process is not None</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.utils.logging.Server.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>self) ‑> int</span>
 </code></dt>
 <dd>
-<div class="desc"><p>This method is called whenever data is retrieved from the data queue.</p>
-<h2 id="args">Args</h2>
+<div class="desc"><p>Starts the logging server.</p>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>summary_writer</code></strong> :&ensp;<code>SummaryWriter</code></dt>
-<dd>Summary writer used by this server.</dd>
-<dt><strong><code>data</code></strong> :&ensp;<code>Any</code></dt>
-<dd>Data, defined by the publishing entity.</dd>
+<dt><code>int</code></dt>
+<dd>The port on which the server started listening to.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def log(self, summary_writer: SummaryWriter, data: logitems.Base):
-    &#34;&#34;&#34;This method is called whenever data is retrieved from the data queue.
+<pre><code class="python">def start(self) -&gt; int:
+    &#34;&#34;&#34;Starts the logging server.
 
-    Args:
-        summary_writer (SummaryWriter): Summary writer used by this server.
-        data (Any): Data, defined by the publishing entity.
+    Returns:
+        int: The port on which the server started listening to.
     &#34;&#34;&#34;
-    data.log(summary_writer)</code></pre>
-</details>
-</dd>
-<dt id="ai.utils.logging.SummaryWriterServer.start"><code class="name flex">
-<span>def <span class="ident">start</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Starts the logging server.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def start(self):
-    &#34;&#34;&#34;Starts the logging server.&#34;&#34;&#34;
-    self._process = Process(target=self._runner, daemon=True)
-    self._process.start()</code></pre>
-</details>
-</dd>
-<dt id="ai.utils.logging.SummaryWriterServer.terminate"><code class="name flex">
-<span>def <span class="ident">terminate</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Stops the logging server.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def terminate(self):
-    &#34;&#34;&#34;Stops the logging server.&#34;&#34;&#34;
-    self._stop_signal.set()</code></pre>
+    a, b = Pipe(duplex=False)
+    self._process = Process(target=run, args=(self._port, self._name, b, self._fields), daemon=True)
+    self._process.start()
+    for _ in range(15):
+        if a.poll(timeout=1.0):
+            break
+    if not a.poll(timeout=0):
+        raise RuntimeError(f&#34;Failed starting logging server &#39;{self._name}&#39;.&#34;)
+    self._port = a.recv()
+    a.close()
+    return self.port</code></pre>
 </details>
 </dd>
 </dl>
@@ -164,18 +179,23 @@ __all__ = [&#34;items&#34;, &#34;SummaryWriterServer&#34;]</code></pre>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="ai.utils.logging.items" href="items/index.html">ai.utils.logging.items</a></code></li>
+<li><code><a title="ai.utils.logging.field" href="field/index.html">ai.utils.logging.field</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="ai.utils.logging.SummaryWriterServer" href="#ai.utils.logging.SummaryWriterServer">SummaryWriterServer</a></code></h4>
+<h4><code><a title="ai.utils.logging.Client" href="#ai.utils.logging.Client">Client</a></code></h4>
 <ul class="">
-<li><code><a title="ai.utils.logging.SummaryWriterServer.join" href="#ai.utils.logging.SummaryWriterServer.join">join</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.log" href="#ai.utils.logging.SummaryWriterServer.log">log</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.start" href="#ai.utils.logging.SummaryWriterServer.start">start</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.terminate" href="#ai.utils.logging.SummaryWriterServer.terminate">terminate</a></code></li>
+<li><code><a title="ai.utils.logging.Client.log" href="#ai.utils.logging.Client.log">log</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.utils.logging.Server" href="#ai.utils.logging.Server">Server</a></code></h4>
+<ul class="">
+<li><code><a title="ai.utils.logging.Server.port" href="#ai.utils.logging.Server.port">port</a></code></li>
+<li><code><a title="ai.utils.logging.Server.start" href="#ai.utils.logging.Server.start">start</a></code></li>
+<li><code><a title="ai.utils.logging.Server.started" href="#ai.utils.logging.Server.started">started</a></code></li>
 </ul>
 </li>
 </ul>

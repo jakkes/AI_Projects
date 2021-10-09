@@ -85,14 +85,28 @@ optimizer class at initialization.</dd>
 </summary>
 <pre><code class="python">def start(self):
     &#34;&#34;&#34;Starts the training and blocks until it has finished.&#34;&#34;&#34;
+
+    log_port = self._logger.start()
+
+    self._workers = [
+        Worker(
+            self._config,
+            self._environment,
+            self._network,
+            self._optimizer_class,
+            self._optimizer_params,
+            log_port,
+        )
+        for _ in range(self._config.workers)
+    ]
+
     for worker in self._workers:
         worker.start()
-    self._logger.start()
 
     start_time = perf_counter()
     while perf_counter() - start_time &lt; self._config.train_time:
         sleep(5.0)
-    
+
     for worker in self._workers:
         worker.terminate()
     self._logger.terminate()

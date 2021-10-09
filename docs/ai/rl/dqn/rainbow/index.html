@@ -451,38 +451,29 @@ a values -inf.</p>
     )[0]</code></pre>
 </details>
 </dd>
-<dt id="ai.rl.dqn.rainbow.Agent.set_logging_queue"><code class="name flex">
-<span>def <span class="ident">set_logging_queue</span></span>(<span>self, queue: queue.Queue)</span>
+<dt id="ai.rl.dqn.rainbow.Agent.set_logging_client"><code class="name flex">
+<span>def <span class="ident">set_logging_client</span></span>(<span>self, client: <a title="ai.utils.logging.Client" href="../../../utils/logging/index.html#ai.utils.logging.Client">Client</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Sets (and overrides previously set) logging queue used by the agent. The
-agent outputs logging items to this queue. The output is formatted as a mapping,
-i.e. JSON representable. List of logging fields are given below.</p>
-<p>Training step logs (always produced jointly):
-"loss" -&gt; float, training loss computed in a training step.
-"max_error" -&gt; float, weight assigned to new samples in the replay buffer.</p>
+<div class="desc"><p>Sets (and overrides previously set) logging client used by the agent. The
+agent outputs tensorboard logs through this client.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>queue</code></strong> :&ensp;<code>queue.Queue</code></dt>
-<dd>Queue.</dd>
+<dt><strong><code>client</code></strong> :&ensp;<code>logging.Client</code></dt>
+<dd>Client.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def set_logging_queue(self, queue: queue.Queue):
-    &#34;&#34;&#34;Sets (and overrides previously set) logging queue used by the agent. The
-    agent outputs logging items to this queue. The output is formatted as a mapping,
-    i.e. JSON representable. List of logging fields are given below.
-
-    Training step logs (always produced jointly):
-        &#34;loss&#34; -&gt; float, training loss computed in a training step.
-        &#34;max_error&#34; -&gt; float, weight assigned to new samples in the replay buffer.
+<pre><code class="python">def set_logging_client(self, client: logging.Client):
+    &#34;&#34;&#34;Sets (and overrides previously set) logging client used by the agent. The
+    agent outputs tensorboard logs through this client.
 
     Args:
-        queue (queue.Queue): Queue.
+        client (logging.Client): Client.
     &#34;&#34;&#34;
-    self._logging_queue = queue</code></pre>
+    self._logging_client = client</code></pre>
 </details>
 </dd>
 <dt id="ai.rl.dqn.rainbow.Agent.train_step"><code class="name flex">
@@ -543,18 +534,12 @@ i.e. JSON representable. List of logging fields are given below.</p>
     if self._train_steps % self._config.target_update_steps == 0:
         self._target_update()
 
-    if self._logging_queue is not None:
-        self._logging_queue.put(
-            logging.items.Scalar(&#34;RainbowAgent/Loss&#34;, loss.detach().item())
-        )
-        self._logging_queue.put(
-            logging.items.Scalar(&#34;RainbowAgent/Max error&#34;, self._max_error.item())
-        )
+    if self._logging_client is not None:
+        self._logging_client.log(&#34;RainbowAgent/Loss&#34;, loss.detach().item())
+        self._logging_client.log(&#34;RainbowAgent/Max error&#34;, self._max_error.item())
 
         if grad_norm is not None:
-            self._logging_queue.put(
-                logging.items.Scalar(&#34;RainbowAgent/Gradient norm&#34;, grad_norm.item())
-            )</code></pre>
+            self._logging_client.log(&#34;RainbowAgent/Gradient norm&#34;, grad_norm.item())</code></pre>
 </details>
 </dd>
 </dl>
@@ -598,7 +583,7 @@ i.e. JSON representable. List of logging fields are given below.</p>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.observe_single" href="#ai.rl.dqn.rainbow.Agent.observe_single">observe_single</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.q_values" href="#ai.rl.dqn.rainbow.Agent.q_values">q_values</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.q_values_single" href="#ai.rl.dqn.rainbow.Agent.q_values_single">q_values_single</a></code></li>
-<li><code><a title="ai.rl.dqn.rainbow.Agent.set_logging_queue" href="#ai.rl.dqn.rainbow.Agent.set_logging_queue">set_logging_queue</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.Agent.set_logging_client" href="#ai.rl.dqn.rainbow.Agent.set_logging_client">set_logging_client</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.train_step" href="#ai.rl.dqn.rainbow.Agent.train_step">train_step</a></code></li>
 </ul>
 </li>

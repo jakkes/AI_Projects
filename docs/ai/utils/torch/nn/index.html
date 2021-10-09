@@ -102,12 +102,10 @@ transformation. Defaults to True.</dd>
 <pre><code class="python">def forward(self, x):
     &#34;&#34;&#34;&#34;&#34;&#34;
     if self.training:
-        epsin = NoisyLinear.get_noise(self.in_features)
-        epsout = NoisyLinear.get_noise(self.out_features)
+        epsin = self.get_noise(self.in_features, self.noise_weight.dtype, self.noise_weight.device)
+        epsout = self.get_noise(self.out_features, self.noise_weight.dtype, self.noise_weight.device)
         self.weps = epsout.ger(epsin)
-        self.beps = self.get_noise(self.out_features)
-        # self.weps.copy_(epsout.ger(epsin))
-        # self.beps.copy_(self.get_noise(self.out_features))
+        self.beps = self.get_noise(self.out_features, self.noise_weight.dtype, self.noise_weight.device)
 
         return super().forward(x) + F.linear(
             x, self.noise_weight * self.weps, self.noise_bias * self.beps
