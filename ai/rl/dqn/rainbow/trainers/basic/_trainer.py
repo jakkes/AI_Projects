@@ -36,6 +36,7 @@ class Trainer:
             logging.field.Scalar("RainbowAgent/Loss"),
             logging.field.Scalar("RainbowAgent/Max error"),
             logging.field.Scalar("RainbowAgent/Gradient norm"),
+            logging.field.Scalar("Environment/Discounted reward"),
             name="RainbowTrainer"
         )
         self._logging_client: logging.Client = None
@@ -90,6 +91,8 @@ class Trainer:
             self._train_step()
 
         self._logging_client.log("Value/Start value", start_value)
+        self._logging_client.log("Environment/Reward", total_reward)
+        self._logging_client.log("Environment/Discounted reward", total_discounted_reward)
 
     def _add_to_collector(self, state, action, action_mask, reward, terminal):
         out = self._reward_collector.step(

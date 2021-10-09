@@ -14,11 +14,6 @@ class Base(ABC):
     an internal state that is modified by the action and (potentially only partially)
     observable from the outside."""
 
-    def __init__(self) -> None:
-        """ """
-        super().__init__()
-        self.__logging_client: logging.Client = None
-
     @property
     @abstractmethod
     def action_space(self) -> environments.action_spaces.Base:
@@ -65,14 +60,3 @@ class Base(ABC):
         behavior is required, feel free to override this method and return a factory
         class of your choice."""
         return environments.Factory(cls, *args, **kwargs)
-
-
-    @property
-    def logging_client(self) -> Optional[logging.Client]:
-        """The logging client used by the environment. If `None`, logging is
-        disabled."""
-        return self.__logging_client
-
-    @logging_client.setter
-    def logging_client(self, client: logging.Client):
-        self.__logging_client = client
