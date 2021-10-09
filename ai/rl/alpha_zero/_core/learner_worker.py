@@ -7,6 +7,8 @@ import torch
 from torch import nn, optim, Tensor, jit
 from torch.multiprocessing import Process, Queue
 
+import ai.utils.logging as logging
+
 
 class LearnerConfig:
     """Configuration of the Learner process."""
@@ -22,7 +24,7 @@ class LearnerWorker(Process):
         optimizer: optim.Optimizer,
         config: LearnerConfig,
         sample_queue: Queue,
-        learner_logging_queue: Queue = None,
+        log_client: logging.Client = None,
         save_path: str = None,
         save_period: int = -1,
     ):
@@ -31,7 +33,7 @@ class LearnerWorker(Process):
         self.optimizer = optimizer
         self.config = config
         self.sample_queue = sample_queue
-        self.learner_logging_queue = learner_logging_queue
+        self.log_client = log_client
         self.save_path = save_path
         self.save_period = save_period
 
@@ -48,8 +50,8 @@ class LearnerWorker(Process):
         loss.backward()
         self.optimizer.step()
 
-        if self.learner_logging_queue is not None:
-            self.learner_logging_queue.put_nowait(loss.detach())
+        if self.log_client is not None:
+            self.log_client.log("Training/Loss", loss.detach().item())
 
         if (
             self.save_period > 0

@@ -1,5 +1,4 @@
 import copy
-import queue
 from typing import Union
 
 import numpy as np
@@ -131,7 +130,7 @@ class Agent:
 
         self._train_steps = 0
         self._max_error = torch.tensor(1.0)
-        self._logging_queue: queue.Queue = None
+        self._logging_client: logging.Client = None
 
     def _initialize_not_inference_mode(self, config: AgentConfig):
         if self._optimizer is None:
@@ -432,18 +431,12 @@ class Agent:
         if self._train_steps % self._config.target_update_steps == 0:
             self._target_update()
 
-        if self._logging_queue is not None:
-            self._logging_queue.put(
-                logging.items.Scalar("RainbowAgent/Loss", loss.detach().item())
-            )
-            self._logging_queue.put(
-                logging.items.Scalar("RainbowAgent/Max error", self._max_error.item())
-            )
+        if self._logging_client is not None:
+            self._logging_client.log("RainbowAgent/Loss", loss.detach().item())
+            self._logging_client.log("RainbowAgent/Max error", self._max_error.item())
 
             if grad_norm is not None:
-                self._logging_queue.put(
-                    logging.items.Scalar("RainbowAgent/Gradient norm", grad_norm.item())
-                )
+                self._logging_client.log("RainbowAgent/Gradient norm", grad_norm.item())
 
     def buffer_size(self) -> int:
         """
@@ -452,19 +445,14 @@ class Agent:
         """
         return self._buffer.size
 
-    def set_logging_queue(self, queue: queue.Queue):
-        """Sets (and overrides previously set) logging queue used by the agent. The
-        agent outputs logging items to this queue. The output is formatted as a mapping,
-        i.e. JSON representable. List of logging fields are given below.
-
-        Training step logs (always produced jointly):
-            "loss" -> float, training loss computed in a training step.
-            "max_error" -> float, weight assigned to new samples in the replay buffer.
+    def set_logging_client(self, client: logging.Client):
+        """Sets (and overrides previously set) logging client used by the agent. The
+        agent outputs tensorboard logs through this client.
 
         Args:
-            queue (queue.Queue): Queue.
+            client (logging.Client): Client.
         """
-        self._logging_queue = queue
+        self._logging_client = client
 
     def q_values(
         self, states: Union[Tensor, ndarray], action_masks: Union[Tensor, ndarray]

@@ -1,5 +1,4 @@
 from math import sqrt
-from queue import Queue
 from typing import Any, Callable, Mapping, Tuple
 
 import torch
@@ -11,6 +10,7 @@ import ai
 import ai.rl as rl
 import ai.rl.a3c.trainer as trainer
 import ai.environments as environments
+import ai.utils.logging as logging
 
 
 def _get_action_logit_value(
@@ -33,7 +33,7 @@ class Worker(Process):
         network: nn.Module,
         optimizer_class: optim.Optimizer,
         optimizer_params: Mapping[str, Any],
-        logging_queue: Queue,
+        log_port: int,
     ):
         super().__init__(daemon=True)
         self._config = config
@@ -42,7 +42,7 @@ class Worker(Process):
         self._optimizer_class = optimizer_class
         self._optimizer_params = optimizer_params
         self._environment = environment
-        self._logging_queue = logging_queue
+        self._log_client = logging.Client("127.0.0.1", log_port)
 
         self._optimizer: Optimizer = None
         self._reward_collector: rl.utils.NStepRewardCollector = None
@@ -67,7 +67,8 @@ class Worker(Process):
             self._terminal = False
             with torch.no_grad():
                 _, v = self._network(self._state.unsqueeze(0))
-            self._logging_queue.put({"r": self._episodic_reward, "v": v.item()})
+            self._log_client.log("Episode/Reward", self._episodic_reward)
+            self._log_client.log("Episode/Start value", v.item())
             self._episodic_reward = 0.0
 
     def _add_loss(self, reward, terminal, logit, logits, value):
@@ -88,21 +89,23 @@ class Worker(Process):
 
             if self._steps >= self._config.batch_size:
                 self._loss /= self._steps
-                logitem = {"l": self._loss.detach().item()}
                 self._optimizer.zero_grad()
                 self._loss.backward()
-                logitem["gm"] = sqrt(
+                gradmagn = sqrt(
                     sum(
                         param.grad.pow(2).sum().item()
                         for _, param in self._network.named_parameters()
                     )
                 )
+                
+                self._log_client.log("Agent/Loss", self._loss.detach().item())
+                self._log_client.log("Agent/Grad. magn.", gradmagn)
+                
                 self._optimizer.step()
                 self._steps = 0
                 self._loss = 0.0
                 self._reward_collector.clear()
 
-                self._logging_queue.put_nowait(logitem)
 
     def _step(self):
         action, logits, value = _get_action_logit_value(

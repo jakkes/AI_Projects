@@ -1,22 +1,14 @@
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
 
 import numpy as np
 import gym
 from gym import spaces
 
-import ai.utils.logging as logging
 import ai.environments as environments
 
 
 class GymWrapper(environments.Base):
     """Environment wrapper for openAI gym environments."""
-
-    class Factory(environments.Factory):
-        def __init__(self, env_id: str):
-            self.env_id = env_id
-
-        def __call__(self) -> "GymWrapper":
-            return GymWrapper(gym.make(self.env_id))
 
     class ActionSpace(environments.action_spaces.Discrete):
         """Discrete action space that wraps a discrete openAI Gym action space."""
@@ -36,30 +28,24 @@ class GymWrapper(environments.Base):
         def action_mask(self) -> np.ndarray:
             return np.ones((self.size, ), dtype=np.bool_)
 
-    def __init__(self, env: gym.Env):
+    def __init__(self, env: Union[gym.Env, str]):
         """
         Args:
-            env (gym.Env): Environment instance to wrap.
+            env (Union[gym.Env, str]): Environment instance to wrap, or the gym
+                environment identifier..
         """
         super().__init__()
-        self._env = env
-        self._action_space = GymWrapper.ActionSpace(env.action_space)
-        self._episode_reward = 0.0
+        self._env = gym.make(env) if type(env) is str else env
+        self._action_space = GymWrapper.ActionSpace(self._env.action_space)
 
     @property
     def action_space(self) -> environments.action_spaces.Discrete:
         return self._action_space
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict]:
-        action = int(action)
-        state, reward, terminal, info = self._env.step(action)
-        self._episode_reward += reward
-        if terminal and self._logging_queue is not None:
-            self._logging_queue.put(logging.items.Scalar("Environment/Reward", self._episode_reward))
-        return state, reward, terminal, info
+        return self._env.step(int(action))
 
     def reset(self) -> np.ndarray:
-        self._episode_reward = 0.0
         return self._env.reset()
 
     def close(self):
@@ -67,9 +53,3 @@ class GymWrapper(environments.Base):
 
     def render(self):
         self._env.render()
-
-    @classmethod
-    def get_factory(cls, env_id: str) -> "GymWrapper.Factory":
-        """Creates an environment factory that spawns the specific `env_id`. For
-        possible values, see the openAI gym documentation."""
-        return GymWrapper.Factory(env_id)

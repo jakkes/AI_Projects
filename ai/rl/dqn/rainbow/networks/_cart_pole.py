@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 import ai.utils.torch.nn as ai_nn
@@ -33,5 +34,5 @@ class CartPole(nn.Module):
     def forward(self, x):
         x = self._body(x)
         if self._use_distributional:
-            x = x.view(-1, 2, self._n_atoms)
+            x = torch.softmax(x.view(-1, 2, self._n_atoms), dim=-1)
         return x

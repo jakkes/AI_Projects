@@ -1,5 +1,3 @@
-"""Logging items."""
-
 from ._base import Base
 from ._scalar import Scalar
 
