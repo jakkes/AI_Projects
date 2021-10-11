@@ -1,4 +1,4 @@
-import time
+import io
 import threading
 
 import torch
@@ -11,7 +11,9 @@ def runner(model: torch.nn.Module, period: float, socket: zmq.Socket):
     metronome = Metronome(period)
     while True:
         metronome.wait()
-        socket.send_json(model.state_dict())
+        bytedata = io.BytesIO()
+        torch.save(model.state_dict(), bytedata)
+        socket.send(bytedata.getvalue())
 
 
 class Broadcaster:
