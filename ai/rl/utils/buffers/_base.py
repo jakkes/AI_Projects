@@ -23,6 +23,12 @@ class Base(abc.ABC):
         """Size of the buffer."""
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def capacity(self) -> int:
+        """Capacity of the buffer."""
+        raise NotImplementedError
+
     @abc.abstractmethod
     def sample(self, n: int) -> Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]:
         """Collects samples from the buffer.
@@ -48,12 +54,15 @@ class Base(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor) -> torch.Tensor:
+    def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor, batch: bool=True) -> torch.Tensor:
         """Adds new data to the buffer.
 
         Args:
             data (Tuple[torch.Tensor]): Data to be added.
             weights (torch.Tensor): Weights of the new data.
+            batch (optional, bool): If `True`, then the first dimension of each tensor
+                is treated as a batch dimension, allowing batch inserts. Defaults to
+                `True`.
 
         Returns:
             torch.Tensor: Identifier given to the new data.

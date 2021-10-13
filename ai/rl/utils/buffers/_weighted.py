@@ -53,6 +53,10 @@ class Weighted(Base):
     def size(self) -> int:
         return self._capacity if self._full else self._i
 
+    @property
+    def capacity(self) -> int:
+        return self._capacity
+
     def get_all(self) -> Tuple[Tuple[Tensor], Tensor, Tensor]:
         return (
             tuple(x[: self.size] for x in self._data),
@@ -60,7 +64,9 @@ class Weighted(Base):
             torch.arange(self.size),
         )
 
-    def add(self, data: Tuple[Tensor, ...], weights: Tensor) -> Tensor:
+    def add(self, data: Tuple[Tensor, ...], weights: Tensor, batch: bool=True) -> Tensor:
+        if not batch:
+            data = tuple(x.unsqueeze(0) for x in data)
         i = (self._i + torch.arange(data[0].shape[0])) % self._capacity
         for x, y in zip(data, self._data):
             y[i] = x
@@ -70,7 +76,7 @@ class Weighted(Base):
         if self._i >= self._capacity:
             self._i %= self._capacity
             self._full = True
-        return i
+        return i if batch else i[0]
 
     def sample(self, n: int) -> Tuple[Tuple[Tensor, ...], Tensor, Tensor]:
         #################################################

@@ -50,10 +50,16 @@ class Uniform(Base):
         pass
 
     @property
+    def capacity(self) -> int:
+        return self._capacity
+
+    @property
     def size(self) -> int:
         return self._capacity if self._full else self._i
 
-    def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor) -> torch.Tensor:
+    def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor, batch: bool=True) -> torch.Tensor:
+        if not batch:
+            data = tuple(x.unsqueeze(0) for x in data)
         i = (self._i + torch.arange(data[0].shape[0])) % self._capacity
         for x, y in zip(data, self._data):
             y[i] = x
@@ -62,4 +68,4 @@ class Uniform(Base):
         if self._i >= self._capacity:
             self._i %= self._capacity
             self._full = True
-        return i
+        return i if batch else i[0]
