@@ -23,13 +23,13 @@ def param_listener(model: nn.Module, address: str):
         model.load_state_dict(torch.load(data))
 
 
-def create_buffer(self: "Server") -> buffers.Uniform:
+def create_buffer(self: "InferenceServer") -> buffers.Uniform:
     return buffers.Uniform(
         self._batchsize, (self._state_shape, ), (self._state_dtype, ), self._device
     )
 
 
-def start_rep_workers(self: "Server"):
+def start_rep_workers(self: "InferenceServer"):
     self._rep_working_threads = [
         threading.Thread(target=rep_worker, args=(self,), daemon=True)
         for _ in range(self._batchsize)
@@ -38,12 +38,12 @@ def start_rep_workers(self: "Server"):
         worker.start()
 
 
-def rep_worker(self: "Server"):
+def rep_worker(self: "InferenceServer"):
 
     def get_output(data):
         for _ in range(10):
             try:
-                return self.get_batch().evaluate_model(data)
+                return self._get_batch().evaluate_model(data)
             except Batch.Executed:
                 continue
         raise RuntimeError("Failed evaluating data sample, ten attempts were made.")
@@ -61,7 +61,8 @@ def rep_worker(self: "Server"):
         socket.send(data.getvalue())
 
 
-class Server(mp.Process):
+class InferenceServer(mp.Process):
+    """Process serving inference requests from clients."""
     def __init__(
         self,
         model: nn.Module,
@@ -74,6 +75,23 @@ class Server(mp.Process):
         device: torch.device = torch.device("cpu"),
         daemon: bool = True,
     ):
+        """
+        Args:
+            model (nn.Module): Model served.
+            state_shape (Tuple[int, ...]): Shape of states, excluding batch size.
+            state_dtype (torch.dtype): Data type of states.
+            dealer_address (int): Address to `InferenceProxy` session, e.g.
+            `tcp://127.0.0.1:33333`.
+            broadcast_address (str): Address to `Broadcaster` session, e.g.
+                `tcp://127.0.0.1:33332`.
+            batchsize (int): Batch size of inference requests.
+            max_delay (float): Maximum delay (seconds) before inference is executed
+                regardless of batchsize.
+            device (torch.device, optional): Device on which the model is run on.
+                Defaults to torch.device("cpu").
+            daemon (bool, optional): Whether or not to run the process in daemon-mode.
+                Defaults to True.
+        """
         super().__init__(daemon=daemon)
         self._model = model
         self._state_shape = state_shape
@@ -96,7 +114,7 @@ class Server(mp.Process):
         start_rep_workers(self)
         param_listener(self._model, self._broadcast_address)
 
-    def get_batch(self) -> "Batch":
+    def _get_batch(self) -> "Batch":
         with self._batch_lock:
             if self._batch is None or self._batch.executed:
                 self._batch = Batch(
@@ -150,6 +168,7 @@ class Batch:
             return
 
         data, _, _ = self._buffer.get_all()
-        self._output = self._model(*data)
+        with torch.inference_mode():
+            self._output = self._model(*data)
         self._executed_event.set()
         self._executed_condition.notify_all()

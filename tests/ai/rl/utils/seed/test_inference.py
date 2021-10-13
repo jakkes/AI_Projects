@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 import torch
 from torch import nn
 
-from ai.rl.utils.seed import inference, Broadcaster
+from ai.rl.utils.seed import InferenceClient, Broadcaster, InferenceServer, InferenceProxy
 
 
 def test_inference():
@@ -14,10 +14,10 @@ def test_inference():
     broadcaster = Broadcaster(model, 1.0)
     broadcast_port = broadcaster.start()
 
-    proxy = inference.Proxy()
+    proxy = InferenceProxy()
     router_port, dealer_port = proxy.start()
 
-    inference_server = inference.Server(
+    inference_server = InferenceServer(
         model,
         (2, ),
         torch.float32,
@@ -30,9 +30,9 @@ def test_inference():
 
     time.sleep(10.0)
 
-    inference_client1 = inference.Client(f"tcp://127.0.0.1:{router_port}")
-    inference_client2 = inference.Client(f"tcp://127.0.0.1:{router_port}")
-    inference_client3 = inference.Client(f"tcp://127.0.0.1:{router_port}")
+    inference_client1 = InferenceClient(f"tcp://127.0.0.1:{router_port}")
+    inference_client2 = InferenceClient(f"tcp://127.0.0.1:{router_port}")
+    inference_client3 = InferenceClient(f"tcp://127.0.0.1:{router_port}")
 
     x1 = torch.randn(2)
     x2 = torch.randn(2)
