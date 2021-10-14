@@ -241,6 +241,16 @@ class Agent:
         """Agent configuration in use."""
         return self._config
 
+    @property
+    def model(self) -> nn.Module:
+        """Model used by the agent."""
+        return self._network
+
+    def _get_actions(self, action_masks: Tensor, network_output: Tensor):
+        return _get_actions(
+            action_masks, network_output, self._config.use_distributional, self._z
+        )
+
     def observe(
         self,
         states: Union[Tensor, ndarray],
@@ -502,3 +512,10 @@ class Agent:
                 action_mask, dtype=torch.bool, device=self._config.network_device
             ).unsqueeze_(0),
         )[0]
+
+    def inference_mode(self) -> "Agent":
+        """Returns a copy of this agent, but in inference mode.
+        
+        Returns:
+            Agent: A shallow copy of the agent, capable of inference only."""
+        return Agent(self._config, self._network, inference_mode=True)

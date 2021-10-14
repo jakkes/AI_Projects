@@ -1,7 +1,6 @@
 import random
 import numpy as np
 import torch
-from multiprocessing import Queue
 
 import ai.rl as rl
 import ai.rl.dqn.rainbow as rainbow

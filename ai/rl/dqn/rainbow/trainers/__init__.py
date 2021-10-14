@@ -1,7 +1,7 @@
 """RainbowDQN trainers."""
 
 
-from . import basic
+from . import basic, seed
 
 
-__all__ = ["basic"]
+__all__ = ["basic", "seed"]
