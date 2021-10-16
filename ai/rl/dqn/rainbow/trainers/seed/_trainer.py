@@ -1,12 +1,12 @@
 from typing import List
-import random
+import time
+import io
 import threading
 
 import numpy as np
 import zmq
 import torch
 
-import ai.rl as rl
 import ai.rl.dqn.rainbow as rainbow
 import ai.environments as environments
 import ai.rl.utils.seed as seed
@@ -15,9 +15,21 @@ from ._config import Config
 from ._actor import Actor
 
 
-def data_listener(self: "Trainer", data_port: int):
-    pass
+def data_listener(agent: rainbow.Agent, data_sub: zmq.Socket, logger_port: int, stop_event: threading.Thread):
+    logger = logging.Client("127.0.0.1", logger_port)
 
+    while not stop_event.is_set():
+        if data_sub.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
+            continue
+        data = torch.load(io.BytesIO(data_sub.recv()))
+        agent.observe_single(data[0][0], data[0][1], data[1], data[2], data[3][0], data[3][2], np.nan)
+        logger.log("Buffer/Size", agent.buffer_size())
+
+def trainer(agent: rainbow.Agent, config: Config, stop_event: threading.Event):
+    while agent.buffer_size() < config.minimum_buffer_size and not stop_event.is_set():
+        time.sleep(1.0)
+    while not stop_event.is_set():
+        agent.train_step()
 
 def create_server(
     self: "Trainer", dealer_port: int, broadcast_port: int
@@ -34,16 +46,24 @@ def create_server(
     )
 
 
-def create_
+def create_logger() -> logging.Server:
+    return logging.Server(
+        logging.field.Scalar("Environment/Reward"),
+        logging.field.Scalar("Buffer/Size"),
+        name="dqnseed"
+    )
 
 
-def create_actor(self: "Trainer", data_port: int, router_port: int) -> Actor:
+def create_actor(
+    self: "Trainer", data_port: int, router_port: int, logger_port: int
+) -> Actor:
     return Actor(
         self._agent.inference_mode(),
         self._config,
         self._environment,
         data_port,
         router_port,
+        logging_client=logging.Client("127.0.0.1", logger_port),
     )
 
 
@@ -60,10 +80,6 @@ class Trainer:
         self._actors: List[Actor] = []
         self._proxy = seed.InferenceProxy()
         self._servers: List[seed.InferenceServer] = []
-        self._broadcaster: seed.Broadcaster = seed.Broadcaster(agent.model, 2.5)
-        self._logging_server
-        self._data_sub: zmq.Socket = zmq.Context.instance().get(zmq.SUB)
-        self._data_listening_thread: threading.Thread = None
 
     def start(self, duration: float):
         """Starts training, and blocks until completed.
@@ -73,21 +89,58 @@ class Trainer:
         """
 
         router_port, dealer_port = self._proxy.start()
-        self._data_sub.subscribe("")
-        data_port = self._data_sub.bind_to_random_port("tcp://*")
-        broadcast_port = self._broadcaster.start()
 
-        for _ in range(self._config.inference_servers):
-            self._servers.append(create_server(self, dealer_port, broadcast_port))
-        for server in self._servers:
+        data_sub = zmq.Context.instance().socket(zmq.SUB)
+        data_sub.subscribe("")
+        data_port = data_sub.bind_to_random_port("tcp://*")
+
+        broadcaster = seed.Broadcaster(self._agent.model, self._config.broadcast_period)
+        broadcast_port = broadcaster.start()
+
+        logger = create_logger()
+        logger_port = logger.start()
+
+        stop_event = threading.Event()
+
+        servers = [
+            create_server(self, dealer_port, broadcast_port)
+            for _ in range(self._config.inference_servers)
+        ]
+        for server in servers:
             server.start()
 
-        for _ in range(self._config.actor_processes):
-            self._actors.append(create_actor(self, data_port, router_port))
-        for actor in self._actors:
+        actors = [
+            create_actor(self, data_port, router_port, logger_port)
+            for _ in range(self._config.actor_processes)
+        ]
+        for actor in actors:
             actor.start()
 
-        self._data_listening_thread = threading.Thread(
-            target=data_listener, args=(data_port, ), daemon=True
+        data_listening_thread = threading.Thread(
+            target=data_listener, args=(self._agent, data_sub, logger_port, stop_event), daemon=True
         )
-        self._data_listening_thread.start()
+        data_listening_thread.start()
+
+        training_thread = threading.Thread(
+            target=trainer, args=(self._agent, self._config, stop_event), daemon=True
+        )
+        training_thread.start()
+
+        start = time.perf_counter()
+        while time.perf_counter() - start < duration:
+            time.sleep(5.0)
+
+        stop_event.set()
+
+        for actor in self._actors:
+            actor.terminate()
+        for server in self._servers:
+            server.terminate()
+        for actor in self._actors:
+            actor.join()
+        for server in self._servers:
+            server.join()
+        data_sub.close()
+
+        training_thread.join()
+        data_listening_thread.join()

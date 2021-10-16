@@ -172,7 +172,7 @@ class Batch:
             return
 
         data, _, _ = self._buffer.get_all()
-        with torch.inference_mode():
+        with torch.no_grad():
             self._output = self._model(*data)
         self._executed_event.set()
         self._executed_condition.notify_all()

@@ -19,7 +19,7 @@ from ._config import Config
 def send_data(data, pub: zmq.Socket):
     buffer = io.BytesIO()
     torch.save(data, buffer)
-    pub.send(buffer)
+    pub.send(buffer.getvalue())
 
 
 class ActorThread(threading.Thread):
@@ -30,7 +30,7 @@ class ActorThread(threading.Thread):
         environment: environments.Factory,
         router_port: int,
         data_port: int,
-        logging_client: logging.Client = None
+        logging_client: logging.Client = None,
     ):
         super().__init__(daemon=True)
         self._agent = agent
@@ -48,7 +48,13 @@ class ActorThread(threading.Thread):
         action_space = env.action_space.as_discrete()
         reward_collector = NStepRewardCollector(
             self._config.n_step,
-            self._agent.config.discount_factor
+            self._agent.config.discount_factor,
+            [
+                self._agent.config.state_shape,
+                (),
+                (self._agent.config.action_space_size,),
+            ],
+            [torch.float32, torch.long, torch.bool],
         )
 
         terminal = True
@@ -66,7 +72,7 @@ class ActorThread(threading.Thread):
                 total_reward = 0
                 terminal = False
 
-            torch.as_tensor(state, dtype=torch.float32)
+            state = torch.as_tensor(state, dtype=torch.float32)
             mask = torch.as_tensor(action_space.action_mask, dtype=torch.bool)
 
             if random.random() < self._config.epsilon:
@@ -101,6 +107,7 @@ class Actor(mp.Process):
         daemon: bool = True,
     ):
         super().__init__(daemon=daemon)
+        self._config = config
         self._args = (agent, config, environment, router_port, data_port)
         self._kwargs = {"logging_client": logging_client}
 

@@ -37,3 +37,6 @@ class Config:
 
     inference_device: torch.device = torch.device("cpu")
     """Device inference is run on."""
+
+    minimum_buffer_size: int = 1000
+    """Minimum buffer size before training steps are executed."""
