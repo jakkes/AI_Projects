@@ -6,6 +6,8 @@ import torch
 class InferenceClient:
     """Client for running remote model inferences."""
 
+    __slots__ = "_socket"
+
     def __init__(self, router_address: str):
         """
         Args:

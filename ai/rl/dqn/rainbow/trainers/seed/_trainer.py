@@ -109,6 +109,8 @@ class Trainer:
         for server in servers:
             server.start()
 
+        time.sleep(10)
+
         actors = [
             create_actor(self, data_port, router_port, logger_port)
             for _ in range(self._config.actor_processes)

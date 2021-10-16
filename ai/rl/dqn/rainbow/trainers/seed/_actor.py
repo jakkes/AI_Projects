@@ -56,6 +56,8 @@ class ActorThread(threading.Thread):
             ],
             [torch.float32, torch.long, torch.bool],
         )
+        max_steps = self._config.max_environment_steps
+        agent = self._agent
 
         terminal = True
         state = None
@@ -79,13 +81,13 @@ class ActorThread(threading.Thread):
                 action = action_space.sample()
             else:
                 model_output = client.evaluate_model(state)
-                action = self._agent._get_actions(mask, model_output)
+                action = agent._get_actions(mask, model_output)
 
             next_state, reward, terminal, _ = env.step(action)
             total_reward += reward
             steps += 1
 
-            if steps >= self._config.max_environment_steps:
+            if max_steps > 0 and steps >= max_steps:
                 terminal = True
 
             data = reward_collector.step(reward, terminal, (state, action, mask))

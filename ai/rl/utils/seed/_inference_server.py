@@ -25,7 +25,7 @@ def param_listener(model: nn.Module, address: str):
 
 def create_buffer(self: "InferenceServer") -> buffers.Uniform:
     return buffers.Uniform(
-        self._batchsize, (self._state_shape, ), (self._state_dtype, ), self._device
+        self._batchsize, (self._state_shape,), (self._state_dtype,), self._device
     )
 
 
@@ -39,7 +39,6 @@ def start_rep_workers(self: "InferenceServer"):
 
 
 def rep_worker(self: "InferenceServer"):
-
     def get_output(data):
         for _ in range(10):
             try:
@@ -63,6 +62,7 @@ def rep_worker(self: "InferenceServer"):
 
 class InferenceServer(mp.Process):
     """Process serving inference requests from clients."""
+
     def __init__(
         self,
         model: nn.Module,
@@ -104,10 +104,7 @@ class InferenceServer(mp.Process):
         self._max_delay = max_delay
         self._device = device
 
-        self._parameter_listening_thread: threading.Thread = None
         self._rep_working_threads: List[threading.Thread] = None
-        self._buffer: buffers.Uniform = None
-        self._output: torch.Tensor = None
         self._batch: "Batch" = None
         self._batch_lock: threading.Lock = None
 
@@ -121,15 +118,22 @@ class InferenceServer(mp.Process):
     def _get_batch(self) -> "Batch":
         with self._batch_lock:
             if self._batch is None or self._batch.executed:
-                self._batch = Batch(
-                    self._model, create_buffer(self), self._max_delay
-                )
+                self._batch = Batch(self._model, create_buffer(self), self._max_delay)
             return self._batch
 
 
 class Batch:
     class Executed(Exception):
         pass
+
+    __slots__ = (
+        "_buffer",
+        "_model",
+        "_output",
+        "_executed_condition",
+        "_executed_event",
+        "_timer",
+    )
 
     def __init__(self, model: nn.Module, buffer: buffers.Uniform, max_delay: float):
         self._buffer = buffer
@@ -148,7 +152,7 @@ class Batch:
             if self._executed_event.is_set():
                 raise Batch.Executed
 
-            label = self._buffer.add((data, ), None, batch=False)
+            label = self._buffer.add((data,), None, batch=False)
 
             if self._buffer.size >= self._buffer.capacity:
                 self.execute(lock_acquired=True)
