@@ -34,6 +34,9 @@ def create_server(
     )
 
 
+def create_
+
+
 def create_actor(self: "Trainer", data_port: int, router_port: int) -> Actor:
     return Actor(
         self._agent.inference_mode(),
@@ -58,6 +61,7 @@ class Trainer:
         self._proxy = seed.InferenceProxy()
         self._servers: List[seed.InferenceServer] = []
         self._broadcaster: seed.Broadcaster = seed.Broadcaster(agent.model, 2.5)
+        self._logging_server
         self._data_sub: zmq.Socket = zmq.Context.instance().get(zmq.SUB)
         self._data_listening_thread: threading.Thread = None
 

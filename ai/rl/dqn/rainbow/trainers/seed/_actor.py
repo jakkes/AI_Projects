@@ -7,10 +7,10 @@ from typing import List
 
 import zmq
 import torch
-from zmq.backend import Socket
 
-import ai.rl.dqn.rainbow as rainbow
+import ai.utils.logging as logging
 import ai.environments as environments
+import ai.rl.dqn.rainbow as rainbow
 import ai.rl.utils.seed as seed
 from ai.rl.utils import NStepRewardCollector
 from ._config import Config
@@ -30,6 +30,7 @@ class ActorThread(threading.Thread):
         environment: environments.Factory,
         router_port: int,
         data_port: int,
+        logging_client: logging.Client = None
     ):
         super().__init__(daemon=True)
         self._agent = agent
@@ -37,6 +38,7 @@ class ActorThread(threading.Thread):
         self._config = config
         self._data_port = data_port
         self._router_port = router_port
+        self._logging_client = logging_client
 
     def run(self):
         data_pub = zmq.Context.instance().socket(zmq.PUB)
@@ -56,6 +58,9 @@ class ActorThread(threading.Thread):
 
         while True:
             if terminal:
+                if total_reward is not None and self._logging_client is not None:
+                    self._logging_client.log("Environment/Reward", total_reward)
+
                 state = env.reset()
                 steps = 0
                 total_reward = 0
@@ -92,16 +97,18 @@ class Actor(mp.Process):
         environment: environments.Factory,
         data_port: int,
         router_port: int,
+        logging_client: logging.Client = None,
         daemon: bool = True,
     ):
         super().__init__(daemon=daemon)
         self._args = (agent, config, environment, router_port, data_port)
+        self._kwargs = {"logging_client": logging_client}
 
         self._threads: List[ActorThread] = []
 
     def run(self):
         for _ in range(self._config.actor_threads):
-            self._threads.append(ActorThread(*self._args))
+            self._threads.append(ActorThread(*self._args, **self._kwargs))
         for thread in self._threads:
             thread.start()
 

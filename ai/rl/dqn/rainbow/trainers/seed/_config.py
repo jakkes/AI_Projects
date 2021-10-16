@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+import torch
+
 @dataclass
 class Config:
     """Trainer config."""
@@ -32,3 +34,6 @@ class Config:
 
     inference_delay: float = 0.1
     """Maximum delay of inference requests."""
+
+    inference_device: torch.device = torch.device("cpu")
+    """Device inference is run on."""
