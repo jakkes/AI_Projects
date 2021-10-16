@@ -77,7 +77,9 @@ class InferenceServer(mp.Process):
     ):
         """
         Args:
-            model (nn.Module): Model served.
+            model (nn.Module): Model served. __Note__: model must not be on GPU. If the
+                model should be served on the GPU, pass a CPU version of the model and
+                pass argument `device`.
             state_shape (Tuple[int, ...]): Shape of states, excluding batch size.
             state_dtype (torch.dtype): Data type of states.
             dealer_address (int): Address to `InferenceProxy` session, e.g.
@@ -87,7 +89,7 @@ class InferenceServer(mp.Process):
             batchsize (int): Batch size of inference requests.
             max_delay (float): Maximum delay (seconds) before inference is executed
                 regardless of batchsize.
-            device (torch.device, optional): Device on which the model is run on.
+            device (torch.device, optional): Device on which the model should be run on.
                 Defaults to torch.device("cpu").
             daemon (bool, optional): Whether or not to run the process in daemon-mode.
                 Defaults to True.
@@ -110,6 +112,8 @@ class InferenceServer(mp.Process):
         self._batch_lock: threading.Lock = None
 
     def run(self):
+        self._model = self._model.to(self._device)
+
         self._batch_lock = threading.Lock()
         start_rep_workers(self)
         param_listener(self._model, self._broadcast_address)
