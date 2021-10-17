@@ -15,21 +15,30 @@ from ._config import Config
 from ._actor import Actor
 
 
-def data_listener(agent: rainbow.Agent, data_sub: zmq.Socket, logger_port: int, stop_event: threading.Thread):
+def data_listener(
+    agent: rainbow.Agent,
+    data_sub: zmq.Socket,
+    logger_port: int,
+    stop_event: threading.Thread,
+):
     logger = logging.Client("127.0.0.1", logger_port)
 
     while not stop_event.is_set():
         if data_sub.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
         data = torch.load(io.BytesIO(data_sub.recv()))
-        agent.observe_single(data[0][0], data[0][1], data[1], data[2], data[3][0], data[3][2], np.nan)
+        agent.observe(
+            data[0][0], data[0][1], data[1], data[2], data[3][0], data[3][2], np.nan
+        )
         logger.log("Buffer/Size", agent.buffer_size())
+
 
 def trainer(agent: rainbow.Agent, config: Config, stop_event: threading.Event):
     while agent.buffer_size() < config.minimum_buffer_size and not stop_event.is_set():
         time.sleep(1.0)
     while not stop_event.is_set():
         agent.train_step()
+
 
 def create_server(
     self: "Trainer", dealer_port: int, broadcast_port: int
@@ -50,7 +59,10 @@ def create_logger() -> logging.Server:
     return logging.Server(
         logging.field.Scalar("Environment/Reward"),
         logging.field.Scalar("Buffer/Size"),
-        name="dqnseed"
+        logging.field.Scalar("RainbowAgent/Loss"),
+        logging.field.Scalar("RainbowAgent/Max error"),
+        logging.field.Scalar("RainbowAgent/Gradient norm"),
+        name="dqnseed",
     )
 
 
@@ -77,18 +89,14 @@ class Trainer:
         self._config = config
         self._environment = environment
 
-        self._actors: List[Actor] = []
-        self._proxy = seed.InferenceProxy()
-        self._servers: List[seed.InferenceServer] = []
-
     def start(self, duration: float):
         """Starts training, and blocks until completed.
 
         Args:
             duration (float): Training duration in seconds.
         """
-
-        router_port, dealer_port = self._proxy.start()
+        proxy = seed.InferenceProxy()
+        router_port, dealer_port = proxy.start()
 
         data_sub = zmq.Context.instance().socket(zmq.SUB)
         data_sub.subscribe("")
@@ -99,6 +107,8 @@ class Trainer:
 
         logger = create_logger()
         logger_port = logger.start()
+
+        self._agent.set_logging_client(logging.Client("localhost", logger_port))
 
         stop_event = threading.Event()
 
@@ -119,7 +129,9 @@ class Trainer:
             actor.start()
 
         data_listening_thread = threading.Thread(
-            target=data_listener, args=(self._agent, data_sub, logger_port, stop_event), daemon=True
+            target=data_listener,
+            args=(self._agent, data_sub, logger_port, stop_event),
+            daemon=True,
         )
         data_listening_thread.start()
 

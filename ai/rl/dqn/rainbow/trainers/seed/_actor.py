@@ -58,6 +58,7 @@ class ActorThread(threading.Thread):
         )
         max_steps = self._config.max_environment_steps
         agent = self._agent
+        logging_client = self._logging_client
 
         terminal = True
         state = None
@@ -66,8 +67,8 @@ class ActorThread(threading.Thread):
 
         while True:
             if terminal:
-                if total_reward is not None and self._logging_client is not None:
-                    self._logging_client.log("Environment/Reward", total_reward)
+                if total_reward is not None and logging_client is not None:
+                    logging_client.log("Environment/Reward", total_reward)
 
                 state = env.reset()
                 steps = 0
@@ -81,7 +82,7 @@ class ActorThread(threading.Thread):
                 action = action_space.sample()
             else:
                 model_output = client.evaluate_model(state)
-                action = agent._get_actions(mask, model_output)
+                action = agent._get_actions(mask.unsqueeze(0), model_output.unsqueeze(0))[0]
 
             next_state, reward, terminal, _ = env.step(action)
             total_reward += reward
