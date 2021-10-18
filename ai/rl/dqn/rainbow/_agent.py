@@ -86,15 +86,19 @@ class Agent:
         network: nn.Module,
         optimizer: optim.Optimizer = None,
         inference_mode: bool = False,
+        replay_init_lazily: bool = True
     ):
         """
         Args:
             config (AgentConfig): Agent configuration.
             network (nn.Module): Network.
             optimizer (optim.Optimizer): Optimizer.
-            inference_mode (bool, optional): If True, the agent can only be used for
+            inference_mode (bool, optional): If `True`, the agent can only be used for
                 acting. Saves memory by not initializing a replay buffer. Defaults to
                 False.
+            replay_init_lazily (bool, optional): If `True`, the replay buffer is
+                initialized lazily, i.e. when the first observation is added. Defaults
+                to `True`.
         """
         self._config = config
         self._network = network
@@ -107,7 +111,7 @@ class Agent:
             else torch.nn.MSELoss(reduction="none")
         )
         if not inference_mode:
-            self._initialize_not_inference_mode(config)
+            self._initialize_not_inference_mode(config, replay_init_lazily)
 
         self._z = torch.linspace(
             config.v_min,
@@ -132,12 +136,7 @@ class Agent:
         self._max_error = torch.tensor(1.0)
         self._logging_client: logging.Client = None
 
-    def _initialize_not_inference_mode(self, config: AgentConfig):
-        if self._optimizer is None:
-            raise ValueError(
-                "Optimizer cannot be `None` when not running in inference mode."
-            )
-
+    def _initialize_replay(self, config: AgentConfig):
         shapes = (
             config.state_shape,  # state
             (),  # action
@@ -167,6 +166,15 @@ class Agent:
             self._buffer = buffers.Uniform(
                 config.replay_capacity, shapes, dtypes, self._config.replay_device
             )
+
+    def _initialize_not_inference_mode(self, config: AgentConfig, replay_init_lazily: bool):
+        if self._optimizer is None:
+            raise ValueError(
+                "Optimizer cannot be `None` when not running in inference mode."
+            )
+        if not replay_init_lazily:
+            self._initialize_replay(config)
+
 
     def _target_update(self):
         self._target_network.load_state_dict(self._network.state_dict())
@@ -273,6 +281,9 @@ class Agent:
             errors (Union[Tensor, ndarray]): TD errors. NaN values are replaced by
                 appropriate initialization value.
         """
+        if self._buffer is None:
+            self._initialize_replay(self._config)
+
         errors = torch.as_tensor(errors, dtype=torch.float32)
         errors[errors.isnan()] = self._max_error
         self._buffer.add(
@@ -453,7 +464,7 @@ class Agent:
         Returns:
             int: The current size of the replay buffer.
         """
-        return self._buffer.size
+        return 0 if self._buffer is None else self._buffer.size
 
     def set_logging_client(self, client: logging.Client):
         """Sets (and overrides previously set) logging client used by the agent. The
