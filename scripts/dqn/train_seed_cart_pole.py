@@ -54,12 +54,12 @@ def main(args: Args):
     agent = Agent(agent_config, network.to(device), optimizer)
 
     trainer_config = trainers.seed.Config()
-    trainer_config.actor_processes = 3
-    trainer_config.actor_threads = 4
-    trainer_config.inference_batchsize = 4
+    trainer_config.actor_processes = 2
+    trainer_config.actor_threads = 2
+    trainer_config.inference_batchsize = 2
     trainer_config.inference_delay = 0.1
     trainer_config.inference_device = device
-    trainer_config.inference_servers = 3
+    trainer_config.inference_servers = 1
     trainer_config.minimum_buffer_size = 1000
     trainer_config.n_step = 3
     trainer_config.epsilon = 0.1
