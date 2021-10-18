@@ -1,3 +1,4 @@
+import warnings
 import io
 import threading
 from typing import List, Tuple
@@ -126,14 +127,14 @@ class Batch:
     class Executed(Exception):
         pass
 
-    __slots__ = (
-        "_buffer",
-        "_model",
-        "_output",
-        "_executed_condition",
-        "_executed_event",
-        "_timer",
-    )
+    # __slots__ = (
+    #     "_buffer",
+    #     "_model",
+    #     "_output",
+    #     "_executed_condition",
+    #     "_executed_event",
+    #     "_timer",
+    # )
 
     def __init__(self, model: nn.Module, buffer: buffers.Uniform, max_delay: float):
         self._buffer = buffer

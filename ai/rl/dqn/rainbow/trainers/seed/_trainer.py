@@ -1,4 +1,5 @@
 from typing import List
+import copy
 import time
 import io
 import threading
@@ -23,6 +24,8 @@ def data_listener(
 ):
     logger = logging.Client("127.0.0.1", logger_port)
 
+    steps = 0
+
     while not stop_event.is_set():
         if data_sub.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
@@ -30,21 +33,39 @@ def data_listener(
         agent.observe(
             data[0][0], data[0][1], data[1], data[2], data[3][0], data[3][2], np.nan
         )
-        logger.log("Buffer/Size", agent.buffer_size())
+
+        steps += data[0][0].shape[0]
+        if steps >= 100:
+            logger.log("Buffer/Size", agent.buffer_size())
+            logger.log("Buffer/Data freq.", steps)
+            steps = 0
 
 
-def trainer(agent: rainbow.Agent, config: Config, stop_event: threading.Event):
+def trainer(
+    agent: rainbow.Agent, config: Config, stop_event: threading.Event, logging_port: int
+):
+    logger = logging.Client("localhost", logging_port)
+
     while agent.buffer_size() < config.minimum_buffer_size and not stop_event.is_set():
         time.sleep(1.0)
+
+    agent.discount_factor = agent.discount_factor ** config.n_step
+
+    steps = 0
     while not stop_event.is_set():
         agent.train_step()
+
+        steps += 1
+        if steps == 10:
+            logger.log("Trainer/Train freq.", 10)
+            steps = 0
 
 
 def create_server(
     self: "Trainer", dealer_port: int, broadcast_port: int
 ) -> seed.InferenceServer:
     return seed.InferenceServer(
-        self._agent.model,
+        copy.deepcopy(self._agent.model).cpu(),
         self._agent.config.state_shape,
         torch.float32,
         f"tcp://127.0.0.1:{dealer_port}",
@@ -62,6 +83,8 @@ def create_logger() -> logging.Server:
         logging.field.Scalar("RainbowAgent/Loss"),
         logging.field.Scalar("RainbowAgent/Max error"),
         logging.field.Scalar("RainbowAgent/Gradient norm"),
+        logging.field.Frequency("Trainer/Train freq.", 5.0),
+        logging.field.Frequency("Buffer/Data freq.", 5.0),
         name="dqnseed",
     )
 
@@ -70,7 +93,7 @@ def create_actor(
     self: "Trainer", data_port: int, router_port: int, logger_port: int
 ) -> Actor:
     return Actor(
-        self._agent.inference_mode(),
+        self._agent.config,
         self._config,
         self._environment,
         data_port,
@@ -112,6 +135,13 @@ class Trainer:
 
         stop_event = threading.Event()
 
+        data_listening_thread = threading.Thread(
+            target=data_listener,
+            args=(self._agent, data_sub, logger_port, stop_event),
+            daemon=True,
+        )
+        data_listening_thread.start()
+
         servers = [
             create_server(self, dealer_port, broadcast_port)
             for _ in range(self._config.inference_servers)
@@ -126,15 +156,10 @@ class Trainer:
         for actor in actors:
             actor.start()
 
-        data_listening_thread = threading.Thread(
-            target=data_listener,
-            args=(self._agent, data_sub, logger_port, stop_event),
-            daemon=True,
-        )
-        data_listening_thread.start()
-
         training_thread = threading.Thread(
-            target=trainer, args=(self._agent, self._config, stop_event), daemon=True
+            target=trainer,
+            args=(self._agent, self._config, stop_event, logger_port),
+            daemon=True,
         )
         training_thread.start()
 

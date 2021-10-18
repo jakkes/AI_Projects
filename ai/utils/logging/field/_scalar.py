@@ -7,8 +7,8 @@ class Scalar(Base):
 
     def __init__(self, name: str) -> None:
         super().__init__(name)
-        self.__step = 0
+        self._step = 0
 
-    def log(self, writer: torch.utils.tensorboard.writer.SummaryWriter, value: float):
-        writer.add_scalar(self.name, value, global_step=self.__step)
-        self.__step += 1
+    def log(self, value: float):
+        self.writer.add_scalar(self.name, value, global_step=self._step)
+        self._step += 1

@@ -18,7 +18,7 @@ class Args(tap.Tap):
     discount_factor: float = 0.99
     """Discount factor."""
 
-    replay_capacity: int = 2 ** 16
+    replay_capacity: int = 10000
     """Replay capacity."""
 
     noise_std: float = 1.0
@@ -26,7 +26,7 @@ class Args(tap.Tap):
 
 
 def main(args: Args):
-    device = torch.device("cpu") if torch.cuda.is_available() else torch.device("cpu")
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
     agent_config = AgentConfig()
     agent_config.action_space_size = 2
@@ -46,12 +46,12 @@ def main(args: Args):
 
     network = networks.CartPole(
         agent_config.use_distributional, agent_config.n_atoms, args.noise_std
-    )
+    ).to(device)
     optimizer = torch.optim.Adam(
         network.parameters(),
         lr=1e-4,
     )
-    agent = Agent(agent_config, network.to(device), optimizer)
+    agent = Agent(agent_config, network, optimizer)
 
     trainer_config = trainers.seed.Config()
     trainer_config.actor_processes = 2
