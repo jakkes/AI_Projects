@@ -42,9 +42,9 @@ class InferenceClient:
         self._socket.send(bytedata.getvalue())
         if self._socket.poll(timeout=10000, flags=zmq.POLLIN) != zmq.POLLIN:
             if attempts == 1:
-                raise RuntimeError("No reply received on inference request.")
+                raise RuntimeError("Remote model evaluation failed.")
             else:
-                warnings.warn("Inference request failed, trying again...")
+                warnings.warn("Remote model evaluation failed, trying again...")
                 self._create_socket()
                 return self.evaluate_model(data, attempts=attempts - 1)
         recvbytes = io.BytesIO(self._socket.recv())
