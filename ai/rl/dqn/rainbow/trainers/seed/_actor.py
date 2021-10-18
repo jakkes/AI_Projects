@@ -44,6 +44,22 @@ def _get_actions(
     return values.argmax(dim=1)
 
 
+@torch.jit.script
+def _get_values(
+    action_masks: torch.Tensor,
+    network_output: torch.Tensor,
+    use_distributional: bool,
+    z: torch.Tensor,
+) -> torch.Tensor:
+    if use_distributional:
+        d = network_output
+        values = torch.sum(d * z.view(1, 1, -1), dim=2)
+    else:
+        values = network_output
+    values = _apply_masks(values, action_masks)
+    return values.max(dim=1).values
+
+
 class ActorThread(threading.Thread):
     def __init__(
         self,
@@ -54,7 +70,7 @@ class ActorThread(threading.Thread):
         data_port: int,
         logging_client: logging.Client = None,
     ):
-        super().__init__(daemon=True)
+        super().__init__(daemon=True, name="ActorThread")
         self._agent_config = agent_config
         self._config = config
         self._environment = environment
@@ -92,6 +108,7 @@ class ActorThread(threading.Thread):
         use_distributional = self._agent_config.use_distributional
 
         terminal = True
+        first = None
         state = None
         steps = None
         total_reward = None
@@ -105,6 +122,7 @@ class ActorThread(threading.Thread):
                 steps = 0
                 total_reward = 0
                 terminal = False
+                first = True
 
             state = torch.as_tensor(state, dtype=torch.float32, device=device)
             mask = torch.as_tensor(action_space.action_mask, dtype=torch.bool, device=device)
@@ -114,6 +132,10 @@ class ActorThread(threading.Thread):
             else:
                 model_output = client.evaluate_model(state)
                 action = _get_actions(mask.unsqueeze(0), model_output.unsqueeze(0), use_distributional, z)[0]
+
+            if first and logging_client is not None:
+                value = float(_get_values(mask.unsqueeze(0), model_output.unsqueeze(0), use_distributional, z)[0])
+                logging_client.log("Actor/Start value", value)
 
             next_state, reward, terminal, _ = env.step(action)
             total_reward += reward
@@ -140,7 +162,7 @@ class Actor(mp.Process):
         logging_client: logging.Client = None,
         daemon: bool = True,
     ):
-        super().__init__(daemon=daemon)
+        super().__init__(daemon=daemon, name="ActorProcess")
         self._config = config
         self._args = (agent_config, config, environment, router_port, data_port)
         self._kwargs = {"logging_client": logging_client}

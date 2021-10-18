@@ -3,6 +3,11 @@ from typing import Tuple
 
 import zmq
 
+from ai.utils import pylogging
+
+
+_LOGGER = pylogging.get_logger(__name__)
+
 
 def proxy_runner(router: zmq.Socket, dealer: zmq.Socket):
     zmq.proxy(router, dealer)
@@ -43,7 +48,8 @@ class InferenceProxy:
         else:
             dealer.bind(f"tcp://*:{self._dealer_port}")
 
-        self._thread = threading.Thread(target=proxy_runner, args=(router, dealer), daemon=True)
+        self._thread = threading.Thread(target=proxy_runner, args=(router, dealer), daemon=True, name="InferenceProxyRunningThread")
         self._thread.start()
+        _LOGGER.info(f"Started inference proxy port mapping {self._router_port}:{self._dealer_port}.")
 
         return self._router_port, self._dealer_port

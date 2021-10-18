@@ -1,4 +1,3 @@
-import warnings
 import io
 import threading
 from typing import List, Tuple
@@ -9,6 +8,10 @@ import torch
 from torch import nn, multiprocessing as mp
 
 import ai.rl.utils.buffers as buffers
+from ai.utils import pylogging
+
+
+_LOGGER = pylogging.get_logger(__name__)
 
 
 def param_listener(model: nn.Module, address: str):
@@ -22,6 +25,7 @@ def param_listener(model: nn.Module, address: str):
             continue
         data = io.BytesIO(socket.recv())
         model.load_state_dict(torch.load(data))
+        _LOGGER.debug("Updated model parameters.")
 
 
 def create_buffer(self: "InferenceServer") -> buffers.Uniform:
@@ -32,11 +36,12 @@ def create_buffer(self: "InferenceServer") -> buffers.Uniform:
 
 def start_rep_workers(self: "InferenceServer"):
     self._rep_working_threads = [
-        threading.Thread(target=rep_worker, args=(self,), daemon=True)
+        threading.Thread(target=rep_worker, args=(self,), daemon=True, name="ReplyWorker")
         for _ in range(self._batchsize)
     ]
     for worker in self._rep_working_threads:
         worker.start()
+    _LOGGER.info(f"Started {self._batchsize} reply workers.")
 
 
 def rep_worker(self: "InferenceServer"):
@@ -54,12 +59,13 @@ def rep_worker(self: "InferenceServer"):
     while True:
         if socket.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
+        _LOGGER.debug("Received model evaluation request.")
         recvbytes = io.BytesIO(socket.recv())
         output = get_output(torch.load(recvbytes))
         data = io.BytesIO()
         torch.save(output, data)
         socket.send(data.getvalue())
-
+        _LOGGER.debug("Model evaluation request completed.")
 
 class InferenceServer(mp.Process):
     """Process serving inference requests from clients."""
@@ -95,7 +101,7 @@ class InferenceServer(mp.Process):
             daemon (bool, optional): Whether or not to run the process in daemon-mode.
                 Defaults to True.
         """
-        super().__init__(daemon=daemon)
+        super().__init__(daemon=daemon, name="InferenceProcess")
         self._model = model
         self._state_shape = state_shape
         self._state_dtype = state_dtype
@@ -110,6 +116,7 @@ class InferenceServer(mp.Process):
         self._batch_lock: threading.Lock = None
 
     def run(self):
+        _LOGGER.info("Inference server starting...")
         self._model = self._model.to(self._device)
 
         self._batch_lock = threading.Lock()
@@ -120,21 +127,13 @@ class InferenceServer(mp.Process):
         with self._batch_lock:
             if self._batch is None or self._batch.executed:
                 self._batch = Batch(self._model, create_buffer(self), self._max_delay)
+                _LOGGER.debug("Created a new inference batch")
             return self._batch
 
 
 class Batch:
     class Executed(Exception):
         pass
-
-    # __slots__ = (
-    #     "_buffer",
-    #     "_model",
-    #     "_output",
-    #     "_executed_condition",
-    #     "_executed_event",
-    #     "_timer",
-    # )
 
     def __init__(self, model: nn.Module, buffer: buffers.Uniform, max_delay: float):
         self._buffer = buffer
@@ -181,3 +180,4 @@ class Batch:
             self._output = self._model(*data)
         self._executed_event.set()
         self._executed_condition.notify_all()
+        _LOGGER.debug(f"Executed a batch of {data[0].shape[0]} inference requests.")

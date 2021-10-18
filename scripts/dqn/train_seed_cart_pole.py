@@ -9,7 +9,7 @@ class Args(tap.Tap):
     duration: float = 600
     """Train duration (seconds)."""
 
-    batch_size: int = 32
+    batch_size: int = 128
     """Batch size used by the agent."""
 
     target_update_steps: int = 100
@@ -18,7 +18,7 @@ class Args(tap.Tap):
     discount_factor: float = 0.99
     """Discount factor."""
 
-    replay_capacity: int = 10000
+    replay_capacity: int = 20000
     """Replay capacity."""
 
     noise_std: float = 1.0
@@ -40,9 +40,9 @@ def main(args: Args):
     agent_config.use_prioritized_experience_replay = False
     agent_config.use_distributional = True
     agent_config.use_double = True
-    agent_config.n_atoms = 21
+    agent_config.n_atoms = 51
     agent_config.v_min = 0
-    agent_config.v_max = 100
+    agent_config.v_max = 200
 
     network = networks.CartPole(
         agent_config.use_distributional, agent_config.n_atoms, args.noise_std
@@ -55,14 +55,14 @@ def main(args: Args):
 
     trainer_config = trainers.seed.Config()
     trainer_config.actor_processes = 2
-    trainer_config.actor_threads = 2
-    trainer_config.inference_batchsize = 2
-    trainer_config.inference_delay = 0.1
+    trainer_config.actor_threads = 4
+    trainer_config.inference_batchsize = 8
+    trainer_config.inference_delay = 0.5
     trainer_config.inference_device = device
     trainer_config.inference_servers = 1
-    trainer_config.minimum_buffer_size = 1000
+    trainer_config.minimum_buffer_size = 10000
     trainer_config.n_step = 3
-    trainer_config.epsilon = 0.1
+    trainer_config.epsilon = 0.05
     trainer_config.broadcast_period = 2.5
 
     trainer = trainers.seed.Trainer(

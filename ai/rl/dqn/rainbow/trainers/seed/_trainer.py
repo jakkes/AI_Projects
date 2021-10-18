@@ -1,4 +1,3 @@
-from typing import List
 import copy
 import time
 import io
@@ -83,6 +82,7 @@ def create_logger() -> logging.Server:
         logging.field.Scalar("RainbowAgent/Loss"),
         logging.field.Scalar("RainbowAgent/Max error"),
         logging.field.Scalar("RainbowAgent/Gradient norm"),
+        logging.field.Scalar("Actor/Start value"),
         logging.field.Frequency("Trainer/Train freq.", 5.0),
         logging.field.Frequency("Buffer/Data freq.", 5.0),
         name="dqnseed",
