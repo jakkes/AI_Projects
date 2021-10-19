@@ -99,6 +99,7 @@ def create_actor(
         data_port,
         router_port,
         logging_client=logging.Client("127.0.0.1", logger_port),
+        daemon=False
     )
 
 
@@ -169,13 +170,13 @@ class Trainer:
 
         stop_event.set()
 
-        for actor in self._actors:
+        for actor in actors:
             actor.terminate()
-        for server in self._servers:
+        for server in servers:
             server.terminate()
-        for actor in self._actors:
+        for actor in actors:
             actor.join()
-        for server in self._servers:
+        for server in servers:
             server.join()
         data_sub.close()
 

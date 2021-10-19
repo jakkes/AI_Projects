@@ -20,7 +20,7 @@ from ._config import Config
 def send_data(data, pub: zmq.Socket):
     buffer = io.BytesIO()
     torch.save(data, buffer)
-    pub.send(buffer.getvalue())
+    pub.send(buffer.getbuffer())
 
 
 @torch.jit.script
@@ -127,10 +127,10 @@ class ActorThread(threading.Thread):
             state = torch.as_tensor(state, dtype=torch.float32, device=device)
             mask = torch.as_tensor(action_space.action_mask, dtype=torch.bool, device=device)
 
+            model_output = client.evaluate_model(state)
             if random.random() < self._config.epsilon:
                 action = action_space.sample()
             else:
-                model_output = client.evaluate_model(state)
                 action = _get_actions(mask.unsqueeze(0), model_output.unsqueeze(0), use_distributional, z)[0]
 
             if first and logging_client is not None:

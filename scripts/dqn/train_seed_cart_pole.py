@@ -18,11 +18,13 @@ class Args(tap.Tap):
     discount_factor: float = 0.99
     """Discount factor."""
 
-    replay_capacity: int = 20000
+    replay_capacity: int = 10000
     """Replay capacity."""
 
     noise_std: float = 1.0
     """Initial noise STD in the NoisyNet."""
+
+    __slots__ = '_thread', '_log_period', '_n'
 
 
 def main(args: Args):
@@ -57,7 +59,7 @@ def main(args: Args):
     trainer_config.actor_processes = 2
     trainer_config.actor_threads = 4
     trainer_config.inference_batchsize = 8
-    trainer_config.inference_delay = 0.5
+    trainer_config.inference_delay = 1.0
     trainer_config.inference_device = device
     trainer_config.inference_servers = 1
     trainer_config.minimum_buffer_size = 10000

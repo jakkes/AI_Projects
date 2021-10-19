@@ -25,7 +25,6 @@ def param_listener(model: nn.Module, address: str):
             continue
         data = io.BytesIO(socket.recv())
         model.load_state_dict(torch.load(data))
-        _LOGGER.debug("Updated model parameters.")
 
 
 def create_buffer(self: "InferenceServer") -> buffers.Uniform:
@@ -59,13 +58,11 @@ def rep_worker(self: "InferenceServer"):
     while True:
         if socket.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
-        _LOGGER.debug("Received model evaluation request.")
         recvbytes = io.BytesIO(socket.recv())
         output = get_output(torch.load(recvbytes))
         data = io.BytesIO()
-        torch.save(output, data)
-        socket.send(data.getvalue())
-        _LOGGER.debug("Model evaluation request completed.")
+        torch.save(output.clone(), data)
+        socket.send(data.getbuffer())
 
 class InferenceServer(mp.Process):
     """Process serving inference requests from clients."""
@@ -116,7 +113,6 @@ class InferenceServer(mp.Process):
         self._batch_lock: threading.Lock = None
 
     def run(self):
-        _LOGGER.info("Inference server starting...")
         self._model = self._model.to(self._device)
 
         self._batch_lock = threading.Lock()
@@ -127,7 +123,6 @@ class InferenceServer(mp.Process):
         with self._batch_lock:
             if self._batch is None or self._batch.executed:
                 self._batch = Batch(self._model, create_buffer(self), self._max_delay)
-                _LOGGER.debug("Created a new inference batch")
             return self._batch
 
 
@@ -142,6 +137,7 @@ class Batch:
         self._executed_condition = threading.Condition(threading.Lock())
         self._executed_event = threading.Event()
         self._timer = threading.Timer(interval=max_delay, function=self.execute)
+        self._timer.setDaemon(True)
 
     @property
     def executed(self) -> bool:
@@ -175,9 +171,10 @@ class Batch:
         if self._executed_event.is_set():
             return
 
+        self._timer.cancel()
+
         data, _, _ = self._buffer.get_all()
         with torch.no_grad():
             self._output = self._model(*data)
         self._executed_event.set()
         self._executed_condition.notify_all()
-        _LOGGER.debug(f"Executed a batch of {data[0].shape[0]} inference requests.")

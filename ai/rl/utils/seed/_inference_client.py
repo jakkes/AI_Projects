@@ -12,8 +12,6 @@ _LOGGER = pylogging.get_logger(__name__)
 class InferenceClient:
     """Client for running remote model inferences."""
 
-    __slots__ = "_socket", "_router_address"
-
     def __init__(self, router_address: str):
         """
         Args:
@@ -45,17 +43,14 @@ class InferenceClient:
         Returns:
             torch.Tensor: Inference result.
         """
-        _LOGGER.debug("Sending inference request.")
         bytedata = io.BytesIO()
         torch.save(data, bytedata)
-        self._socket.send(bytedata.getvalue())
+        self._socket.send(bytedata.getbuffer(), copy=True)
         if self._socket.poll(timeout=10000, flags=zmq.POLLIN) != zmq.POLLIN:
             if attempts == 1:
                 raise RuntimeError("Remote model evaluation failed.")
             else:
-                _LOGGER.warn(f"Remote model evaluation failed. {attempts} attempts remain.")
                 self._create_socket()
                 return self.evaluate_model(data, attempts=attempts - 1)
-        recvbytes = io.BytesIO(self._socket.recv())
-        _LOGGER.debug("Inference request reply received.")
+        recvbytes = io.BytesIO(self._socket.recv(copy=True))
         return torch.load(recvbytes)
