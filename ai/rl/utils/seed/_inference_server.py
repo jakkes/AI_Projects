@@ -62,7 +62,7 @@ def rep_worker(self: "InferenceServer"):
         output = get_output(torch.load(recvbytes))
         data = io.BytesIO()
         torch.save(output.clone(), data)
-        socket.send(data.getbuffer())
+        socket.send(data.getvalue())
 
 class InferenceServer(mp.Process):
     """Process serving inference requests from clients."""

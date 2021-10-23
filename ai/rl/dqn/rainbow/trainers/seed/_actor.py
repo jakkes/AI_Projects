@@ -20,7 +20,7 @@ from ._config import Config
 def send_data(data, pub: zmq.Socket):
     buffer = io.BytesIO()
     torch.save(data, buffer)
-    pub.send(buffer.getbuffer())
+    pub.send(buffer.getvalue())
 
 
 @torch.jit.script

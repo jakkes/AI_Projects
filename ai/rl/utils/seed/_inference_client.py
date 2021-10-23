@@ -45,7 +45,7 @@ class InferenceClient:
         """
         bytedata = io.BytesIO()
         torch.save(data, bytedata)
-        self._socket.send(bytedata.getbuffer(), copy=True)
+        self._socket.send(bytedata.getvalue())
         if self._socket.poll(timeout=10000, flags=zmq.POLLIN) != zmq.POLLIN:
             if attempts == 1:
                 raise RuntimeError("Remote model evaluation failed.")
