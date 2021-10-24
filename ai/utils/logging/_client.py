@@ -1,4 +1,6 @@
 from typing import Any
+import threading
+
 import zmq
 
 
@@ -8,6 +10,7 @@ class Client:
         self._port = port
         self._socket = zmq.Context.instance().socket(zmq.PUB)
         self._socket.connect(f"tcp://{self._host}:{self._port}")
+        self._lock = threading.Lock()
 
     def __getstate__(self):
         return self._host, self._port
@@ -16,6 +19,8 @@ class Client:
         self._host, self._port = data
         self._socket = zmq.Context.instance().socket(zmq.PUB)
         self._socket.connect(f"tcp://{self._host}:{self._port}")
+        self._lock = threading.Lock()
 
     def log(self, field: str, value: Any):
-        self._socket.send_pyobj((field, value))
+        with self._lock:
+            self._socket.send_pyobj((field, value))
