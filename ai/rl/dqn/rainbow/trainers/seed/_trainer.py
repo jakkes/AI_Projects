@@ -168,6 +168,12 @@ class Trainer:
         while time.perf_counter() - start < duration:
             time.sleep(5.0)
 
+            for i in range(len(actors)):
+                if not actors[i].is_alive():
+                    actors[i] = create_actor(self, data_port, router_port, logger_port)
+                    actors[i].start()
+                    print("Restarted actor...")
+
         stop_event.set()
 
         for actor in actors:

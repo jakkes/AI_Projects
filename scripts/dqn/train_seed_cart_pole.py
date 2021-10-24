@@ -57,8 +57,8 @@ def main(args: Args):
 
     trainer_config = trainers.seed.Config()
     trainer_config.actor_processes = 2
-    trainer_config.actor_threads = 4
-    trainer_config.inference_batchsize = 8
+    trainer_config.actor_threads = 8
+    trainer_config.inference_batchsize = 16
     trainer_config.inference_delay = 1.0
     trainer_config.inference_device = device
     trainer_config.inference_servers = 1
