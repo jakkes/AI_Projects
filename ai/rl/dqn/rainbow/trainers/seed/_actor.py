@@ -82,8 +82,7 @@ class ActorThread(threading.Thread):
         data_pub = zmq.Context.instance().socket(zmq.PUB)
         data_pub.connect(f"tcp://127.0.0.1:{self._data_port}")
         client = seed.InferenceClient(f"tcp://127.0.0.1:{self._router_port}")
-        
-        device = self._config.inference_device
+
         env = self._environment()
         action_space = env.action_space.as_discrete()
         reward_collector = NStepRewardCollector(
@@ -94,16 +93,14 @@ class ActorThread(threading.Thread):
                 (),
                 (self._agent_config.action_space_size,),
             ],
-            [torch.float32, torch.long, torch.bool],
-            device=device
+            [torch.float32, torch.long, torch.bool]
         )
         max_steps = self._config.max_environment_steps
         logging_client = self._logging_client
         z = torch.linspace(
             self._agent_config.v_min,
             self._agent_config.v_max,
-            steps=self._agent_config.n_atoms,
-            device=self._config.inference_device,
+            steps=self._agent_config.n_atoms
         )
         use_distributional = self._agent_config.use_distributional
 
@@ -124,8 +121,8 @@ class ActorThread(threading.Thread):
                 terminal = False
                 first = True
 
-            state = torch.as_tensor(state, dtype=torch.float32, device=device)
-            mask = torch.as_tensor(action_space.action_mask, dtype=torch.bool, device=device)
+            state = torch.as_tensor(state, dtype=torch.float32)
+            mask = torch.as_tensor(action_space.action_mask, dtype=torch.bool)
 
             model_output = client.evaluate_model(state)
             if random.random() < self._config.epsilon:

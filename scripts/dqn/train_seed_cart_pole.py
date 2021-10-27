@@ -3,10 +3,11 @@ import torch
 
 import ai.environments as environments
 from ai.rl.dqn.rainbow import AgentConfig, Agent, trainers, networks
+from ai.utils import Factory
 
 
 class Args(tap.Tap):
-    duration: float = 600
+    duration: float = 3600
     """Train duration (seconds)."""
 
     batch_size: int = 128
@@ -18,13 +19,11 @@ class Args(tap.Tap):
     discount_factor: float = 0.99
     """Discount factor."""
 
-    replay_capacity: int = 10000
+    replay_capacity: int = 100000
     """Replay capacity."""
 
-    noise_std: float = 1.0
+    noise_std: float = 0.0
     """Initial noise STD in the NoisyNet."""
-
-    __slots__ = '_thread', '_log_period', '_n'
 
 
 def main(args: Args):
@@ -42,30 +41,34 @@ def main(args: Args):
     agent_config.use_prioritized_experience_replay = False
     agent_config.use_distributional = True
     agent_config.use_double = True
-    agent_config.n_atoms = 51
+    agent_config.n_atoms = 21
     agent_config.v_min = 0
-    agent_config.v_max = 200
+    agent_config.v_max = 100
 
-    network = networks.CartPole(
-        agent_config.use_distributional, agent_config.n_atoms, args.noise_std
-    ).to(device)
-    optimizer = torch.optim.Adam(
-        network.parameters(),
+    network = Factory(
+        networks.CartPole,
+        agent_config.use_distributional,
+        agent_config.n_atoms,
+        args.noise_std
+    )
+    optimizer = Factory(
+        torch.optim.Adam,
         lr=1e-4,
+        weight_decay=1e-4
     )
     agent = Agent(agent_config, network, optimizer)
 
     trainer_config = trainers.seed.Config()
-    trainer_config.actor_processes = 2
-    trainer_config.actor_threads = 8
-    trainer_config.inference_batchsize = 16
+    trainer_config.actor_processes = 4
+    trainer_config.actor_threads = 32
+    trainer_config.inference_batchsize = 64
     trainer_config.inference_delay = 1.0
     trainer_config.inference_device = device
     trainer_config.inference_servers = 1
     trainer_config.minimum_buffer_size = 10000
     trainer_config.n_step = 3
     trainer_config.epsilon = 0.05
-    trainer_config.broadcast_period = 2.5
+    trainer_config.broadcast_period = 1.0
 
     trainer = trainers.seed.Trainer(
         agent, trainer_config, environments.GymWrapper.get_factory("CartPole-v0")

@@ -5,14 +5,24 @@ import pytest
 import torch
 from torch import nn, cuda
 
-from ai.rl.utils.seed import InferenceClient, Broadcaster, InferenceServer, InferenceProxy
+from ai.rl.utils.seed import (
+    InferenceClient,
+    Broadcaster,
+    InferenceServer,
+    InferenceProxy,
+)
+from ai.utils import Factory
 
 
 def test_inference():
-    model = nn.Sequential(
-        nn.Linear(2, 10), nn.ReLU(inplace=True), nn.Linear(10, 1), nn.Sigmoid()
+    model = Factory(
+        nn.Sequential,
+        nn.Linear(2, 10),
+        nn.ReLU(inplace=True),
+        nn.Linear(10, 1),
+        nn.Sigmoid(),
     )
-    broadcaster = Broadcaster(model, 1.0)
+    broadcaster = Broadcaster(model(), 1.0)
     broadcast_port = broadcaster.start()
 
     proxy = InferenceProxy()
@@ -20,12 +30,12 @@ def test_inference():
 
     inference_server = InferenceServer(
         model,
-        (2, ),
+        (2,),
         torch.float32,
         f"tcp://127.0.0.1:{dealer_port}",
         f"tcp://127.0.0.1:{broadcast_port}",
         2,
-        1.0
+        1.0,
     )
     inference_server.start()
 
@@ -39,10 +49,12 @@ def test_inference():
     x2 = torch.randn(2)
     x3 = torch.randn(2)
 
+    model = model()
+
     y1 = model(x1.unsqueeze(0))[0]
     y2 = model(x2.unsqueeze(0))[0]
     y3 = model(x3.unsqueeze(0))[0]
-    
+
     f1 = lambda: inference_client1.evaluate_model(x1)
     f2 = lambda: inference_client2.evaluate_model(x2)
     f3 = lambda: inference_client3.evaluate_model(x3)
@@ -63,10 +75,14 @@ def test_inference():
 
 @pytest.mark.skipif(not cuda.is_available(), reason="CUDA not available.")
 def test_inference_cuda():
-    model = nn.Sequential(
-        nn.Linear(2, 10), nn.ReLU(inplace=True), nn.Linear(10, 1), nn.Sigmoid()
+    model = Factory(
+        nn.Sequential,
+        nn.Linear(2, 10),
+        nn.ReLU(inplace=True),
+        nn.Linear(10, 1),
+        nn.Sigmoid(),
     )
-    broadcaster = Broadcaster(model, 1.0)
+    broadcaster = Broadcaster(model(), 1.0)
     broadcast_port = broadcaster.start()
 
     proxy = InferenceProxy()
@@ -74,13 +90,13 @@ def test_inference_cuda():
 
     inference_server = InferenceServer(
         model,
-        (2, ),
+        (2,),
         torch.float32,
         f"tcp://127.0.0.1:{dealer_port}",
         f"tcp://127.0.0.1:{broadcast_port}",
         2,
         1.0,
-        device=torch.device("cuda")
+        device=torch.device("cuda"),
     )
     inference_server.start()
 
@@ -90,7 +106,7 @@ def test_inference_cuda():
     inference_client2 = InferenceClient(f"tcp://127.0.0.1:{router_port}")
     inference_client3 = InferenceClient(f"tcp://127.0.0.1:{router_port}")
 
-    model = model.cuda()
+    model = model().cuda()
 
     x1 = torch.randn(2).cuda()
     x2 = torch.randn(2).cuda()
@@ -99,7 +115,7 @@ def test_inference_cuda():
     y1 = model(x1.unsqueeze(0))[0]
     y2 = model(x2.unsqueeze(0))[0]
     y3 = model(x3.unsqueeze(0))[0]
-    
+
     f1 = lambda: inference_client1.evaluate_model(x1)
     f2 = lambda: inference_client2.evaluate_model(x2)
     f3 = lambda: inference_client3.evaluate_model(x3)

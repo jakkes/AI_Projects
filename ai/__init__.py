@@ -1,21 +1,24 @@
-import queue
-import os
-from types import ModuleType
-from multiprocessing import set_start_method, get_start_method
 from . import environments, simulators, utils, rl, search
 
 
 __all__ = ["environments", "simulators", "utils", "rl", "search"]
 __version__ = "0.0.4"
 
-try:
-    set_start_method("spawn")
-except RuntimeError:
-    if get_start_method().lower() != "spawn":
-        raise RuntimeError("Start method is not spawn")
+
+def _fix_start_method():
+    from multiprocessing import set_start_method, get_start_method
+    try:
+        set_start_method("spawn")
+    except RuntimeError:
+        if get_start_method().lower() != "spawn":
+            raise RuntimeError("Start method is not spawn")
 
 
 def _fix_pdoc():
+    import queue
+    import os
+    from types import ModuleType
+
     root = os.path.dirname(__file__)
     modules = queue.Queue()
     for module in __all__:
@@ -48,4 +51,5 @@ def _fix_pdoc():
                 submodule = submodule[:-3]
                 module.__pdoc__[submodule] = submodule in module.__all__
 
+_fix_start_method()
 _fix_pdoc()

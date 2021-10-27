@@ -64,7 +64,7 @@ def create_server(
     self: "Trainer", dealer_port: int, broadcast_port: int
 ) -> seed.InferenceServer:
     return seed.InferenceServer(
-        copy.deepcopy(self._agent.model).cpu(),
+        self._agent.model_factory,
         self._agent.config.state_shape,
         torch.float32,
         f"tcp://127.0.0.1:{dealer_port}",
@@ -126,7 +126,7 @@ class Trainer:
         data_sub.subscribe("")
         data_port = data_sub.bind_to_random_port("tcp://*")
 
-        broadcaster = seed.Broadcaster(self._agent.model, self._config.broadcast_period)
+        broadcaster = seed.Broadcaster(self._agent.model_instance, self._config.broadcast_period)
         broadcast_port = broadcaster.start()
 
         logger = create_logger()
@@ -150,6 +150,9 @@ class Trainer:
         for server in servers:
             server.start()
 
+        # Allow some time to start server.
+        time.sleep(5.0)
+
         actors = [
             create_actor(self, data_port, router_port, logger_port)
             for _ in range(self._config.actor_processes)
@@ -163,6 +166,9 @@ class Trainer:
             daemon=True,
         )
         training_thread.start()
+
+        # Allow some time to start actors.
+        time.sleep(5.0)
 
         start = time.perf_counter()
         while time.perf_counter() - start < duration:

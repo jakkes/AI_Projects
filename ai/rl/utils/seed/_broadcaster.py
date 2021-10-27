@@ -5,10 +5,6 @@ import torch
 import zmq
 
 from ai.utils import Metronome
-from ai.utils import pylogging
-
-
-_LOGGER = pylogging.get_logger(__name__)
 
 
 def runner(model: torch.nn.Module, period: float, socket: zmq.Socket):
@@ -52,5 +48,4 @@ class Broadcaster:
             target=runner, args=(self._model, self._period, socket), daemon=True
         )
         self._thread.start()
-        _LOGGER.info(f"Started model parameter broadcaster on port {self._port}.")
         return self._port

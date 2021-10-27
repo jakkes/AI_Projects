@@ -3,11 +3,6 @@ import io
 import zmq
 import torch
 
-from ai.utils import pylogging
-
-
-_LOGGER = pylogging.get_logger(__name__)
-
 
 class InferenceClient:
     """Client for running remote model inferences."""
@@ -24,15 +19,12 @@ class InferenceClient:
 
     def _create_socket(self):
         if self._socket is not None:
-            _LOGGER.info("Closing old socket...")
             self._socket.setsockopt(zmq.LINGER, 0)
             self._socket.close()
-            _LOGGER.info("Old socket closed.")
         self._socket = zmq.Context.instance().socket(zmq.REQ)
         self._socket.connect(self._router_address)
-        _LOGGER.info(f"Opened socket to {self._router_address}.")
 
-    def evaluate_model(self, data: torch.Tensor, attempts: int = 5) -> torch.Tensor:
+    def evaluate_model(self, data: torch.Tensor, attempts: int = 10) -> torch.Tensor:
         """Runs a remote inference.
 
         Args:
@@ -45,12 +37,12 @@ class InferenceClient:
         """
         bytedata = io.BytesIO()
         torch.save(data, bytedata)
-        self._socket.send(bytedata.getvalue())
+        self._socket.send(bytedata.getbuffer(), copy=False)
         if self._socket.poll(timeout=10000, flags=zmq.POLLIN) != zmq.POLLIN:
             if attempts == 1:
                 raise RuntimeError("Remote model evaluation failed.")
             else:
                 self._create_socket()
                 return self.evaluate_model(data, attempts=attempts - 1)
-        recvbytes = io.BytesIO(self._socket.recv(copy=True))
+        recvbytes = io.BytesIO(self._socket.recv(copy=False).buffer)
         return torch.load(recvbytes)

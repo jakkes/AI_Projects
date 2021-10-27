@@ -1,5 +1,5 @@
 import copy
-from typing import Union
+from typing import Dict, Union
 
 import numpy as np
 from numpy import ndarray
@@ -9,6 +9,7 @@ from torch import nn, optim, Tensor
 
 import ai.rl.utils.buffers as buffers
 import ai.utils.logging as logging
+from ai.utils import Factory
 from ._agent_config import AgentConfig
 
 
@@ -83,16 +84,17 @@ class Agent:
     def __init__(
         self,
         config: AgentConfig,
-        network: nn.Module,
-        optimizer: optim.Optimizer = None,
+        network: Factory[nn.Module],
+        optimizer: Factory[optim.Optimizer] = None,
         inference_mode: bool = False,
         replay_init_lazily: bool = True
     ):
         """
         Args:
             config (AgentConfig): Agent configuration.
-            network (nn.Module): Network.
-            optimizer (optim.Optimizer): Optimizer.
+            network (Factory[nn.Module]): Network wrapped in a `Factory`.
+            optimizer (Factory[optim.Optimizer]): Optimizer, wrapped in a `Factory`.
+                Model parameters are passed to the optimizer when instanced.
             inference_mode (bool, optional): If `True`, the agent can only be used for
                 acting. Saves memory by not initializing a replay buffer. Defaults to
                 False.
@@ -101,8 +103,9 @@ class Agent:
                 to `True`.
         """
         self._config = config
-        self._network = network
-        self._target_network = copy.deepcopy(network)
+        self._network_factory = network
+        self._network = network().to(config.network_device)
+        self._target_network = network().to(config.network_device)
         self._optimizer = optimizer
         self._buffer = None
         self._td_loss = (
@@ -172,6 +175,7 @@ class Agent:
             raise ValueError(
                 "Optimizer cannot be `None` when not running in inference mode."
             )
+        self._optimizer = self._optimizer(self._network.parameters())
         if not replay_init_lazily:
             self._initialize_replay(config)
 
@@ -250,8 +254,13 @@ class Agent:
         return self._config
 
     @property
-    def model(self) -> nn.Module:
-        """Model used by the agent."""
+    def model_factory(self) -> Factory[nn.Module]:
+        """Model factory used by the agent."""
+        return self._network_factory
+
+    @property
+    def model_instance(self) -> nn.Module:
+        """Model instance."""
         return self._network
 
     def _get_actions(self, action_masks: Tensor, network_output: Tensor):

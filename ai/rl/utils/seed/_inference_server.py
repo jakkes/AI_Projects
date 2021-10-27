@@ -8,10 +8,7 @@ import torch
 from torch import nn, multiprocessing as mp
 
 import ai.rl.utils.buffers as buffers
-from ai.utils import pylogging
-
-
-_LOGGER = pylogging.get_logger(__name__)
+from ai.utils import Factory
 
 
 def param_listener(model: nn.Module, address: str):
@@ -40,14 +37,15 @@ def start_rep_workers(self: "InferenceServer"):
     ]
     for worker in self._rep_working_threads:
         worker.start()
-    _LOGGER.info(f"Started {self._batchsize} reply workers.")
 
 
 def rep_worker(self: "InferenceServer"):
-    def get_output(data):
+    device = self._device
+    
+    def get_output(data: torch.Tensor):
         for _ in range(10):
             try:
-                return self._get_batch().evaluate_model(data)
+                return self._get_batch().evaluate_model(data.to(device)).cpu()
             except Batch.Executed:
                 continue
         raise RuntimeError("Failed evaluating data sample, ten attempts were made.")
@@ -58,18 +56,19 @@ def rep_worker(self: "InferenceServer"):
     while True:
         if socket.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
-        recvbytes = io.BytesIO(socket.recv())
+        recvbytes = io.BytesIO(socket.recv(copy=False).buffer)
         output = get_output(torch.load(recvbytes))
         data = io.BytesIO()
         torch.save(output.clone(), data)
-        socket.send(data.getvalue())
+        socket.send(data.getbuffer(), copy=False)
+
 
 class InferenceServer(mp.Process):
     """Process serving inference requests from clients."""
 
     def __init__(
         self,
-        model: nn.Module,
+        model: Factory[nn.Module],
         state_shape: Tuple[int, ...],
         state_dtype: torch.dtype,
         dealer_address: int,
@@ -81,9 +80,7 @@ class InferenceServer(mp.Process):
     ):
         """
         Args:
-            model (nn.Module): Model served. __Note__: model must not be on GPU. If the
-                model should be served on the GPU, pass a CPU version of the model and
-                pass argument `device`.
+            model (Factory[nn.Module]): Model served, wrapped in a `Factory`.
             state_shape (Tuple[int, ...]): Shape of states, excluding batch size.
             state_dtype (torch.dtype): Data type of states.
             dealer_address (int): Address to `InferenceProxy` session, e.g.
@@ -113,7 +110,7 @@ class InferenceServer(mp.Process):
         self._batch_lock: threading.Lock = None
 
     def run(self):
-        self._model = self._model.to(self._device)
+        self._model = self._model().to(self._device)
 
         self._batch_lock = threading.Lock()
         start_rep_workers(self)
