@@ -8,6 +8,7 @@ import torch
 from torch import nn, multiprocessing as mp
 
 import ai.rl.utils.buffers as buffers
+from ai.utils import Factory
 
 
 def param_listener(model: nn.Module, address: str):
@@ -25,13 +26,13 @@ def param_listener(model: nn.Module, address: str):
 
 def create_buffer(self: "InferenceServer") -> buffers.Uniform:
     return buffers.Uniform(
-        self._batchsize, (self._state_shape, ), (self._state_dtype, ), self._device
+        self._batchsize, (self._state_shape,), (self._state_dtype,), self._device
     )
 
 
 def start_rep_workers(self: "InferenceServer"):
     self._rep_working_threads = [
-        threading.Thread(target=rep_worker, args=(self,), daemon=True)
+        threading.Thread(target=rep_worker, args=(self,), daemon=True, name="ReplyWorker")
         for _ in range(self._batchsize)
     ]
     for worker in self._rep_working_threads:
@@ -39,11 +40,12 @@ def start_rep_workers(self: "InferenceServer"):
 
 
 def rep_worker(self: "InferenceServer"):
-
-    def get_output(data):
+    device = self._device
+    
+    def get_output(data: torch.Tensor):
         for _ in range(10):
             try:
-                return self._get_batch().evaluate_model(data)
+                return self._get_batch().evaluate_model(data.to(device)).cpu()
             except Batch.Executed:
                 continue
         raise RuntimeError("Failed evaluating data sample, ten attempts were made.")
@@ -54,18 +56,19 @@ def rep_worker(self: "InferenceServer"):
     while True:
         if socket.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
-        recvbytes = io.BytesIO(socket.recv())
+        recvbytes = io.BytesIO(socket.recv(copy=False).buffer)
         output = get_output(torch.load(recvbytes))
         data = io.BytesIO()
-        torch.save(output, data)
-        socket.send(data.getvalue())
+        torch.save(output.clone(), data)
+        socket.send(data.getbuffer(), copy=False)
 
 
 class InferenceServer(mp.Process):
     """Process serving inference requests from clients."""
+
     def __init__(
         self,
-        model: nn.Module,
+        model: Factory[nn.Module],
         state_shape: Tuple[int, ...],
         state_dtype: torch.dtype,
         dealer_address: int,
@@ -77,9 +80,7 @@ class InferenceServer(mp.Process):
     ):
         """
         Args:
-            model (nn.Module): Model served. __Note__: model must not be on GPU. If the
-                model should be served on the GPU, pass a CPU version of the model and
-                pass argument `device`.
+            model (Factory[nn.Module]): Model served, wrapped in a `Factory`.
             state_shape (Tuple[int, ...]): Shape of states, excluding batch size.
             state_dtype (torch.dtype): Data type of states.
             dealer_address (int): Address to `InferenceProxy` session, e.g.
@@ -94,7 +95,7 @@ class InferenceServer(mp.Process):
             daemon (bool, optional): Whether or not to run the process in daemon-mode.
                 Defaults to True.
         """
-        super().__init__(daemon=daemon)
+        super().__init__(daemon=daemon, name="InferenceProcess")
         self._model = model
         self._state_shape = state_shape
         self._state_dtype = state_dtype
@@ -104,15 +105,12 @@ class InferenceServer(mp.Process):
         self._max_delay = max_delay
         self._device = device
 
-        self._parameter_listening_thread: threading.Thread = None
         self._rep_working_threads: List[threading.Thread] = None
-        self._buffer: buffers.Uniform = None
-        self._output: torch.Tensor = None
         self._batch: "Batch" = None
         self._batch_lock: threading.Lock = None
 
     def run(self):
-        self._model = self._model.to(self._device)
+        self._model = self._model().to(self._device)
 
         self._batch_lock = threading.Lock()
         start_rep_workers(self)
@@ -121,9 +119,7 @@ class InferenceServer(mp.Process):
     def _get_batch(self) -> "Batch":
         with self._batch_lock:
             if self._batch is None or self._batch.executed:
-                self._batch = Batch(
-                    self._model, create_buffer(self), self._max_delay
-                )
+                self._batch = Batch(self._model, create_buffer(self), self._max_delay)
             return self._batch
 
 
@@ -138,6 +134,7 @@ class Batch:
         self._executed_condition = threading.Condition(threading.Lock())
         self._executed_event = threading.Event()
         self._timer = threading.Timer(interval=max_delay, function=self.execute)
+        self._timer.setDaemon(True)
 
     @property
     def executed(self) -> bool:
@@ -148,7 +145,7 @@ class Batch:
             if self._executed_event.is_set():
                 raise Batch.Executed
 
-            label = self._buffer.add((data, ), None, batch=False)
+            label = self._buffer.add((data,), None, batch=False)
 
             if self._buffer.size >= self._buffer.capacity:
                 self.execute(lock_acquired=True)
@@ -171,8 +168,10 @@ class Batch:
         if self._executed_event.is_set():
             return
 
+        self._timer.cancel()
+
         data, _, _ = self._buffer.get_all()
-        with torch.inference_mode():
+        with torch.no_grad():
             self._output = self._model(*data)
         self._executed_event.set()
         self._executed_condition.notify_all()

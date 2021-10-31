@@ -11,6 +11,10 @@ import ai.utils.logging as logging
 
 def run(port: Optional[int], name: str,  conn: Connection, fields: Mapping[str, logging.field.Base]):
     writer = SummaryWriter(comment=name)
+
+    for field in fields.values():
+        field.writer = writer
+
     socket = zmq.Context.instance().socket(zmq.SUB)
     socket.subscribe("")
     if port is None:
@@ -28,7 +32,7 @@ def run(port: Optional[int], name: str,  conn: Connection, fields: Mapping[str, 
             continue
         field, value = socket.recv_pyobj()
         try:
-            fields[field].log(writer, value)
+            fields[field].log(value)
         except KeyError:
             if field not in failed_keys:
                 warnings.warn(

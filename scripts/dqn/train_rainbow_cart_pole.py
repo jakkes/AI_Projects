@@ -4,6 +4,7 @@ from torch import optim, cuda
 
 import ai.environments as environments
 import ai.rl.dqn.rainbow as rainbow
+from ai.utils import Factory
 
 
 class ArgumentParser(tap.Tap):
@@ -19,7 +20,7 @@ class ArgumentParser(tap.Tap):
     discount_factor: float = 0.99
     """Discount factor."""
 
-    replay_capacity: int = 2**16
+    replay_capacity: int = 2 ** 16
     """Replay capacity."""
 
     noise_std: float = 1.0
@@ -47,10 +48,13 @@ def main(args: ArgumentParser):
     agent_config.v_min = 0
     agent_config.v_max = 100
 
-    network = rainbow.networks.CartPole(
-        agent_config.use_distributional, agent_config.n_atoms, args.noise_std
-    ).to(device)
-    optimizer = optim.Adam(network.parameters(), lr=1e-4, )
+    network = Factory(
+        rainbow.networks.CartPole,
+        agent_config.use_distributional,
+        agent_config.n_atoms,
+        args.noise_std,
+    )
+    optimizer = Factory(optim.Adam, lr=1e-4)
     agent = rainbow.Agent(agent_config, network, optimizer)
 
     trainer_config = rainbow.trainers.basic.Config()
@@ -64,5 +68,5 @@ def main(args: ArgumentParser):
 
 
 if __name__ == "__main__":
-    args = ArgumentParser().parse_args()
+    args = ArgumentParser(underscores_to_dashes=True).parse_args()
     main(args)

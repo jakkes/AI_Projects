@@ -43,7 +43,7 @@ class InferenceProxy:
         else:
             dealer.bind(f"tcp://*:{self._dealer_port}")
 
-        self._thread = threading.Thread(target=proxy_runner, args=(router, dealer), daemon=True)
+        self._thread = threading.Thread(target=proxy_runner, args=(router, dealer), daemon=True, name="InferenceProxyRunningThread")
         self._thread.start()
 
         return self._router_port, self._dealer_port

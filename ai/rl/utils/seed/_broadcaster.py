@@ -13,7 +13,7 @@ def runner(model: torch.nn.Module, period: float, socket: zmq.Socket):
         metronome.wait()
         bytedata = io.BytesIO()
         torch.save(model.state_dict(), bytedata)
-        socket.send(bytedata.getvalue())
+        socket.send(bytedata.getbuffer())
 
 
 class Broadcaster:
