@@ -26,24 +26,27 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import queue
-import os
-from types import ModuleType
-from multiprocessing import set_start_method, get_start_method
-from . import environments, simulators, utils, rl, search
+<pre><code class="python">from . import environments, simulators, utils, rl, search
 
 
 __all__ = [&#34;environments&#34;, &#34;simulators&#34;, &#34;utils&#34;, &#34;rl&#34;, &#34;search&#34;]
 __version__ = &#34;0.0.4&#34;
 
-try:
-    set_start_method(&#34;spawn&#34;)
-except RuntimeError:
-    if get_start_method().lower() != &#34;spawn&#34;:
-        raise RuntimeError(&#34;Start method is not spawn&#34;)
+
+def _fix_start_method():
+    from multiprocessing import set_start_method, get_start_method
+    try:
+        set_start_method(&#34;spawn&#34;)
+    except RuntimeError:
+        if get_start_method().lower() != &#34;spawn&#34;:
+            raise RuntimeError(&#34;Start method is not spawn&#34;)
 
 
 def _fix_pdoc():
+    import queue
+    import os
+    from types import ModuleType
+
     root = os.path.dirname(__file__)
     modules = queue.Queue()
     for module in __all__:
@@ -76,6 +79,7 @@ def _fix_pdoc():
                 submodule = submodule[:-3]
                 module.__pdoc__[submodule] = submodule in module.__all__
 
+_fix_start_method()
 _fix_pdoc()</code></pre>
 </details>
 </section>

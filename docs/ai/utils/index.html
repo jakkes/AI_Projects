@@ -30,9 +30,10 @@
 <pre><code class="python">&#34;&#34;&#34;Module containing general utility methods, used throughout the library.&#34;&#34;&#34;
 
 from ._metronome import Metronome
-from . import np, torch, logging
+from ._factory import Factory
+from . import np, torch, logging, pylogging
 
-__all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;, &#34;Metronome&#34;]</code></pre>
+__all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;, &#34;Metronome&#34;, &#34;pylogging&#34;, &#34;Factory&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -45,6 +46,11 @@ __all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;, &#34;Metronome&#34;
 <dt><code class="name"><a title="ai.utils.np" href="np/index.html">ai.utils.np</a></code></dt>
 <dd>
 <div class="desc"><p>Numpy specific utility methods.</p></div>
+</dd>
+<dt><code class="name"><a title="ai.utils.pylogging" href="pylogging/index.html">ai.utils.pylogging</a></code></dt>
+<dd>
+<div class="desc"><p>Module for performing console logging. This module wraps the builtin <code><a title="ai.utils.logging" href="logging/index.html">ai.utils.logging</a></code>
+module.</p></div>
 </dd>
 <dt><code class="name"><a title="ai.utils.torch" href="torch/index.html">ai.utils.torch</a></code></dt>
 <dd>
@@ -59,6 +65,31 @@ __all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;, &#34;Metronome&#34;
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="ai.utils.Factory"><code class="flex name class">
+<span>class <span class="ident">Factory</span></span>
+<span>(</span><span>cls: ~T, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wraps a class into a factory object. When the object is called, an instance of
+the class is returned. Useful for when passing uninitialized objects between
+processes.</p>
+<p>The implementation logic is essentially:</p>
+<pre><code class="language-python">def factory(cls, *args, **kwargs):
+    def generate():
+        return cls(*args, **kwargs)
+    return generate
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>cls</code></strong> :&ensp;<code>T</code></dt>
+<dd>Class or function to be called using <code>args</code> and <code>kwargs</code>.
+Additional args and kwargs may be added when called.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Generic</li>
+</ul>
+</dd>
 <dt id="ai.utils.Metronome"><code class="flex name class">
 <span>class <span class="ident">Metronome</span></span>
 <span>(</span><span>period: float)</span>
@@ -112,11 +143,15 @@ returned.</p></div>
 <ul>
 <li><code><a title="ai.utils.logging" href="logging/index.html">ai.utils.logging</a></code></li>
 <li><code><a title="ai.utils.np" href="np/index.html">ai.utils.np</a></code></li>
+<li><code><a title="ai.utils.pylogging" href="pylogging/index.html">ai.utils.pylogging</a></code></li>
 <li><code><a title="ai.utils.torch" href="torch/index.html">ai.utils.torch</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="ai.utils.Factory" href="#ai.utils.Factory">Factory</a></code></h4>
+</li>
 <li>
 <h4><code><a title="ai.utils.Metronome" href="#ai.utils.Metronome">Metronome</a></code></h4>
 <ul class="">

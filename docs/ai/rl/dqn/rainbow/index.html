@@ -60,7 +60,7 @@ __all__ = [&#34;Agent&#34;, &#34;AgentConfig&#34;, &#34;networks&#34;, &#34;trai
 <dl>
 <dt id="ai.rl.dqn.rainbow.Agent"><code class="flex name class">
 <span>class <span class="ident">Agent</span></span>
-<span>(</span><span>config: <a title="ai.rl.dqn.rainbow.AgentConfig" href="#ai.rl.dqn.rainbow.AgentConfig">AgentConfig</a>, network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer = None, inference_mode: bool = False)</span>
+<span>(</span><span>config: <a title="ai.rl.dqn.rainbow.AgentConfig" href="#ai.rl.dqn.rainbow.AgentConfig">AgentConfig</a>, network: <a title="ai.utils.Factory" href="../../../utils/index.html#ai.utils.Factory">Factory</a>[torch.nn.modules.module.Module], optimizer: <a title="ai.utils.Factory" href="../../../utils/index.html#ai.utils.Factory">Factory</a>[torch.optim.optimizer.Optimizer] = None, inference_mode: bool = False, replay_init_lazily: bool = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>RainbowDQN Agent.</p>
@@ -68,14 +68,19 @@ __all__ = [&#34;Agent&#34;, &#34;AgentConfig&#34;, &#34;networks&#34;, &#34;trai
 <dl>
 <dt><strong><code>config</code></strong> :&ensp;<code><a title="ai.rl.dqn.rainbow.AgentConfig" href="#ai.rl.dqn.rainbow.AgentConfig">AgentConfig</a></code></dt>
 <dd>Agent configuration.</dd>
-<dt><strong><code>network</code></strong> :&ensp;<code>nn.Module</code></dt>
-<dd>Network.</dd>
-<dt><strong><code>optimizer</code></strong> :&ensp;<code>optim.Optimizer</code></dt>
-<dd>Optimizer.</dd>
+<dt><strong><code>network</code></strong> :&ensp;<code>Factory[nn.Module]</code></dt>
+<dd>Network wrapped in a <code>Factory</code>.</dd>
+<dt><strong><code>optimizer</code></strong> :&ensp;<code>Factory[optim.Optimizer]</code></dt>
+<dd>Optimizer, wrapped in a <code>Factory</code>.
+Model parameters are passed to the optimizer when instanced.</dd>
 <dt><strong><code>inference_mode</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>If True, the agent can only be used for
+<dd>If <code>True</code>, the agent can only be used for
 acting. Saves memory by not initializing a replay buffer. Defaults to
 False.</dd>
+<dt><strong><code>replay_init_lazily</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If <code>True</code>, the replay buffer is
+initialized lazily, i.e. when the first observation is added. Defaults
+to <code>True</code>.</dd>
 </dl></div>
 <h3>Instance variables</h3>
 <dl>
@@ -90,6 +95,32 @@ False.</dd>
 def config(self) -&gt; AgentConfig:
     &#34;&#34;&#34;Agent configuration in use.&#34;&#34;&#34;
     return self._config</code></pre>
+</details>
+</dd>
+<dt id="ai.rl.dqn.rainbow.Agent.model_factory"><code class="name">var <span class="ident">model_factory</span> : <a title="ai.utils.Factory" href="../../../utils/index.html#ai.utils.Factory">Factory</a>[torch.nn.modules.module.Module]</code></dt>
+<dd>
+<div class="desc"><p>Model factory used by the agent.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def model_factory(self) -&gt; Factory[nn.Module]:
+    &#34;&#34;&#34;Model factory used by the agent.&#34;&#34;&#34;
+    return self._network_factory</code></pre>
+</details>
+</dd>
+<dt id="ai.rl.dqn.rainbow.Agent.model_instance"><code class="name">var <span class="ident">model_instance</span> : torch.nn.modules.module.Module</code></dt>
+<dd>
+<div class="desc"><p>Model instance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def model_instance(self) -&gt; nn.Module:
+    &#34;&#34;&#34;Model instance.&#34;&#34;&#34;
+    return self._network</code></pre>
 </details>
 </dd>
 </dl>
@@ -204,7 +235,29 @@ def config(self) -&gt; AgentConfig:
     Returns:
         int: The current size of the replay buffer.
     &#34;&#34;&#34;
-    return self._buffer.size</code></pre>
+    return 0 if self._buffer is None else self._buffer.size</code></pre>
+</details>
+</dd>
+<dt id="ai.rl.dqn.rainbow.Agent.inference_mode"><code class="name flex">
+<span>def <span class="ident">inference_mode</span></span>(<span>self) ‑> <a title="ai.rl.dqn.rainbow.Agent" href="#ai.rl.dqn.rainbow.Agent">Agent</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns a copy of this agent, but in inference mode.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="ai.rl.dqn.rainbow.Agent" href="#ai.rl.dqn.rainbow.Agent">Agent</a></code></dt>
+<dd>A shallow copy of the agent, capable of inference only.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def inference_mode(self) -&gt; &#34;Agent&#34;:
+    &#34;&#34;&#34;Returns a copy of this agent, but in inference mode.
+    
+    Returns:
+        Agent: A shallow copy of the agent, capable of inference only.&#34;&#34;&#34;
+    return Agent(self._config, self._network, inference_mode=True)</code></pre>
 </details>
 </dd>
 <dt id="ai.rl.dqn.rainbow.Agent.observe"><code class="name flex">
@@ -256,6 +309,9 @@ appropriate initialization value.</dd>
         errors (Union[Tensor, ndarray]): TD errors. NaN values are replaced by
             appropriate initialization value.
     &#34;&#34;&#34;
+    if self._buffer is None:
+        self._initialize_replay(self._config)
+
     errors = torch.as_tensor(errors, dtype=torch.float32)
     errors[errors.isnan()] = self._max_error
     self._buffer.add(
@@ -579,6 +635,9 @@ agent outputs tensorboard logs through this client.</p>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.act_single" href="#ai.rl.dqn.rainbow.Agent.act_single">act_single</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.buffer_size" href="#ai.rl.dqn.rainbow.Agent.buffer_size">buffer_size</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.config" href="#ai.rl.dqn.rainbow.Agent.config">config</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.Agent.inference_mode" href="#ai.rl.dqn.rainbow.Agent.inference_mode">inference_mode</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.Agent.model_factory" href="#ai.rl.dqn.rainbow.Agent.model_factory">model_factory</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.Agent.model_instance" href="#ai.rl.dqn.rainbow.Agent.model_instance">model_instance</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.observe" href="#ai.rl.dqn.rainbow.Agent.observe">observe</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.observe_single" href="#ai.rl.dqn.rainbow.Agent.observe_single">observe_single</a></code></li>
 <li><code><a title="ai.rl.dqn.rainbow.Agent.q_values" href="#ai.rl.dqn.rainbow.Agent.q_values">q_values</a></code></li>

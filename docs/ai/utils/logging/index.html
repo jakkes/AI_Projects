@@ -71,7 +71,8 @@ __all__ = [&#34;field&#34;, &#34;Server&#34;, &#34;Client&#34;]</code></pre>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def log(self, field: str, value: Any):
-    self._socket.send_pyobj((field, value))</code></pre>
+    with self._lock:
+        self._socket.send_pyobj((field, value), flags=zmq.NOBLOCK)</code></pre>
 </details>
 </dd>
 </dl>
