@@ -54,7 +54,7 @@ __all__ = [&#34;buffers&#34;, &#34;NStepRewardCollector&#34;]</code></pre>
 <dl>
 <dt id="ai.rl.utils.NStepRewardCollector"><code class="flex name class">
 <span>class <span class="ident">NStepRewardCollector</span></span>
-<span>(</span><span>n_step: int, discount_factor: float, state_data_shapes: Sequence[Tuple[int, ...]], state_data_dtypes: Sequence[torch.dtype])</span>
+<span>(</span><span>n_step: int, discount_factor: float, state_data_shapes: Sequence[Tuple[int, ...]], state_data_dtypes: Sequence[torch.dtype], device: torch.device = device(type='cpu'))</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Utility object for collecting n-step rewards.</p>
@@ -71,6 +71,8 @@ correct state and next states.</dd>
 <dt><strong><code>state_data_dtypes</code></strong> :&ensp;<code>Sequence[torch.dtype]</code></dt>
 <dd>Sequence of data types that need
 to be stored at each state.</dd>
+<dt><strong><code>device</code></strong></dt>
+<dd>(torch.device, optional): Device data is stored on. Defaults to CPU.</dd>
 </dl></div>
 <h3>Methods</h3>
 <dl>
@@ -140,7 +142,7 @@ Otherwise, None.</dd>
     &#34;&#34;&#34;
 
     state_data = [
-        torch.as_tensor(data, dtype=dtype)
+        torch.as_tensor(data, dtype=dtype, device=self._device)
         for data, dtype in zip(state_data, self._state_data_dtypes)
     ]
 
@@ -152,7 +154,7 @@ Otherwise, None.</dd>
     if self._looped:
         rewards = self._rewards[self._i] * self._discount_vector
         return_rewards.append(rewards.sum().clone().unsqueeze_(0))
-        return_terminals.append(torch.tensor([False]))
+        return_terminals.append(torch.tensor([False], device=self._device))
         for x, y in zip(self._state_data_buffer, return_state_data):
             y.append(x[self._i].clone().unsqueeze_(0))
         for x, y in zip(state_data, return_next_state_data):
@@ -172,7 +174,7 @@ Otherwise, None.</dd>
         n_return = self._n_step if self._looped else self._i
         rewards = self._rewards[:n_return].clone() * self._discount_vector.view(1, -1)
         return_rewards.append(rewards.sum(1))
-        return_terminals.append(torch.ones(n_return, dtype=torch.bool))
+        return_terminals.append(torch.ones(n_return, dtype=torch.bool, device=self._device))
         for x, y, z in zip(self._state_data_buffer, return_state_data, return_next_state_data):
             y.append(x[:n_return].clone())
             z.append(torch.zeros_like(x[:n_return]))

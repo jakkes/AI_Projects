@@ -62,6 +62,20 @@ __all__ = [&#34;Base&#34;, &#34;Uniform&#34;, &#34;Weighted&#34;]</code></pre>
 </ul>
 <h3>Instance variables</h3>
 <dl>
+<dt id="ai.rl.utils.buffers.Base.capacity"><code class="name">var <span class="ident">capacity</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Capacity of the buffer.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+@abc.abstractmethod
+def capacity(self) -&gt; int:
+    &#34;&#34;&#34;Capacity of the buffer.&#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
 <dt id="ai.rl.utils.buffers.Base.size"><code class="name">var <span class="ident">size</span> : int</code></dt>
 <dd>
 <div class="desc"><p>Size of the buffer.</p></div>
@@ -80,7 +94,7 @@ def size(self) -&gt; int:
 <h3>Methods</h3>
 <dl>
 <dt id="ai.rl.utils.buffers.Base.add"><code class="name flex">
-<span>def <span class="ident">add</span></span>(<span>self, data: Tuple[torch.Tensor], weights: torch.Tensor) ‑> torch.Tensor</span>
+<span>def <span class="ident">add</span></span>(<span>self, data: Tuple[torch.Tensor], weights: torch.Tensor, batch: bool = True) ‑> torch.Tensor</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Adds new data to the buffer.</p>
@@ -90,6 +104,10 @@ def size(self) -&gt; int:
 <dd>Data to be added.</dd>
 <dt><strong><code>weights</code></strong> :&ensp;<code>torch.Tensor</code></dt>
 <dd>Weights of the new data.</dd>
+<dt><strong><code>batch</code></strong> :&ensp;<code>optional, bool</code></dt>
+<dd>If <code>True</code>, then the first dimension of each tensor
+is treated as a batch dimension, allowing batch inserts. Defaults to
+<code>True</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -101,12 +119,15 @@ def size(self) -&gt; int:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abc.abstractmethod
-def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor) -&gt; torch.Tensor:
+def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor, batch: bool=True) -&gt; torch.Tensor:
     &#34;&#34;&#34;Adds new data to the buffer.
 
     Args:
         data (Tuple[torch.Tensor]): Data to be added.
         weights (torch.Tensor): Weights of the new data.
+        batch (optional, bool): If `True`, then the first dimension of each tensor
+            is treated as a batch dimension, allowing batch inserts. Defaults to
+            `True`.
 
     Returns:
         torch.Tensor: Identifier given to the new data.
@@ -233,6 +254,7 @@ to CPU.</dd>
 <li><code><b><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="ai.rl.utils.buffers.Base.add" href="#ai.rl.utils.buffers.Base.add">add</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.capacity" href="#ai.rl.utils.buffers.Base.capacity">capacity</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.get_all" href="#ai.rl.utils.buffers.Base.get_all">get_all</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.sample" href="#ai.rl.utils.buffers.Base.sample">sample</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.size" href="#ai.rl.utils.buffers.Base.size">size</a></code></li>
@@ -274,6 +296,7 @@ to CPU.</dd>
 <li><code><b><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></b></code>:
 <ul class="hlist">
 <li><code><a title="ai.rl.utils.buffers.Base.add" href="#ai.rl.utils.buffers.Base.add">add</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.capacity" href="#ai.rl.utils.buffers.Base.capacity">capacity</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.get_all" href="#ai.rl.utils.buffers.Base.get_all">get_all</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.sample" href="#ai.rl.utils.buffers.Base.sample">sample</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.size" href="#ai.rl.utils.buffers.Base.size">size</a></code></li>
@@ -300,8 +323,9 @@ to CPU.</dd>
 <ul>
 <li>
 <h4><code><a title="ai.rl.utils.buffers.Base" href="#ai.rl.utils.buffers.Base">Base</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="ai.rl.utils.buffers.Base.add" href="#ai.rl.utils.buffers.Base.add">add</a></code></li>
+<li><code><a title="ai.rl.utils.buffers.Base.capacity" href="#ai.rl.utils.buffers.Base.capacity">capacity</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.get_all" href="#ai.rl.utils.buffers.Base.get_all">get_all</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.sample" href="#ai.rl.utils.buffers.Base.sample">sample</a></code></li>
 <li><code><a title="ai.rl.utils.buffers.Base.size" href="#ai.rl.utils.buffers.Base.size">size</a></code></li>

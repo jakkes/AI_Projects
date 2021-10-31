@@ -29,9 +29,11 @@
 </summary>
 <pre><code class="python">&#34;&#34;&#34;Module containing general utility methods, used throughout the library.&#34;&#34;&#34;
 
-from . import np, torch, logging
+from ._metronome import Metronome
+from ._factory import Factory
+from . import np, torch, logging, pylogging
 
-__all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;]</code></pre>
+__all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;, &#34;Metronome&#34;, &#34;pylogging&#34;, &#34;Factory&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -45,6 +47,11 @@ __all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;]</code></pre>
 <dd>
 <div class="desc"><p>Numpy specific utility methods.</p></div>
 </dd>
+<dt><code class="name"><a title="ai.utils.pylogging" href="pylogging/index.html">ai.utils.pylogging</a></code></dt>
+<dd>
+<div class="desc"><p>Module for performing console logging. This module wraps the builtin <code><a title="ai.utils.logging" href="logging/index.html">ai.utils.logging</a></code>
+module.</p></div>
+</dd>
 <dt><code class="name"><a title="ai.utils.torch" href="torch/index.html">ai.utils.torch</a></code></dt>
 <dd>
 <div class="desc"><p>Contains general PyTorch utility methods.</p></div>
@@ -56,6 +63,69 @@ __all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;]</code></pre>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ai.utils.Factory"><code class="flex name class">
+<span>class <span class="ident">Factory</span></span>
+<span>(</span><span>cls: ~T, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wraps a class into a factory object. When the object is called, an instance of
+the class is returned. Useful for when passing uninitialized objects between
+processes.</p>
+<p>The implementation logic is essentially:</p>
+<pre><code class="language-python">def factory(cls, *args, **kwargs):
+    def generate():
+        return cls(*args, **kwargs)
+    return generate
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>cls</code></strong> :&ensp;<code>T</code></dt>
+<dd>Class or function to be called using <code>args</code> and <code>kwargs</code>.
+Additional args and kwargs may be added when called.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="ai.utils.Metronome"><code class="flex name class">
+<span>class <span class="ident">Metronome</span></span>
+<span>(</span><span>period: float)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Utility for executing at a certain frequency.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>period</code></strong> :&ensp;<code>float</code></dt>
+<dd>Period (seconds) that this timer should help control.</dd>
+</dl></div>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.utils.Metronome.wait"><code class="name flex">
+<span>def <span class="ident">wait</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Blocks until the specified period has passed since the last time this method
+returned.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wait(self):
+    &#34;&#34;&#34;Blocks until the specified period has passed since the last time this method
+    returned.&#34;&#34;&#34;
+    if self._last_return is None:
+        time.sleep(self._period)
+    else:
+        time.sleep(max(self._period - time.perf_counter() + self._last_return, 0))
+    self._last_return = time.perf_counter()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -73,7 +143,21 @@ __all__ = [&#34;np&#34;, &#34;torch&#34;, &#34;logging&#34;]</code></pre>
 <ul>
 <li><code><a title="ai.utils.logging" href="logging/index.html">ai.utils.logging</a></code></li>
 <li><code><a title="ai.utils.np" href="np/index.html">ai.utils.np</a></code></li>
+<li><code><a title="ai.utils.pylogging" href="pylogging/index.html">ai.utils.pylogging</a></code></li>
 <li><code><a title="ai.utils.torch" href="torch/index.html">ai.utils.torch</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ai.utils.Factory" href="#ai.utils.Factory">Factory</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ai.utils.Metronome" href="#ai.utils.Metronome">Metronome</a></code></h4>
+<ul class="">
+<li><code><a title="ai.utils.Metronome.wait" href="#ai.utils.Metronome.wait">wait</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

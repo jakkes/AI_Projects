@@ -30,7 +30,7 @@ zero sum games.</p>
 passed onto the <code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code> where network updates are performed. These are
 configurable by the <code><a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a></code> and <code><a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code>.</p>
 <p>In addition to these, there are two logging servers used for visualization to
-tensorboard: <code><a title="ai.rl.alpha_zero.LearnerLogger" href="#ai.rl.alpha_zero.LearnerLogger">LearnerLogger</a></code> and <code><a title="ai.rl.alpha_zero.SelfPlayLogger" href="#ai.rl.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code>.</p>
+tensorboard: <code>LearnerLogger</code> and <code>SelfPlayLogger</code>.</p>
 <p>For a basic implementation of the AlphaZero algorithm, see the <code><a title="ai.rl.alpha_zero.train" href="#ai.rl.alpha_zero.train">train()</a></code> method. This
 method uses pure python multiprocessing. However, replacing the python queues by some
 other transportation protocol (implementing the queue interface) should allow the
@@ -65,7 +65,7 @@ When evaluating a model, use the `mcts` method.
 
 from ._core.learner_worker import LearnerWorker, LearnerConfig
 from ._core.self_play_worker import SelfPlayWorker, SelfPlayConfig
-from ._core.loggers import LearnerLogger, SelfPlayLogger
+from ._core.logger import Logger
 from ._core.mcts import mcts, MCTSConfig
 from ._core.mcts_node import MCTSNode
 from ._train import train
@@ -77,8 +77,7 @@ __all__ = [
     &#34;LearnerConfig&#34;,
     &#34;SelfPlayWorker&#34;,
     &#34;SelfPlayConfig&#34;,
-    &#34;LearnerLogger&#34;,
-    &#34;SelfPlayLogger&#34;,
+    &#34;Logger&#34;,
     &#34;MCTSConfig&#34;,
     &#34;MCTSNode&#34;,
     &#34;train&#34;,
@@ -249,10 +248,11 @@ training is run until the process is interupted. Defaults to -1.</dd>
             training is run until the process is interupted. Defaults to -1.
     &#34;&#34;&#34;
     network.share_memory()
+    logger = Logger()
+    log_port = logger.start()
+    log_client = logging.Client(&#34;127.0.0.1&#34;, log_port)
 
     sample_queue = Queue(maxsize=2000)
-    episode_logging_queue = Queue(maxsize=2000)
-    learner_logging_queue = Queue(maxsize=2000)
 
     self_play_workers = [
         SelfPlayWorker(
@@ -260,7 +260,7 @@ training is run until the process is interupted. Defaults to -1.</dd>
             network,
             self_play_config,
             sample_queue,
-            episode_logging_queue=episode_logging_queue,
+            log_client=log_client,
         )
         for _ in range(self_play_workers)
     ]
@@ -270,16 +270,11 @@ training is run until the process is interupted. Defaults to -1.</dd>
         optimizer,
         learner_config,
         sample_queue,
-        learner_logging_queue=learner_logging_queue,
+        log_client=log_client,
         save_path=save_path,
         save_period=save_period
     )
 
-    learner_logger = LearnerLogger(learner_logging_queue)
-    self_play_logger = SelfPlayLogger(episode_logging_queue)
-
-    learner_logger.start()
-    self_play_logger.start()
     learner_worker.start()
     for worker in self_play_workers:
         worker.start()
@@ -288,14 +283,10 @@ training is run until the process is interupted. Defaults to -1.</dd>
     while train_time &lt; 0 or perf_counter() - start &lt; train_time:
         sleep(10)
 
-    learner_logger.terminate()
-    self_play_logger.terminate()
     learner_worker.terminate()
     for worker in self_play_workers:
         worker.terminate()
 
-    learner_logger.join()
-    self_play_logger.join()
     learner_worker.join()
     for worker in self_play_workers:
         worker.join()</code></pre>
@@ -312,37 +303,9 @@ training is run until the process is interupted. Defaults to -1.</dd>
 <dd>
 <div class="desc"><p>Configuration of the Learner process.</p></div>
 </dd>
-<dt id="ai.rl.alpha_zero.LearnerLogger"><code class="flex name class">
-<span>class <span class="ident">LearnerLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Logging server for the <code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code>.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
-<dd>Queue from which logging items are gathered.</dd>
-</dl></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="ai.utils.logging.SummaryWriterServer" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer">SummaryWriterServer</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="ai.utils.logging.SummaryWriterServer" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer">SummaryWriterServer</a></b></code>:
-<ul class="hlist">
-<li><code><a title="ai.utils.logging.SummaryWriterServer.join" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.join">join</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.log" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.log">log</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.start" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.start">start</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.terminate" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.terminate">terminate</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 <dt id="ai.rl.alpha_zero.LearnerWorker"><code class="flex name class">
 <span>class <span class="ident">LearnerWorker</span></span>
-<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: <a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>, learner_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>> = None, save_path: str = None, save_period: int = -1)</span>
+<span>(</span><span>network: torch.nn.modules.module.Module, optimizer: torch.optim.optimizer.Optimizer, config: <a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fc70187ebb0>>, log_client: <a title="ai.utils.logging.Client" href="../../utils/logging/index.html#ai.utils.logging.Client">Client</a> = None, save_path: str = None, save_period: int = -1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>
@@ -442,8 +405,8 @@ training is run until the process is interupted. Defaults to -1.</dd>
     loss.backward()
     self.optimizer.step()
 
-    if self.learner_logging_queue is not None:
-        self.learner_logging_queue.put_nowait(loss.detach())
+    if self.log_client is not None:
+        self.log_client.log(&#34;Training/Loss&#34;, loss.detach().item())
 
     if (
         self.save_period &gt; 0
@@ -454,6 +417,26 @@ training is run until the process is interupted. Defaults to -1.</dd>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="ai.rl.alpha_zero.Logger"><code class="flex name class">
+<span>class <span class="ident">Logger</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Logging server for the <code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code>.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ai.utils.logging.Server" href="../../utils/logging/index.html#ai.utils.logging.Server">Server</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.utils.logging.Server" href="../../utils/logging/index.html#ai.utils.logging.Server">Server</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.utils.logging.Server.port" href="../../utils/logging/index.html#ai.utils.logging.Server.port">port</a></code></li>
+<li><code><a title="ai.utils.logging.Server.start" href="../../utils/logging/index.html#ai.utils.logging.Server.start">start</a></code></li>
+<li><code><a title="ai.utils.logging.Server.started" href="../../utils/logging/index.html#ai.utils.logging.Server.started">started</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="ai.rl.alpha_zero.MCTSConfig"><code class="flex name class">
 <span>class <span class="ident">MCTSConfig</span></span>
@@ -824,37 +807,9 @@ policy.</p>
 <li><a title="ai.rl.alpha_zero.MCTSConfig" href="#ai.rl.alpha_zero.MCTSConfig">MCTSConfig</a></li>
 </ul>
 </dd>
-<dt id="ai.rl.alpha_zero.SelfPlayLogger"><code class="flex name class">
-<span>class <span class="ident">SelfPlayLogger</span></span>
-<span>(</span><span>data_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Logging server for the <code><a title="ai.rl.alpha_zero.SelfPlayWorker" href="#ai.rl.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code>.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>data_queue</code></strong> :&ensp;<code>Queue</code></dt>
-<dd>Queue from which logging items are gathered.</dd>
-</dl></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="ai.utils.logging.SummaryWriterServer" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer">SummaryWriterServer</a></li>
-<li>abc.ABC</li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="ai.utils.logging.SummaryWriterServer" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer">SummaryWriterServer</a></b></code>:
-<ul class="hlist">
-<li><code><a title="ai.utils.logging.SummaryWriterServer.join" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.join">join</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.log" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.log">log</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.start" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.start">start</a></code></li>
-<li><code><a title="ai.utils.logging.SummaryWriterServer.terminate" href="../../utils/logging/index.html#ai.utils.logging.SummaryWriterServer.terminate">terminate</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 <dt id="ai.rl.alpha_zero.SelfPlayWorker"><code class="flex name class">
 <span>class <span class="ident">SelfPlayWorker</span></span>
-<span>(</span><span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, network: torch.nn.modules.module.Module, config: <a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>>, episode_logging_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fe1bbdba3a0>> = None)</span>
+<span>(</span><span>simulator: <a title="ai.simulators.Factory" href="../../simulators/index.html#ai.simulators.Factory">Factory</a>, network: torch.nn.modules.module.Module, config: <a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a>, sample_queue: <bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object at 0x7fc70187ebb0>>, log_client: <a title="ai.utils.logging.Client" href="../../utils/logging/index.html#ai.utils.logging.Client">Client</a> = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Process objects represent activity that is run in a separate process</p>
@@ -880,7 +835,6 @@ policy.</p>
         try:
             self.sample_queue.put(self.run_episode(), timeout=5)
         except Full:
-            logger.warn(&#34;Sample queue full. Skipping...&#34;)
             continue</code></pre>
 </details>
 </dd>
@@ -939,13 +893,14 @@ policy.</p>
         action_mask = self.simulator.action_space.as_discrete.action_mask(state)
         root = root.children[action]
 
-    if self.episode_logging_queue is not None:
+    if self.log_client is not None:
         kl_div = -(
             first_action_policy * torch.log_softmax(start_prior, dim=0).numpy()
         ).sum()
-        self.episode_logging_queue.put_nowait(
-            (abs(reward), start_value, kl_div, first_action)
-        )
+        self.log_client.log(&#34;Episode/Reward&#34;, reward)
+        self.log_client.log(&#34;Episode/Start value&#34;, start_value)
+        self.log_client.log(&#34;Episode/Start KL Div&#34;, kl_div)
+        self.log_client.log(&#34;Episode/First action&#34;, first_action)
 
     states = torch.as_tensor(np.stack(states), dtype=torch.float)
     action_masks = torch.as_tensor(np.stack(action_masks))
@@ -992,15 +947,15 @@ policy.</p>
 <h4><code><a title="ai.rl.alpha_zero.LearnerConfig" href="#ai.rl.alpha_zero.LearnerConfig">LearnerConfig</a></code></h4>
 </li>
 <li>
-<h4><code><a title="ai.rl.alpha_zero.LearnerLogger" href="#ai.rl.alpha_zero.LearnerLogger">LearnerLogger</a></code></h4>
-</li>
-<li>
 <h4><code><a title="ai.rl.alpha_zero.LearnerWorker" href="#ai.rl.alpha_zero.LearnerWorker">LearnerWorker</a></code></h4>
 <ul class="">
 <li><code><a title="ai.rl.alpha_zero.LearnerWorker.run" href="#ai.rl.alpha_zero.LearnerWorker.run">run</a></code></li>
 <li><code><a title="ai.rl.alpha_zero.LearnerWorker.save" href="#ai.rl.alpha_zero.LearnerWorker.save">save</a></code></li>
 <li><code><a title="ai.rl.alpha_zero.LearnerWorker.train_step" href="#ai.rl.alpha_zero.LearnerWorker.train_step">train_step</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="ai.rl.alpha_zero.Logger" href="#ai.rl.alpha_zero.Logger">Logger</a></code></h4>
 </li>
 <li>
 <h4><code><a title="ai.rl.alpha_zero.MCTSConfig" href="#ai.rl.alpha_zero.MCTSConfig">MCTSConfig</a></code></h4>
@@ -1027,9 +982,6 @@ policy.</p>
 </li>
 <li>
 <h4><code><a title="ai.rl.alpha_zero.SelfPlayConfig" href="#ai.rl.alpha_zero.SelfPlayConfig">SelfPlayConfig</a></code></h4>
-</li>
-<li>
-<h4><code><a title="ai.rl.alpha_zero.SelfPlayLogger" href="#ai.rl.alpha_zero.SelfPlayLogger">SelfPlayLogger</a></code></h4>
 </li>
 <li>
 <h4><code><a title="ai.rl.alpha_zero.SelfPlayWorker" href="#ai.rl.alpha_zero.SelfPlayWorker">SelfPlayWorker</a></code></h4>

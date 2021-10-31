@@ -84,15 +84,15 @@ __all__ = [&#34;Trainer&#34;, &#34;Config&#34;]</code></pre>
 <pre><code class="python">def start(self):
     &#34;&#34;&#34;Starts training, according to the configuration.&#34;&#34;&#34;
 
-    self._logging_server.start()
+    port = self._logging_server.start()
+    self._logging_client = logging.Client(&#34;127.0.0.1&#34;, port)
+    self._agent.set_logging_client(self._logging_client)
 
     env = self._env_factory()
     try:
         self._run(env)
     finally:
-        env.close()
-        self._logging_server.terminate()
-        self._logging_server.join()</code></pre>
+        env.close()</code></pre>
 </details>
 </dd>
 </dl>

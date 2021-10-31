@@ -4,13 +4,13 @@ from torch import nn, optim
 from torch.multiprocessing import Queue
 
 import ai.simulators as simulators
+import ai.utils.logging as logging
 from . import (
     LearnerConfig,
     LearnerWorker,
-    SelfPlayLogger,
     SelfPlayConfig,
     SelfPlayWorker,
-    LearnerLogger,
+    Logger
 )
 
 
@@ -43,10 +43,11 @@ def train(
             training is run until the process is interupted. Defaults to -1.
     """
     network.share_memory()
+    logger = Logger()
+    log_port = logger.start()
+    log_client = logging.Client("127.0.0.1", log_port)
 
     sample_queue = Queue(maxsize=2000)
-    episode_logging_queue = Queue(maxsize=2000)
-    learner_logging_queue = Queue(maxsize=2000)
 
     self_play_workers = [
         SelfPlayWorker(
@@ -54,7 +55,7 @@ def train(
             network,
             self_play_config,
             sample_queue,
-            episode_logging_queue=episode_logging_queue,
+            log_client=log_client,
         )
         for _ in range(self_play_workers)
     ]
@@ -64,16 +65,11 @@ def train(
         optimizer,
         learner_config,
         sample_queue,
-        learner_logging_queue=learner_logging_queue,
+        log_client=log_client,
         save_path=save_path,
         save_period=save_period
     )
 
-    learner_logger = LearnerLogger(learner_logging_queue)
-    self_play_logger = SelfPlayLogger(episode_logging_queue)
-
-    learner_logger.start()
-    self_play_logger.start()
     learner_worker.start()
     for worker in self_play_workers:
         worker.start()
@@ -82,14 +78,10 @@ def train(
     while train_time < 0 or perf_counter() - start < train_time:
         sleep(10)
 
-    learner_logger.terminate()
-    self_play_logger.terminate()
     learner_worker.terminate()
     for worker in self_play_workers:
         worker.terminate()
 
-    learner_logger.join()
-    self_play_logger.join()
     learner_worker.join()
     for worker in self_play_workers:
         worker.join()

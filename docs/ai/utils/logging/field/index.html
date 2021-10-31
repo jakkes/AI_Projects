@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>ai.utils.logging.items API documentation</title>
-<meta name="description" content="Logging items." />
+<title>ai.utils.logging.field API documentation</title>
+<meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,21 +19,19 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>ai.utils.logging.items</code></h1>
+<h1 class="title">Module <code>ai.utils.logging.field</code></h1>
 </header>
 <section id="section-intro">
-<p>Logging items.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;Logging items.&#34;&#34;&#34;
-
-from ._base import Base
+<pre><code class="python">from ._base import Base
 from ._scalar import Scalar
+from ._frequency import Frequency
 
 
-__all__ = [&#34;Base&#34;, &#34;Scalar&#34;]</code></pre>
+__all__ = [&#34;Base&#34;, &#34;Scalar&#34;, &#34;Frequency&#34;]</code></pre>
 </details>
 </section>
 <section>
@@ -45,23 +43,57 @@ __all__ = [&#34;Base&#34;, &#34;Scalar&#34;]</code></pre>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="ai.utils.logging.items.Base"><code class="flex name class">
+<dt id="ai.utils.logging.field.Base"><code class="flex name class">
 <span>class <span class="ident">Base</span></span>
+<span>(</span><span>name: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base logging item.</p></div>
+<div class="desc"><p>Base logging field.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the logging field.</dd>
+</dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>abc.ABC</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="ai.utils.logging.items.Scalar" href="#ai.utils.logging.items.Scalar">Scalar</a></li>
+<li><a title="ai.utils.logging.field.Frequency" href="#ai.utils.logging.field.Frequency">Frequency</a></li>
+<li><a title="ai.utils.logging.field.Scalar" href="#ai.utils.logging.field.Scalar">Scalar</a></li>
 </ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="ai.utils.logging.field.Base.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self) -&gt; str:
+    return self._name</code></pre>
+</details>
+</dd>
+<dt id="ai.utils.logging.field.Base.writer"><code class="name">var <span class="ident">writer</span> : torch.utils.tensorboard.writer.SummaryWriter</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def writer(self) -&gt; torch.utils.tensorboard.writer.SummaryWriter:
+    return self._writer</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
-<dt id="ai.utils.logging.items.Base.log"><code class="name flex">
-<span>def <span class="ident">log</span></span>(<span>self, writer: torch.utils.tensorboard.writer.SummaryWriter)</span>
+<dt id="ai.utils.logging.field.Base.log"><code class="name flex">
+<span>def <span class="ident">log</span></span>(<span>self, value: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Logs the item to the given writer.</p></div>
@@ -70,37 +102,61 @@ __all__ = [&#34;Base&#34;, &#34;Scalar&#34;]</code></pre>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abc.abstractmethod
-def log(self, writer: torch.utils.tensorboard.writer.SummaryWriter):
+def log(self, value: Any):
     &#34;&#34;&#34;Logs the item to the given writer.&#34;&#34;&#34;
-    raise NotImplementedError</code></pre>
+    pass</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
-<dt id="ai.utils.logging.items.Scalar"><code class="flex name class">
-<span>class <span class="ident">Scalar</span></span>
-<span>(</span><span>name: str, value: float)</span>
+<dt id="ai.utils.logging.field.Frequency"><code class="flex name class">
+<span>class <span class="ident">Frequency</span></span>
+<span>(</span><span>name: str, log_period: float)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A logging item containing a scalar value.</p>
-<p>A logging item containing a scalar value.</p>
+<div class="desc"><p>Field logging frequency of occurances.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
-<dd>Logging field name</dd>
-<dt><strong><code>value</code></strong> :&ensp;<code>float</code></dt>
-<dd>Value</dd>
+<dd>Name of logging field.</dd>
+<dt><strong><code>log_period</code></strong> :&ensp;<code>float</code></dt>
+<dd>Period (seconds) between logs.</dd>
 </dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="ai.utils.logging.items.Base" href="#ai.utils.logging.items.Base">Base</a></li>
+<li><a title="ai.utils.logging.field.Base" href="#ai.utils.logging.field.Base">Base</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="ai.utils.logging.items.Base" href="#ai.utils.logging.items.Base">Base</a></b></code>:
+<li><code><b><a title="ai.utils.logging.field.Base" href="#ai.utils.logging.field.Base">Base</a></b></code>:
 <ul class="hlist">
-<li><code><a title="ai.utils.logging.items.Base.log" href="#ai.utils.logging.items.Base.log">log</a></code></li>
+<li><code><a title="ai.utils.logging.field.Base.log" href="#ai.utils.logging.field.Base.log">log</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="ai.utils.logging.field.Scalar"><code class="flex name class">
+<span>class <span class="ident">Scalar</span></span>
+<span>(</span><span>name: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Field logging scalar values.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the logging field.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ai.utils.logging.field.Base" href="#ai.utils.logging.field.Base">Base</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="ai.utils.logging.field.Base" href="#ai.utils.logging.field.Base">Base</a></b></code>:
+<ul class="hlist">
+<li><code><a title="ai.utils.logging.field.Base.log" href="#ai.utils.logging.field.Base.log">log</a></code></li>
 </ul>
 </li>
 </ul>
@@ -122,13 +178,18 @@ def log(self, writer: torch.utils.tensorboard.writer.SummaryWriter):
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="ai.utils.logging.items.Base" href="#ai.utils.logging.items.Base">Base</a></code></h4>
+<h4><code><a title="ai.utils.logging.field.Base" href="#ai.utils.logging.field.Base">Base</a></code></h4>
 <ul class="">
-<li><code><a title="ai.utils.logging.items.Base.log" href="#ai.utils.logging.items.Base.log">log</a></code></li>
+<li><code><a title="ai.utils.logging.field.Base.log" href="#ai.utils.logging.field.Base.log">log</a></code></li>
+<li><code><a title="ai.utils.logging.field.Base.name" href="#ai.utils.logging.field.Base.name">name</a></code></li>
+<li><code><a title="ai.utils.logging.field.Base.writer" href="#ai.utils.logging.field.Base.writer">writer</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="ai.utils.logging.items.Scalar" href="#ai.utils.logging.items.Scalar">Scalar</a></code></h4>
+<h4><code><a title="ai.utils.logging.field.Frequency" href="#ai.utils.logging.field.Frequency">Frequency</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ai.utils.logging.field.Scalar" href="#ai.utils.logging.field.Scalar">Scalar</a></code></h4>
 </li>
 </ul>
 </li>

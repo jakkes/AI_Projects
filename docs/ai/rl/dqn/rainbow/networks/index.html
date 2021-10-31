@@ -100,7 +100,7 @@ registered hooks while the latter silently ignores them.</p>
 <pre><code class="python">def forward(self, x):
     x = self._body(x)
     if self._use_distributional:
-        x = x.view(-1, 2, self._n_atoms)
+        x = torch.softmax(x.view(-1, 2, self._n_atoms), dim=-1)
     return x</code></pre>
 </details>
 </dd>

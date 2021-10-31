@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>ai.rl.dqn.rainbow.trainers.seed API documentation</title>
+<meta name="description" content="Distributed trainer, based on the SEED architecture." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ai.rl.dqn.rainbow.trainers.seed</code></h1>
+</header>
+<section id="section-intro">
+<p>Distributed trainer, based on the SEED architecture.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Distributed trainer, based on the SEED architecture.&#34;&#34;&#34;
+
+
+from ._actor import Actor
+from ._trainer import Trainer
+from ._config import Config
+
+
+__all__ = [&#34;Actor&#34;, &#34;Trainer&#34;, &#34;Config&#34;]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Actor"><code class="flex name class">
+<span>class <span class="ident">Actor</span></span>
+<span>(</span><span>agent_config: <a title="ai.rl.dqn.rainbow.AgentConfig" href="../../index.html#ai.rl.dqn.rainbow.AgentConfig">AgentConfig</a>, config: <a title="ai.rl.dqn.rainbow.trainers.seed.Config" href="#ai.rl.dqn.rainbow.trainers.seed.Config">Config</a>, environment: <a title="ai.environments.Factory" href="../../../../../environments/index.html#ai.environments.Factory">Factory</a>, data_port: int, router_port: int, logging_client: <a title="ai.utils.logging.Client" href="../../../../../utils/logging/index.html#ai.utils.logging.Client">Client</a> = None, daemon: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process objects represent activity that is run in a separate process</p>
+<p>The class is analogous to <code>threading.Thread</code></p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>multiprocessing.context.Process</li>
+<li>multiprocessing.process.BaseProcess</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Actor.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Method to be run in sub-process; can be overridden in sub-class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(self):
+    for _ in range(self._config.actor_threads):
+        self._threads.append(ActorThread(*self._args, **self._kwargs))
+    for thread in self._threads:
+        thread.start()
+
+    while True:
+        time.sleep(5.0)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config"><code class="flex name class">
+<span>class <span class="ident">Config</span></span>
+<span>(</span><span>max_environment_steps: int = -1, n_step: int = 3, epsilon: float = 0.1, actor_processes: int = 1, actor_threads: int = 4, inference_servers: int = 1, broadcast_period: float = 2.5, inference_batchsize: int = 4, inference_delay: float = 0.1, inference_device: torch.device = device(type='cpu'), minimum_buffer_size: int = 1000, max_train_frequency: float = -1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Trainer config.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.actor_processes"><code class="name">var <span class="ident">actor_processes</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.actor_threads"><code class="name">var <span class="ident">actor_threads</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.broadcast_period"><code class="name">var <span class="ident">broadcast_period</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.epsilon"><code class="name">var <span class="ident">epsilon</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.inference_batchsize"><code class="name">var <span class="ident">inference_batchsize</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.inference_delay"><code class="name">var <span class="ident">inference_delay</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.inference_device"><code class="name">var <span class="ident">inference_device</span> : torch.device</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.inference_servers"><code class="name">var <span class="ident">inference_servers</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.max_environment_steps"><code class="name">var <span class="ident">max_environment_steps</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.max_train_frequency"><code class="name">var <span class="ident">max_train_frequency</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.minimum_buffer_size"><code class="name">var <span class="ident">minimum_buffer_size</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Config.n_step"><code class="name">var <span class="ident">n_step</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Trainer"><code class="flex name class">
+<span>class <span class="ident">Trainer</span></span>
+<span>(</span><span>agent: <a title="ai.rl.dqn.rainbow.Agent" href="../../index.html#ai.rl.dqn.rainbow.Agent">Agent</a>, config: <a title="ai.rl.dqn.rainbow.trainers.seed.Config" href="#ai.rl.dqn.rainbow.trainers.seed.Config">Config</a>, environment: <a title="ai.environments.Factory" href="../../../../../environments/index.html#ai.environments.Factory">Factory</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>SEED trainer.</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="ai.rl.dqn.rainbow.trainers.seed.Trainer.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>self, duration: float)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Starts training, and blocks until completed.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>duration</code></strong> :&ensp;<code>float</code></dt>
+<dd>Training duration in seconds.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start(self, duration: float):
+    &#34;&#34;&#34;Starts training, and blocks until completed.
+
+    Args:
+        duration (float): Training duration in seconds.
+    &#34;&#34;&#34;
+    proxy = seed.InferenceProxy()
+    router_port, dealer_port = proxy.start()
+
+    data_sub = zmq.Context.instance().socket(zmq.SUB)
+    data_sub.subscribe(&#34;&#34;)
+    data_port = data_sub.bind_to_random_port(&#34;tcp://*&#34;)
+
+    broadcaster = seed.Broadcaster(self._agent.model_instance, self._config.broadcast_period)
+    broadcast_port = broadcaster.start()
+
+    logger = create_logger()
+    logger_port = logger.start()
+
+    self._agent.set_logging_client(logging.Client(&#34;localhost&#34;, logger_port))
+
+    stop_event = threading.Event()
+
+    data_listening_thread = threading.Thread(
+        target=data_listener,
+        args=(self._agent, data_sub, logger_port, stop_event),
+        daemon=True,
+    )
+    data_listening_thread.start()
+
+    servers = [
+        create_server(self, dealer_port, broadcast_port)
+        for _ in range(self._config.inference_servers)
+    ]
+    for server in servers:
+        server.start()
+
+    # Allow some time to start server.
+    time.sleep(5.0)
+
+    actors = [
+        create_actor(self, data_port, router_port, logger_port)
+        for _ in range(self._config.actor_processes)
+    ]
+    for actor in actors:
+        actor.start()
+
+    training_thread = threading.Thread(
+        target=trainer,
+        args=(self._agent, self._config, stop_event, logger_port),
+        daemon=True,
+    )
+    training_thread.start()
+
+    # Allow some time to start actors.
+    time.sleep(5.0)
+
+    start = time.perf_counter()
+    while time.perf_counter() - start &lt; duration:
+        time.sleep(5.0)
+
+        for i in range(len(actors)):
+            if not actors[i].is_alive():
+                actors[i] = create_actor(self, data_port, router_port, logger_port)
+                actors[i].start()
+                print(&#34;Restarted actor...&#34;)
+
+    stop_event.set()
+
+    for actor in actors:
+        actor.terminate()
+    for server in servers:
+        server.terminate()
+    for actor in actors:
+        actor.join()
+    for server in servers:
+        server.join()
+    data_sub.close()
+
+    training_thread.join()
+    data_listening_thread.join()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="ai.rl.dqn.rainbow.trainers" href="../index.html">ai.rl.dqn.rainbow.trainers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ai.rl.dqn.rainbow.trainers.seed.Actor" href="#ai.rl.dqn.rainbow.trainers.seed.Actor">Actor</a></code></h4>
+<ul class="">
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Actor.run" href="#ai.rl.dqn.rainbow.trainers.seed.Actor.run">run</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config" href="#ai.rl.dqn.rainbow.trainers.seed.Config">Config</a></code></h4>
+<ul class="">
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.actor_processes" href="#ai.rl.dqn.rainbow.trainers.seed.Config.actor_processes">actor_processes</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.actor_threads" href="#ai.rl.dqn.rainbow.trainers.seed.Config.actor_threads">actor_threads</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.broadcast_period" href="#ai.rl.dqn.rainbow.trainers.seed.Config.broadcast_period">broadcast_period</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.epsilon" href="#ai.rl.dqn.rainbow.trainers.seed.Config.epsilon">epsilon</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.inference_batchsize" href="#ai.rl.dqn.rainbow.trainers.seed.Config.inference_batchsize">inference_batchsize</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.inference_delay" href="#ai.rl.dqn.rainbow.trainers.seed.Config.inference_delay">inference_delay</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.inference_device" href="#ai.rl.dqn.rainbow.trainers.seed.Config.inference_device">inference_device</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.inference_servers" href="#ai.rl.dqn.rainbow.trainers.seed.Config.inference_servers">inference_servers</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.max_environment_steps" href="#ai.rl.dqn.rainbow.trainers.seed.Config.max_environment_steps">max_environment_steps</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.max_train_frequency" href="#ai.rl.dqn.rainbow.trainers.seed.Config.max_train_frequency">max_train_frequency</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.minimum_buffer_size" href="#ai.rl.dqn.rainbow.trainers.seed.Config.minimum_buffer_size">minimum_buffer_size</a></code></li>
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Config.n_step" href="#ai.rl.dqn.rainbow.trainers.seed.Config.n_step">n_step</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ai.rl.dqn.rainbow.trainers.seed.Trainer" href="#ai.rl.dqn.rainbow.trainers.seed.Trainer">Trainer</a></code></h4>
+<ul class="">
+<li><code><a title="ai.rl.dqn.rainbow.trainers.seed.Trainer.start" href="#ai.rl.dqn.rainbow.trainers.seed.Trainer.start">start</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

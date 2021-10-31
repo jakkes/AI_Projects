@@ -1,6 +1,5 @@
 import copy
-import queue
-from typing import Union
+from typing import Dict, Union
 
 import numpy as np
 from numpy import ndarray
@@ -10,6 +9,7 @@ from torch import nn, optim, Tensor
 
 import ai.rl.utils.buffers as buffers
 import ai.utils.logging as logging
+from ai.utils import Factory
 from ._agent_config import AgentConfig
 
 
@@ -84,22 +84,28 @@ class Agent:
     def __init__(
         self,
         config: AgentConfig,
-        network: nn.Module,
-        optimizer: optim.Optimizer = None,
+        network: Factory[nn.Module],
+        optimizer: Factory[optim.Optimizer] = None,
         inference_mode: bool = False,
+        replay_init_lazily: bool = True
     ):
         """
         Args:
             config (AgentConfig): Agent configuration.
-            network (nn.Module): Network.
-            optimizer (optim.Optimizer): Optimizer.
-            inference_mode (bool, optional): If True, the agent can only be used for
+            network (Factory[nn.Module]): Network wrapped in a `Factory`.
+            optimizer (Factory[optim.Optimizer]): Optimizer, wrapped in a `Factory`.
+                Model parameters are passed to the optimizer when instanced.
+            inference_mode (bool, optional): If `True`, the agent can only be used for
                 acting. Saves memory by not initializing a replay buffer. Defaults to
                 False.
+            replay_init_lazily (bool, optional): If `True`, the replay buffer is
+                initialized lazily, i.e. when the first observation is added. Defaults
+                to `True`.
         """
         self._config = config
-        self._network = network
-        self._target_network = copy.deepcopy(network)
+        self._network_factory = network
+        self._network = network().to(config.network_device)
+        self._target_network = network().to(config.network_device)
         self._optimizer = optimizer
         self._buffer = None
         self._td_loss = (
@@ -108,7 +114,7 @@ class Agent:
             else torch.nn.MSELoss(reduction="none")
         )
         if not inference_mode:
-            self._initialize_not_inference_mode(config)
+            self._initialize_not_inference_mode(config, replay_init_lazily)
 
         self._z = torch.linspace(
             config.v_min,
@@ -131,14 +137,9 @@ class Agent:
 
         self._train_steps = 0
         self._max_error = torch.tensor(1.0)
-        self._logging_queue: queue.Queue = None
+        self._logging_client: logging.Client = None
 
-    def _initialize_not_inference_mode(self, config: AgentConfig):
-        if self._optimizer is None:
-            raise ValueError(
-                "Optimizer cannot be `None` when not running in inference mode."
-            )
-
+    def _initialize_replay(self, config: AgentConfig):
         shapes = (
             config.state_shape,  # state
             (),  # action
@@ -168,6 +169,16 @@ class Agent:
             self._buffer = buffers.Uniform(
                 config.replay_capacity, shapes, dtypes, self._config.replay_device
             )
+
+    def _initialize_not_inference_mode(self, config: AgentConfig, replay_init_lazily: bool):
+        if self._optimizer is None:
+            raise ValueError(
+                "Optimizer cannot be `None` when not running in inference mode."
+            )
+        self._optimizer = self._optimizer(self._network.parameters())
+        if not replay_init_lazily:
+            self._initialize_replay(config)
+
 
     def _target_update(self):
         self._target_network.load_state_dict(self._network.state_dict())
@@ -242,6 +253,21 @@ class Agent:
         """Agent configuration in use."""
         return self._config
 
+    @property
+    def model_factory(self) -> Factory[nn.Module]:
+        """Model factory used by the agent."""
+        return self._network_factory
+
+    @property
+    def model_instance(self) -> nn.Module:
+        """Model instance."""
+        return self._network
+
+    def _get_actions(self, action_masks: Tensor, network_output: Tensor):
+        return _get_actions(
+            action_masks, network_output, self._config.use_distributional, self._z
+        )
+
     def observe(
         self,
         states: Union[Tensor, ndarray],
@@ -264,6 +290,9 @@ class Agent:
             errors (Union[Tensor, ndarray]): TD errors. NaN values are replaced by
                 appropriate initialization value.
         """
+        if self._buffer is None:
+            self._initialize_replay(self._config)
+
         errors = torch.as_tensor(errors, dtype=torch.float32)
         errors[errors.isnan()] = self._max_error
         self._buffer.add(
@@ -432,39 +461,28 @@ class Agent:
         if self._train_steps % self._config.target_update_steps == 0:
             self._target_update()
 
-        if self._logging_queue is not None:
-            self._logging_queue.put(
-                logging.items.Scalar("RainbowAgent/Loss", loss.detach().item())
-            )
-            self._logging_queue.put(
-                logging.items.Scalar("RainbowAgent/Max error", self._max_error.item())
-            )
+        if self._logging_client is not None:
+            self._logging_client.log("RainbowAgent/Loss", loss.detach().item())
+            self._logging_client.log("RainbowAgent/Max error", self._max_error.item())
 
             if grad_norm is not None:
-                self._logging_queue.put(
-                    logging.items.Scalar("RainbowAgent/Gradient norm", grad_norm.item())
-                )
+                self._logging_client.log("RainbowAgent/Gradient norm", grad_norm.item())
 
     def buffer_size(self) -> int:
         """
         Returns:
             int: The current size of the replay buffer.
         """
-        return self._buffer.size
+        return 0 if self._buffer is None else self._buffer.size
 
-    def set_logging_queue(self, queue: queue.Queue):
-        """Sets (and overrides previously set) logging queue used by the agent. The
-        agent outputs logging items to this queue. The output is formatted as a mapping,
-        i.e. JSON representable. List of logging fields are given below.
-
-        Training step logs (always produced jointly):
-            "loss" -> float, training loss computed in a training step.
-            "max_error" -> float, weight assigned to new samples in the replay buffer.
+    def set_logging_client(self, client: logging.Client):
+        """Sets (and overrides previously set) logging client used by the agent. The
+        agent outputs tensorboard logs through this client.
 
         Args:
-            queue (queue.Queue): Queue.
+            client (logging.Client): Client.
         """
-        self._logging_queue = queue
+        self._logging_client = client
 
     def q_values(
         self, states: Union[Tensor, ndarray], action_masks: Union[Tensor, ndarray]
@@ -514,3 +532,10 @@ class Agent:
                 action_mask, dtype=torch.bool, device=self._config.network_device
             ).unsqueeze_(0),
         )[0]
+
+    def inference_mode(self) -> "Agent":
+        """Returns a copy of this agent, but in inference mode.
+        
+        Returns:
+            Agent: A shallow copy of the agent, capable of inference only."""
+        return Agent(self._config, self._network, inference_mode=True)
