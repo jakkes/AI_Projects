@@ -40,3 +40,7 @@ class Config:
 
     minimum_buffer_size: int = 1000
     """Minimum buffer size before training steps are executed."""
+
+    max_train_frequency: float = -1
+    """Maximum number of training steps per second. Negative value results in no limit.
+    This may be useful if data collection is slow."""

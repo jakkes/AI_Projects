@@ -23,4 +23,4 @@ class Client:
 
     def log(self, field: str, value: Any):
         with self._lock:
-            self._socket.send_pyobj((field, value))
+            self._socket.send_pyobj((field, value), flags=zmq.NOBLOCK)

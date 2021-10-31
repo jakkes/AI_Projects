@@ -11,6 +11,7 @@ import ai.rl.dqn.rainbow as rainbow
 import ai.environments as environments
 import ai.rl.utils.seed as seed
 import ai.utils.logging as logging
+from ai.utils import Metronome
 from ._config import Config
 from ._actor import Actor
 
@@ -50,14 +51,16 @@ def trainer(
 
     agent.discount_factor = agent.discount_factor ** config.n_step
 
-    steps = 0
-    while not stop_event.is_set():
-        agent.train_step()
+    metronome = None
+    if config.max_train_frequency > 0:
+        metronome = Metronome(1.0 / config.max_train_frequency)
 
-        steps += 1
-        if steps == 10:
-            logger.log("Trainer/Train freq.", 10)
-            steps = 0
+    while not stop_event.is_set():
+        if metronome is not None:
+            metronome.wait()
+
+        agent.train_step()
+        logger.log("Trainer/Train freq.", 1)
 
 
 def create_server(
