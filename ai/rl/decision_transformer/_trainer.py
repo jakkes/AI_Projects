@@ -12,7 +12,7 @@ from numpy import inf
 
 import ai
 from ai import environments
-from ai.utils import logging
+from ai.utils import logging, Factory
 from . import exploration_strategies
 from ._trainer_config import TrainerConfig
 
@@ -25,16 +25,16 @@ class Trainer:
 
     def __init__(
         self,
-        state_encoder: nn.Module,
-        action_encoder: nn.Module,
-        reward_encoder: nn.Module,
-        positional_encoder: nn.Module,
-        transformer: "ai.rl.decision_transformer.TransformerEncoder",
-        action_decoder: nn.Module,
+        state_encoder: Factory[nn.Module],
+        action_encoder: Factory[nn.Module],
+        reward_encoder: Factory[nn.Module],
+        positional_encoder: Factory[nn.Module],
+        transformer: Factory["ai.rl.decision_transformer.TransformerEncoder"],
+        action_decoder: Factory[nn.Module],
         environment: environments.Factory,
         exploration_strategy: exploration_strategies.Base,
         config: TrainerConfig,
-        optimizer: optim.Optimizer,
+        optimizer: Factory[optim.Optimizer],
     ):
         self._device = torch.device("cuda" if config.enable_cuda else "cpu")
         self._dtype = torch.float16 if config.enable_float16 else torch.float32

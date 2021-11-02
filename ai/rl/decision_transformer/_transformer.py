@@ -69,6 +69,9 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
+    """A transformer encoder module. This module performs the sequence encoding
+    operation of a full transformer module."""
+
     def __init__(
         self,
         N: int,
@@ -78,6 +81,16 @@ class TransformerEncoder(nn.Module):
         d_v: int,
         fc_hidden_layer_size: int,
     ):
+        """
+        Args:
+            N (int): Number of encoder layers to be used.
+            h (int): Number of heads in the multi head attention.
+            d_model (int): Size of encoded vectors passed to this module.
+            d_k (int): Size of key vectors used in the attention modules.
+            d_v (int): Size of value vectors used in the attention modules.
+            fc_hidden_layer_size (int): Size of the hidden layer processing the output
+                of each multi head attention.
+        """
         super().__init__()
         self.layers = nn.ModuleList(
             [
