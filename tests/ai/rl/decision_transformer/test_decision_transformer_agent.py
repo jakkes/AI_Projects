@@ -1,7 +1,7 @@
 import torch
 
 from ai.rl.decision_transformer import TransformerEncoder
-from ai.rl.decision_transformer._agent import interleave, evaluate_transformer
+from ai.rl.decision_transformer._agent import interleave, evaluate_transformer, decode
 
 
 def test_interleave():
@@ -31,3 +31,16 @@ def test_evaluate_transformer():
 
     out = evaluate_transformer(model, data, lengths)
     print(out)
+
+
+def test_decode():
+    model = torch.nn.Identity()
+
+    x = torch.randn(3, 50)
+    l = torch.tensor([1, 2, 3])
+    
+    y = decode(model, x, l)
+
+    assert y[0] == x[0, 1]
+    assert y[1] == x[1, 4]
+    assert y[2] == x[2, 7]

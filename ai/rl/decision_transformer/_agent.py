@@ -1,6 +1,6 @@
 import itertools
 from dataclasses import dataclass
-from typing import Iterator, Tuple, Union
+from typing import Iterator, Callable
 
 import torch
 from torch import nn
@@ -59,23 +59,30 @@ class ModelFactory:
         )
 
 
-
-def interleave(reward_to_gos: torch.Tensor, states: torch.Tensor, actions: torch.Tensor):
+def interleave(
+    reward_to_gos: torch.Tensor, states: torch.Tensor, actions: torch.Tensor
+):
     bs = states.shape[0]
     encoding_dim = states.shape[-1]
     actions = torch.cat(
-        (actions, torch.zeros(bs, 1, encoding_dim, device=actions.device, dtype=actions.dtype)),
-        dim=1
+        (
+            actions,
+            torch.zeros(
+                bs, 1, encoding_dim, device=actions.device, dtype=actions.dtype
+            ),
+        ),
+        dim=1,
     )
     stacked = torch.stack((reward_to_gos, states, actions), dim=2)
     return stacked.view(bs, -1, encoding_dim)[:, :-1, :]
+
 
 def encode_and_interleave(
     self: "Agent",
     states: torch.Tensor,
     actions: torch.Tensor,
     reward_to_gos: torch.Tensor,
-    time_steps: torch.Tensor
+    time_steps: torch.Tensor,
 ) -> torch.Tensor:
     positions = self._model.positional_encoder(time_steps)
     states = self._model.state_encoder(states) + positions
@@ -83,16 +90,26 @@ def encode_and_interleave(
     reward_to_gos = self._model.reward_encoder(reward_to_gos) + positions
     return interleave(reward_to_gos, states, actions)
 
+
 def evaluate_transformer(
     transformer: "ai.rl.decision_transformer.TransformerEncoder",
     sequences: torch.Tensor,
-    lengths: torch.Tensor
 ) -> torch.Tensor:
     seq_shape = sequences.shape[1]
     bs = sequences.shape[0]
-    seq_vec = torch.arange(seq_shape, device=lengths.device).view(1, -1, 1)
-    lengths = lengths.view(-1, 1, 1).expand(-1, seq_shape, -1)
-    return transformer(sequences, mask=seq_vec < lengths)
+    seq_vec = torch.arange(seq_shape, device=sequences.device)
+    mask = (seq_vec.view(1, -1) <= seq_vec.view(-1, 1)).unsqueeze_(0).expand(bs, -1, -1)
+    return transformer(sequences, mask=mask)
+
+
+def decode(
+    decoder: nn.Module, transformer_output: torch.Tensor, lengths: torch.Tensor
+) -> torch.Tensor:
+    indices = 3 * lengths - 2
+    batch_vec = torch.arange(
+        transformer_output.shape[0], device=transformer_output.device
+    )
+    return decoder(transformer_output[batch_vec, indices])
 
 
 class Agent:
@@ -137,9 +154,38 @@ class Agent:
         """Wrapper class containing all networks used by the agent."""
         return self._model
 
-    def compute_loss(self, *data, **kwargs) -> torch.Tensor:
+    def compute_loss(self,
+        states: torch.Tensor,
+        actions: torch.Tensor,
+        reward_to_gos: torch.Tensor,
+        time_steps: torch.Tensor,
+        lengths: torch.Tensor,
+        loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+    ) -> torch.Tensor:
         """Computes the loss given the observed data."""
-        raise NotImplementedError
+        sequences = encode_and_interleave(
+            self, states, actions, reward_to_gos, time_steps
+        )
+        transformer_output = evaluate_transformer(self, sequences)
+        max_length = lengths.max()
+        indices = torch.arange(1, 3 * max_length - 1, step=3, device=lengths.device).view(1, -1)
+        batch_vec = torch.arange(transformer_output.shape[0], device=lengths.device).view(-1, 1)
+
+
+    def _evaluate_action_untraced(
+        self,
+        states: torch.Tensor,
+        actions: torch.Tensor,
+        reward_to_gos: torch.Tensor,
+        time_steps: torch.Tensor,
+        lengths: torch.Tensor,
+    ) -> torch.Tensor:
+        with torch.inference_mode():
+            sequences = encode_and_interleave(
+                self, states, actions, reward_to_gos, time_steps
+            )
+            transformer_output = evaluate_transformer(self, sequences)
+            return decode(self._model.action_decoder, transformer_output, lengths)
 
     def evaluate_action(
         self,
@@ -150,7 +196,8 @@ class Agent:
         lengths: torch.Tensor,
     ) -> torch.Tensor:
         """Evaluates the model on the given sequence of data. All sequences are given in
-        `(BATCH, SEQ, *FEATURES)` format.
+        `(BATCH, SEQ, *FEATURES)` format. The inference is run in `inference_mode`,
+        implying no backward passes possible.
 
         Args:
             states (torch.Tensor): Sequence of states.
@@ -163,6 +210,8 @@ class Agent:
             torch.Tensor: Model output for the next action, shaped
                 `(BATCH, *ACTIONFEATURES)`.
         """
-        sequences = encode_and_interleave(self, states, actions, reward_to_gos, time_steps)
-        transformer_output = evaluate_transformer(self, sequences, 3 * lengths - 1)
-        return self._model.action_decoder(transformer_output[:, -1, :])
+        self.evaluate_action = torch.jit.trace(
+            self._evaluate_action_untraced,
+            (states, actions, reward_to_gos, time_steps, lengths),
+        )
+        return self.evaluate_action(states, actions, reward_to_gos, time_steps, lengths)
