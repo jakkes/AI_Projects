@@ -50,12 +50,12 @@ class ModelFactory:
 
     def get_model(self) -> Model:
         return Model(
-            self._state_encoder(),
-            self._action_encoder(),
-            self._reward_encoder(),
-            self._positional_encoder(),
-            self._transformer(),
-            self._action_decoder(),
+            self.state_encoder(),
+            self.action_encoder(),
+            self.reward_encoder(),
+            self.positional_encoder(),
+            self.transformer(),
+            self.action_decoder(),
         )
 
 
@@ -84,10 +84,10 @@ def encode_and_interleave(
     reward_to_gos: torch.Tensor,
     time_steps: torch.Tensor,
 ) -> torch.Tensor:
-    positions = self._model.positional_encoder(time_steps)
+    positions = self._model.positional_encoder(time_steps.unsqueeze(-1))
     states = self._model.state_encoder(states) + positions
     actions = self._model.action_encoder(actions) + positions[:, :-1]
-    reward_to_gos = self._model.reward_encoder(reward_to_gos) + positions
+    reward_to_gos = self._model.reward_encoder(reward_to_gos.unsqueeze(-1)) + positions
     return interleave(reward_to_gos, states, actions)
 
 
@@ -130,7 +130,8 @@ class Agent:
             action_encoder (Factory[nn.Module]): Action encoder network.
             reward_encoder (Factory[nn.Module]): Reward (to go) encoder network.
             positional_encoder (Factory[nn.Module]): Positional encoder network.
-            transformer (Factory["ai.rl.decision_transformer.TransformerEncoder"]): Transformer network.
+            transformer (Factory["ai.rl.decision_transformer.TransformerEncoder"]):
+                Transformer network.
             action_decoder (Factory[nn.Module]): Decoding network.
         """
         self._factory = ModelFactory(
@@ -154,40 +155,56 @@ class Agent:
         """Wrapper class containing all networks used by the agent."""
         return self._model
 
-    def compute_loss(self,
-        states: torch.Tensor,
-        actions: torch.Tensor,
-        reward_to_gos: torch.Tensor,
-        time_steps: torch.Tensor,
-        lengths: torch.Tensor,
-        loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
-    ) -> torch.Tensor:
-        """Computes the loss given the observed data."""
-        sequences = encode_and_interleave(
-            self, states, actions, reward_to_gos, time_steps
-        )
-        transformer_output = evaluate_transformer(self, sequences)
-        max_length = lengths.max()
-        indices = torch.arange(1, 3 * max_length - 1, step=3, device=lengths.device).view(1, -1)
-        batch_vec = torch.arange(transformer_output.shape[0], device=lengths.device).view(-1, 1)
-
-
-    def _evaluate_action_untraced(
+    def loss(
         self,
         states: torch.Tensor,
         actions: torch.Tensor,
         reward_to_gos: torch.Tensor,
         time_steps: torch.Tensor,
         lengths: torch.Tensor,
+        loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
     ) -> torch.Tensor:
-        with torch.inference_mode():
-            sequences = encode_and_interleave(
-                self, states, actions, reward_to_gos, time_steps
-            )
-            transformer_output = evaluate_transformer(self, sequences)
-            return decode(self._model.action_decoder, transformer_output, lengths)
+        """Computes the loss over the given data.
 
-    def evaluate_action(
+        Args:
+            states (torch.Tensor): Sequence of states, shaped 
+                `(BATCH, SEQ, *STATEFEATURES)`.
+            actions (torch.Tensor): Sequence of actions, shaped
+                `(BATCH, SEQ, *ACITONFEATURES)`.
+            reward_to_gos (torch.Tensor): Sequence of reward to gos, shaped
+                `(BATCH, SEQ)`.
+            time_steps (torch.Tensor): Time steps of each observation, shaped
+                `(BATCH, SEQ)`.
+            lengths (torch.Tensor): Sequence lengths, in number of states observed.
+                Shaped `(BATCH, )`.
+            loss_fn (Callable[[torch.Tensor, torch.Tensor], torch.Tensor]): Function
+                taking the output from the action decoding step and the corresponding
+                actions (in batch format, shaped `(BATCH, *ACTION_FEATURES)`), producing
+                a scalar tensor.
+
+        Returns:
+            torch.Tensor: Loss, output from `loss_fn`.
+        """
+        sequences = encode_and_interleave(
+            self, states, actions, reward_to_gos, time_steps
+        )
+        transformer_output = evaluate_transformer(self._model.transformer, sequences)
+        max_length = lengths.max()
+        action_indices = torch.arange(
+            1, 3 * max_length - 1, step=3, device=lengths.device
+        )
+        hidden_states = transformer_output[:, action_indices]
+        target_actions = actions[:, :max_length]
+        action_mask = torch.arange(max_length, device=lengths.device).view(
+            1, -1
+        ) < lengths.view(-1, 1)
+
+        decoded_actions = self._model.action_decoder(hidden_states[action_mask])
+        target_actions = target_actions[action_mask]
+
+        return loss_fn(decoded_actions, target_actions)
+
+    def evaluate(
         self,
         states: torch.Tensor,
         actions: torch.Tensor,
@@ -196,22 +213,28 @@ class Agent:
         lengths: torch.Tensor,
     ) -> torch.Tensor:
         """Evaluates the model on the given sequence of data. All sequences are given in
-        `(BATCH, SEQ, *FEATURES)` format. The inference is run in `inference_mode`,
-        implying no backward passes possible.
+        `(BATCH, SEQ, *FEATURES)` format. The inference is run in inference_mode,
+        implying no backward passes are possible on the output.
 
         Args:
-            states (torch.Tensor): Sequence of states.
-            actions (torch.Tensor): Sequence of actions.
-            reward_to_gos (torch.Tensor): Sequence of reward to gos.
-            time_steps (torch.Tensor): Time steps of each observation.
+            states (torch.Tensor): Sequence of states, shaped 
+                `(BATCH, SEQ, *STATEFEATURES)`.
+            actions (torch.Tensor): Sequence of actions, shaped
+                `(BATCH, SEQ, *ACITONFEATURES)`.
+            reward_to_gos (torch.Tensor): Sequence of reward to gos, shaped
+                `(BATCH, SEQ)`.
+            time_steps (torch.Tensor): Time steps of each observation, shaped
+                `(BATCH, SEQ)`.
             lengths (torch.Tensor): Sequence lengths, in number of states observed.
+                Shaped `(BATCH, )`.
 
         Returns:
             torch.Tensor: Model output for the next action, shaped
                 `(BATCH, *ACTIONFEATURES)`.
         """
-        self.evaluate_action = torch.jit.trace(
-            self._evaluate_action_untraced,
-            (states, actions, reward_to_gos, time_steps, lengths),
-        )
-        return self.evaluate_action(states, actions, reward_to_gos, time_steps, lengths)
+        with torch.inference_mode():
+            sequences = encode_and_interleave(
+                self, states, actions, reward_to_gos, time_steps
+            )
+            transformer_output = evaluate_transformer(self._model.transformer, sequences)
+            return decode(self._model.action_decoder, transformer_output, lengths)

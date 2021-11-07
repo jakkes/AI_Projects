@@ -15,10 +15,6 @@ class TrainerConfig:
     batch_size: int = 64
     """Number of sequences to use during each update step."""
 
-    max_episode_steps: int = -1
-    """Maximum number of steps one episode may consist of. This parameter has an
-    immediate effect on memory usage, as the replay buffer is scaled accordingly."""
-
     actor_processes: int = 1
     """Number of actor processes spawned. Each actor process may spawn multiple actor
     threads."""
@@ -48,11 +44,7 @@ class TrainerConfig:
     """Device on which the replay buffer should be located."""
 
     inference_sequence_length: int = 15
-    """Length of sequences passed to models, known as K in the original paper."""
-
-    enable_float16: bool = False
-    """If True, training is run using `torch.float16` tensors, otherwise
-    `torch.float32`"""
+    """Length of sequences passed to models, known as _K_ in the original paper."""
 
     network_device: torch.device = torch.device("cpu")
     """Device on which the network is to be located."""
@@ -62,5 +54,5 @@ class TrainerConfig:
     This may be useful if data collection is slow."""
 
     max_environment_steps: int = -1
-    """Maximum number of steps before an episode is terminated. If less than zero, this
-    limit is not enforced."""
+    """Maximum number of steps one episode may consist of. This parameter has an
+    immediate effect on memory usage, as the replay buffer is scaled accordingly."""

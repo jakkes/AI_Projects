@@ -29,7 +29,7 @@ class Attention(nn.Module):
             )
             presoftmax[imask] = -math.inf
             softmax = torch.softmax(presoftmax, dim=-1)
-            softmax[torch.where(torch.all(imask, dim=-1))] = 0
+            # softmax[torch.where(torch.all(imask, dim=-1))] = 0
             return softmax.matmul(self.lin_v(x))
 
 
