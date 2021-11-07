@@ -25,6 +25,9 @@ class TrainerConfig:
     inference_servers: int = 1
     """Number of processes serving inference requests."""
 
+    inference_device: torch.device = torch.device("cpu")
+    """Device on which inferences are run."""
+
     broadcast_period: float = 2.5
     """Period (seconds) between model parameter broadcasts."""
 

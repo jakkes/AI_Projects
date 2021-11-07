@@ -9,35 +9,23 @@ import ai
 from ai.utils import Factory
 
 
-@dataclass
-class Model:
-    state_encoder: nn.Module
-    action_encoder: nn.Module
-    reward_encoder: nn.Module
-    positional_encoder: nn.Module
-    transformer: "ai.rl.decision_transformer.TransformerEncoder"
-    action_decoder: nn.Module
-
-    def parameters(self) -> Iterator[torch.Tensor]:
-        yield from itertools.chain(
-            self.state_encoder.parameters(),
-            self.action_encoder.parameters(),
-            self.reward_encoder.parameters(),
-            self.positional_encoder.parameters(),
-            self.transformer.parameters(),
-            self.action_decoder.parameters(),
-        )
-
-    def to(self, device: torch.device):
-        return Model(
-            self.state_encoder.to(device),
-            self.action_encoder.to(device),
-            self.reward_encoder.to(device),
-            self.positional_encoder.to(device),
-            self.transformer.to(device),
-            self.action_decoder.to(device),
-        )
-
+class Model(nn.Module):
+    def __init__(
+        self,
+        state_encoder: nn.Module,
+        action_encoder: nn.Module,
+        reward_encoder: nn.Module,
+        positional_encoder: nn.Module,
+        transformer: "ai.rl.decision_transformer.TransformerEncoder",
+        action_decoder: nn.Module
+    ):
+        super().__init__()
+        self.state_encoder = state_encoder
+        self.action_encoder = action_encoder
+        self.reward_encoder = reward_encoder
+        self.positional_encoder = positional_encoder
+        self.transformer = transformer
+        self.action_decoder = action_decoder
 
 @dataclass
 class ModelFactory:

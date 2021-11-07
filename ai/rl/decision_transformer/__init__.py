@@ -2,10 +2,10 @@
 
 
 from ._transformer import TransformerEncoder, Attention, MultiHeadAttention
+from ._trainer_config import TrainerConfig
 from ._agent import Agent
 from . import exploration_strategies
 from ._trainer import Trainer
-from ._trainer_config import TrainerConfig
 
 
 __all__ = [
