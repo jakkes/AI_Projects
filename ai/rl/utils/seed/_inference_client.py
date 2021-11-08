@@ -1,3 +1,4 @@
+from typing import Tuple
 import io
 
 import zmq
@@ -24,13 +25,13 @@ class InferenceClient:
         self._socket = zmq.Context.instance().socket(zmq.REQ)
         self._socket.connect(self._router_address)
 
-    def evaluate_model(self, data: torch.Tensor, attempts: int = 10) -> torch.Tensor:
+    def evaluate_model(self, *data: torch.Tensor, attempts: int = 10) -> torch.Tensor:
         """Runs a remote inference.
 
         Args:
-            data (torch.Tensor): State.
+            data (torch.Tensor): Arguments to model.
             attempts (int, optional): Number of attempts made before an exception is
-                raised. Defaults to 5.
+                raised. Defaults to 10.
 
         Returns:
             torch.Tensor: Inference result.

@@ -30,8 +30,8 @@ def test_inference():
 
     inference_server = InferenceServer(
         model,
-        (2,),
-        torch.float32,
+        ((2,), ),
+        (torch.float32, ),
         f"tcp://127.0.0.1:{dealer_port}",
         f"tcp://127.0.0.1:{broadcast_port}",
         2,
@@ -90,8 +90,8 @@ def test_inference_cuda():
 
     inference_server = InferenceServer(
         model,
-        (2,),
-        torch.float32,
+        ((2,), ),
+        (torch.float32, ),
         f"tcp://127.0.0.1:{dealer_port}",
         f"tcp://127.0.0.1:{broadcast_port}",
         2,
@@ -132,3 +132,7 @@ def test_inference_cuda():
     assert torch.all(z1 == y1)
     assert torch.all(z2 == y2)
     assert torch.all(z3 == y3)
+
+
+if __name__ == "__main__":
+    test_inference()

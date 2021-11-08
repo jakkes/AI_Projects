@@ -26,7 +26,7 @@ def param_listener(model: nn.Module, address: str):
 
 def create_buffer(self: "InferenceServer") -> buffers.Uniform:
     return buffers.Uniform(
-        self._batchsize, (self._state_shape,), (self._state_dtype,), self._device
+        self._batchsize, self._state_shapes, self._state_dtypes, self._device
     )
 
 
@@ -42,10 +42,10 @@ def start_rep_workers(self: "InferenceServer"):
 def rep_worker(self: "InferenceServer"):
     device = self._device
     
-    def get_output(data: torch.Tensor):
+    def get_output(*data: torch.Tensor):
         for _ in range(10):
             try:
-                return self._get_batch().evaluate_model(data.to(device)).cpu()
+                return self._get_batch().evaluate_model(*(x.to(device) for x in data)).cpu()
             except Batch.Executed:
                 continue
         raise RuntimeError("Failed evaluating data sample, ten attempts were made.")
@@ -57,7 +57,7 @@ def rep_worker(self: "InferenceServer"):
         if socket.poll(timeout=1000, flags=zmq.POLLIN) != zmq.POLLIN:
             continue
         recvbytes = io.BytesIO(socket.recv(copy=False).buffer)
-        output = get_output(torch.load(recvbytes))
+        output = get_output(*torch.load(recvbytes))
         data = io.BytesIO()
         torch.save(output.clone(), data)
         socket.send(data.getbuffer(), copy=False)
@@ -69,8 +69,8 @@ class InferenceServer(mp.Process):
     def __init__(
         self,
         model: Factory[nn.Module],
-        state_shape: Tuple[int, ...],
-        state_dtype: torch.dtype,
+        state_shapes: Tuple[Tuple[int, ...], ...],
+        state_dtypes: Tuple[torch.dtype, ...],
         dealer_address: int,
         broadcast_address: str,
         batchsize: int,
@@ -81,8 +81,9 @@ class InferenceServer(mp.Process):
         """
         Args:
             model (Factory[nn.Module]): Model served, wrapped in a `Factory`.
-            state_shape (Tuple[int, ...]): Shape of states, excluding batch size.
-            state_dtype (torch.dtype): Data type of states.
+            state_shapes (Tuple[Tuple[int, ...], ...]): Shapes of states, excluding batch
+                size.
+            state_dtypes (Tuple[torch.dtype, ...]): Data types of states.
             dealer_address (int): Address to `InferenceProxy` session, e.g.
             `tcp://127.0.0.1:33333`.
             broadcast_address (str): Address to `Broadcaster` session, e.g.
@@ -97,8 +98,8 @@ class InferenceServer(mp.Process):
         """
         super().__init__(daemon=daemon, name="InferenceProcess")
         self._model = model
-        self._state_shape = state_shape
-        self._state_dtype = state_dtype
+        self._state_shapes = state_shapes
+        self._state_dtypes = state_dtypes
         self._dealer_address = dealer_address
         self._broadcast_address = broadcast_address
         self._batchsize = batchsize

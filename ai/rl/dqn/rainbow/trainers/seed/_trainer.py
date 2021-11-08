@@ -68,8 +68,8 @@ def create_server(
 ) -> seed.InferenceServer:
     return seed.InferenceServer(
         self._agent.model_factory,
-        self._agent.config.state_shape,
-        torch.float32,
+        (self._agent.config.state_shape, ),
+        (torch.float32, ),
         f"tcp://127.0.0.1:{dealer_port}",
         f"tcp://127.0.0.1:{broadcast_port}",
         self._config.inference_batchsize,

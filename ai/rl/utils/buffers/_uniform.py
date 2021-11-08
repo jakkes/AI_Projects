@@ -69,3 +69,7 @@ class Uniform(Base):
             self._i %= self._capacity
             self._full = True
         return i if batch else i[0]
+
+    def clear(self):
+        self._i = 0
+        self._full = False

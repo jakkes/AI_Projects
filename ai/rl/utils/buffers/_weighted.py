@@ -146,3 +146,6 @@ class Weighted(Base):
             i[go_right] = right[go_right]
             i[~go_right] = left[~go_right]
         return i - self._wi
+
+    def clear(self):
+        raise NotImplementedError

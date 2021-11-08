@@ -27,6 +27,49 @@ class Model(nn.Module):
         self.transformer = transformer
         self.action_decoder = action_decoder
 
+    def forward(
+        self,
+        states: torch.Tensor,
+        actions: torch.Tensor,
+        reward_to_gos: torch.Tensor,
+        time_steps: torch.Tensor,
+        lengths: torch.Tensor,
+    ) -> torch.Tensor:
+        sequences = encode_and_interleave(
+            self, states, actions, reward_to_gos, time_steps
+        )
+        transformer_output = evaluate_transformer(self.transformer, sequences)
+        return decode(self.action_decoder, transformer_output, lengths)
+
+    def loss(
+        self,
+        states: torch.Tensor,
+        actions: torch.Tensor,
+        reward_to_gos: torch.Tensor,
+        time_steps: torch.Tensor,
+        lengths: torch.Tensor,
+        loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
+    ) -> torch.Tensor:
+        sequences = encode_and_interleave(
+            self, states, actions, reward_to_gos, time_steps
+        )
+        transformer_output = evaluate_transformer(self.transformer, sequences)
+        max_length = lengths.max()
+        action_indices = torch.arange(
+            1, 3 * max_length - 1, step=3, device=lengths.device
+        )
+        hidden_states = transformer_output[:, action_indices]
+        target_actions = actions[:, :max_length]
+        action_mask = torch.arange(max_length, device=lengths.device).view(
+            1, -1
+        ) < lengths.view(-1, 1)
+
+        decoded_actions = self.action_decoder(hidden_states[action_mask])
+        target_actions = target_actions[action_mask]
+
+        return loss_fn(decoded_actions, target_actions)
+
+
 @dataclass
 class ModelFactory:
     state_encoder: Factory[nn.Module]
@@ -66,16 +109,16 @@ def interleave(
 
 
 def encode_and_interleave(
-    self: "Agent",
+    self: "Model",
     states: torch.Tensor,
     actions: torch.Tensor,
     reward_to_gos: torch.Tensor,
     time_steps: torch.Tensor,
 ) -> torch.Tensor:
-    positions = self._model.positional_encoder(time_steps.unsqueeze(-1))
-    states = self._model.state_encoder(states) + positions
-    actions = self._model.action_encoder(actions) + positions[:, :-1]
-    reward_to_gos = self._model.reward_encoder(reward_to_gos.unsqueeze(-1)) + positions
+    positions = self.positional_encoder(time_steps.unsqueeze(-1))
+    states = self.state_encoder(states) + positions
+    actions = self.action_encoder(actions) + positions[:, :-1]
+    reward_to_gos = self.reward_encoder(reward_to_gos.unsqueeze(-1)) + positions
     return interleave(reward_to_gos, states, actions)
 
 
@@ -173,24 +216,7 @@ class Agent:
         Returns:
             torch.Tensor: Loss, output from `loss_fn`.
         """
-        sequences = encode_and_interleave(
-            self, states, actions, reward_to_gos, time_steps
-        )
-        transformer_output = evaluate_transformer(self._model.transformer, sequences)
-        max_length = lengths.max()
-        action_indices = torch.arange(
-            1, 3 * max_length - 1, step=3, device=lengths.device
-        )
-        hidden_states = transformer_output[:, action_indices]
-        target_actions = actions[:, :max_length]
-        action_mask = torch.arange(max_length, device=lengths.device).view(
-            1, -1
-        ) < lengths.view(-1, 1)
-
-        decoded_actions = self._model.action_decoder(hidden_states[action_mask])
-        target_actions = target_actions[action_mask]
-
-        return loss_fn(decoded_actions, target_actions)
+        return self._model.loss(states, actions, reward_to_gos, time_steps, lengths, loss_fn)
 
     def evaluate(
         self,
@@ -221,8 +247,4 @@ class Agent:
                 `(BATCH, *ACTIONFEATURES)`.
         """
         with torch.inference_mode():
-            sequences = encode_and_interleave(
-                self, states, actions, reward_to_gos, time_steps
-            )
-            transformer_output = evaluate_transformer(self._model.transformer, sequences)
-            return decode(self._model.action_decoder, transformer_output, lengths)
+            return self._model(states, actions, reward_to_gos, time_steps, lengths)

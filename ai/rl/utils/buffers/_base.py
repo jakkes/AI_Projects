@@ -15,19 +15,19 @@ class Base(abc.ABC):
             Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]: Tuple of (data,
                 weights, identifier).
         """
-        raise NotImplementedError
+        pass
 
     @property
     @abc.abstractmethod
     def size(self) -> int:
         """Size of the buffer."""
-        raise NotImplementedError
+        pass
 
     @property
     @abc.abstractmethod
     def capacity(self) -> int:
         """Capacity of the buffer."""
-        raise NotImplementedError
+        pass
 
     @abc.abstractmethod
     def sample(self, n: int) -> Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]:
@@ -40,7 +40,7 @@ class Base(abc.ABC):
             Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]: Tuple of (data,
                 sample_probabilities, identifier).
         """
-        raise NotImplementedError
+        pass
 
     @abc.abstractmethod
     def update_weights(self, identifiers: torch.Tensor, weights: torch.Tensor):
@@ -51,7 +51,7 @@ class Base(abc.ABC):
                 be updated.
             weights (torch.Tensor): New weights.
         """
-        raise NotImplementedError
+        pass
 
     @abc.abstractmethod
     def add(self, data: Tuple[torch.Tensor], weights: torch.Tensor, batch: bool=True) -> torch.Tensor:
@@ -67,4 +67,9 @@ class Base(abc.ABC):
         Returns:
             torch.Tensor: Identifier given to the new data.
         """
-        raise NotImplementedError
+        pass
+
+    @abc.abstractmethod
+    def clear(self):
+        """Clears the contents of the buffer."""
+        pass

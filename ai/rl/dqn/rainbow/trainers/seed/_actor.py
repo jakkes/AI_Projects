@@ -124,7 +124,7 @@ class ActorThread(threading.Thread):
             state = torch.as_tensor(state, dtype=torch.float32)
             mask = torch.as_tensor(action_space.action_mask, dtype=torch.bool)
 
-            model_output = client.evaluate_model(state)
+            model_output = client.evaluate_model((state, ))
             if random.random() < self._config.epsilon:
                 action = action_space.sample()
             else:

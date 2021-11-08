@@ -9,8 +9,11 @@ class TrainerConfig:
     state_shape: Tuple[int, ...]
     """Shape of environment states."""
 
-    action_size: int
-    """Size of action space, i.e. number of available actions in total."""
+    action_shape: Tuple[int, ...]
+    """Shape of action space."""
+
+    discrete_action_space: bool
+    """If `True`, the environment is assumed to be using a discrete action space."""
 
     batch_size: int = 64
     """Number of sequences to use during each update step."""

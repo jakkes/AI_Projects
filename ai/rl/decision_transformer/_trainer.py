@@ -1,3 +1,4 @@
+from typing import Tuple
 import threading
 import struct
 
@@ -29,6 +30,27 @@ class RTGServer(threading.Thread):
             rep.send(struct.pack("f", self._exploration_strategy.reward_to_go()))
 
 
+def inference_shapes(config: dt.TrainerConfig) -> Tuple[Tuple[int, ...], ...]:
+    return (
+        (config.inference_sequence_length, ) + config.state_shape,
+        (config.inference_sequence_length - 1, ) + config.action_shape,
+        (config.inference_sequence_length, ),
+        (config.inference_sequence_length, ),
+        ()
+    )
+
+
+def inference_dtypes(config: dt.TrainerConfig) -> Tuple[torch.dtype, ...]:
+    return (
+        torch.float32,
+        torch.long if config.discrete_action_space else torch.float32,
+        torch.float32,
+        torch.long,
+        torch.long
+    )
+
+
+
 class Trainer:
     def __init__(
         self,
@@ -55,16 +77,14 @@ class Trainer:
         rtgproxy = seed.InferenceProxy()
         rtgproxy_ports = rtgproxy.start()
 
-        
-
         broadcaster = seed.Broadcaster(self._agent.model)
         broadcaster_port = broadcaster.start()
 
         inference_servers = [
             seed.InferenceServer(
                 self._agent.model_factory,
-                self._config.state_shape,
-                torch.float32,
+                inference_shapes(self._config),
+                inference_shapes(self._config),
                 f"tcp://127.0.0.1:{proxy_ports[1]}",
                 f"tcp://127.0.0.1:{broadcaster_port}",
                 self._config.inference_batchsize,
