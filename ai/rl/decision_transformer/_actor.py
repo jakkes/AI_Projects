@@ -19,8 +19,7 @@ def inference_data_store(config: dt.TrainerConfig) -> buffers.Uniform:
         (
             torch.float32,
             torch.long if config.discrete_action_space else torch.float32,
-            torch.long,
-            torch.long,
+            torch.float32
         ),
     )
 
@@ -60,12 +59,16 @@ class ActorThread(threading.Thread):
         rtg_client = RTGClient(self._rtg_request_address)
         buffer = inference_data_store(self._config)
         env = self._env()
+        K = self._config.inference_sequence_length
+        action_dtype = torch.long if self._config.discrete_action_space else torch.float32
 
         state = None
         terminal = True
         rtg = 0.0
         length = 0
         action = None
+        seq_vec = torch.arange(K)
+        step = 0
 
         while True:
 
@@ -75,11 +78,27 @@ class ActorThread(threading.Thread):
                 length = 0
                 state = env.reset()
                 terminal = False
-                action = env.action_space.sample()
+                action = torch.as_tensor(
+                    env.action_space.sample(),
+                    dtype=action_dtype,
+                )
+                buffer.clear()
+                step = 0
 
-            length = min(length + 1, self._config.inference_sequence_length)
+            length = min(length + 1, K)
             state = torch.as_tensor(state, dtype=torch.float32)
+            buffer.add((state, action, rtg), 1.0, batch=False)
+            step += 1
 
+            (states, actions, rtgs), _, _ = buffer.get_all()
+            if buffer.size == buffer.capacity:
+                rot_vec = (seq_vec + step) % K
+                states = states[rot_vec]
+                actions = actions[rot_vec]
+                rtgs = rtgs[rot_vec]
+            actions = actions[1:]
+
+            action_output = seed_client.evaluate_model(states, actions, rtgs)
 
 
 class Actor(mp.Process):
