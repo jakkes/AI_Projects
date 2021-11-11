@@ -45,7 +45,7 @@ def rep_worker(self: "InferenceServer"):
     def get_output(*data: torch.Tensor):
         for _ in range(10):
             try:
-                return self._get_batch().evaluate_model(*(x.to(device) for x in data)).cpu()
+                return self._get_batch().evaluate_model(tuple(x.to(device) for x in data)).cpu()
             except Batch.Executed:
                 continue
         raise RuntimeError("Failed evaluating data sample, ten attempts were made.")
@@ -141,12 +141,12 @@ class Batch:
     def executed(self) -> bool:
         return self._executed_event.is_set()
 
-    def evaluate_model(self, data: torch.Tensor) -> torch.Tensor:
+    def evaluate_model(self, data: Tuple[torch.Tensor, ...]) -> torch.Tensor:
         with self._executed_condition:
             if self._executed_event.is_set():
                 raise Batch.Executed
 
-            label = self._buffer.add((data,), None, batch=False)
+            label = self._buffer.add(data, None, batch=False)
 
             if self._buffer.size >= self._buffer.capacity:
                 self.execute(lock_acquired=True)

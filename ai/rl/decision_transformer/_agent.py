@@ -79,6 +79,9 @@ class ModelFactory:
     transformer: Factory["ai.rl.decision_transformer.TransformerEncoder"]
     action_decoder: Factory[nn.Module]
 
+    def __call__(self) -> Model:
+        return self.get_model()
+
     def get_model(self) -> Model:
         return Model(
             self.state_encoder(),

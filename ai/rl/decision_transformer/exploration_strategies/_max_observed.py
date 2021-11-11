@@ -14,8 +14,9 @@ class MaxObserved(Base):
         super().__init__()
         self._value = min_value
 
-    def update(self, reward_sequences: torch.Tensor):
-        self._value = max(self._value, reward_sequences.sum(-1).max())
+    def update(self, reward_sequences: torch.Tensor, sequence: bool=True):
+        rtg = reward_sequences.sum(-1) if sequence else reward_sequences
+        self._value = max(self._value, rtg.max())
 
     def reward_to_go(self) -> float:
         return self._value

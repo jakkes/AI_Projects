@@ -24,10 +24,10 @@ class Quantile(Base):
         self.__value = 0.0
         self.__step = 0
 
-    def update(self, reward_sequences: torch.Tensor):
+    def update(self, reward_sequences: torch.Tensor, sequence: bool=True):
         self.__step += 1
         
-        rtg = reward_sequences.sum(-1)
+        rtg = reward_sequences.sum(-1) if sequence else reward_sequences
         self.__momentum += (1 - self.__momentum_rate) * (self.__quantile - (rtg < self.__value).float().mean() - self.__momentum)
         self.__value += self.__alpha * self.__momentum / (1 - self.__momentum_rate ** self.__step)
 

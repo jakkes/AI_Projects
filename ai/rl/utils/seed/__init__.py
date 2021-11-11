@@ -82,6 +82,15 @@ from ._broadcaster import Broadcaster
 from ._inference_client import InferenceClient
 from ._inference_server import InferenceServer
 from ._inference_proxy import InferenceProxy
+from ._data_collector import DataCollector
+from ._data_publisher import DataPublisher
 
 
-__all__ = ["Broadcaster", "InferenceClient", "InferenceServer", "InferenceProxy"]
+__all__ = [
+    "Broadcaster",
+    "InferenceClient",
+    "InferenceServer",
+    "InferenceProxy",
+    "DataCollector",
+    "DataPublisher",
+]

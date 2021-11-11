@@ -31,7 +31,7 @@ class Uniform(Base):
         self._i = 0
         self._full = False
 
-    def sample(self, n: int) -> Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]:
+    def sample(self, n: int) -> Tuple[Tuple[torch.Tensor, ...], torch.Tensor, torch.Tensor]:
         i = torch.randint(0, self.size, (n, ))
         return (
             tuple(x[i] for x in self._data),
@@ -39,7 +39,7 @@ class Uniform(Base):
             i
         )
 
-    def get_all(self) -> Tuple[Tuple[torch.Tensor], torch.Tensor, torch.Tensor]:
+    def get_all(self) -> Tuple[Tuple[torch.Tensor, ...], torch.Tensor, torch.Tensor]:
         return (
             tuple(x[:self.size] for x in self._data),
             torch.ones(self.size),

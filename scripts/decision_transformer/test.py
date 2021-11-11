@@ -1,12 +1,10 @@
-import itertools
-import multiprocessing as mp
-
 import torch
 from torch import nn
 
 
 from ai import environments
-from ai.rl import decision_transformer as df
+from ai.rl import decision_transformer as dt
+from ai.utils import Factory
 
 
 EMBED_SPACE = 8
@@ -27,7 +25,7 @@ class ActionEncoder(nn.Module):
         self.seq = nn.Linear(1, EMBED_SPACE)
 
     def forward(self, x):
-        return self.seq(x.unsqueeze(-1))
+        return self.seq(x.float().unsqueeze(-1))
 
 
 class RewardEncoder(nn.Module):
@@ -36,7 +34,7 @@ class RewardEncoder(nn.Module):
         self.seq = nn.Linear(1, EMBED_SPACE)
 
     def forward(self, x):
-        return self.seq(x.unsqueeze(-1))
+        return self.seq(x)
 
 
 class PositionEncoder(nn.Module):
@@ -45,74 +43,52 @@ class PositionEncoder(nn.Module):
         self.seq = nn.Linear(1, EMBED_SPACE)
 
     def forward(self, x):
-        return self.seq(x.unsqueeze(-1))
+        return self.seq(x)
 
 
 class ActionDecoder(nn.Module):
     def __init__(self):
         super().__init__()
         self.seq = nn.Sequential(
-            nn.Linear(EMBED_SPACE, 32), nn.ReLU(inplace=True), nn.Linear(32, 2)
+            nn.Linear(EMBED_SPACE, 32), nn.ReLU(inplace=True), nn.Linear(32, 1)
         )
 
     def forward(self, x):
-        return self.seq(x)
+        return self.seq(x).squeeze(-1)
 
 
 def main():
-    config = df.TrainerConfig(
+    config = dt.TrainerConfig(
         state_shape=(4,),
-        action_size=2,
-        batch_size=32,
-        max_episode_steps=200,
-        number_of_actors=6,
-        replay_capacity=100000,
-        min_replay_size=50000,
-        training_time=3600,
-        inference_sequence_length=15,
-        enable_float16=True,
-        enable_cuda=True,
-        inference_batchsize=5
+        action_shape=(),
+        discrete_action_space=True,
+        max_environment_steps=200
     )
-    transformer = nn.TransformerEncoder(
-        nn.TransformerEncoderLayer(EMBED_SPACE, 8, dim_feedforward=1024, batch_first=True),
-        3
-    ).half().cuda()
-    action_decoder = ActionDecoder().half().cuda()
-    state_encoder = StateEncoder().half().cuda()
-    action_encoder = ActionEncoder().half().cuda()
-    reward_encoder = RewardEncoder().half().cuda()
-    postion_encoder = PositionEncoder().half().cuda()
-    empty_embeddings = [torch.zeros(EMBED_SPACE).half().cuda().requires_grad_() for _ in range(4)]
-    optimizer = torch.optim.Adam(
-        itertools.chain(
-            transformer.parameters(),
-            state_encoder.parameters(),
-            action_encoder.parameters(),
-            reward_encoder.parameters(),
-            postion_encoder.parameters(),
-            empty_embeddings,
-            action_decoder.parameters(),
-        ),
-        lr=1e-4,
-        eps=1e-6,
-        weight_decay=1e-4
-    )
+    transformer = Factory(dt.TransformerEncoder, 8, 8, EMBED_SPACE, 8, 8, 1024)
+    action_decoder = Factory(ActionDecoder)
+    state_encoder = Factory(StateEncoder)
+    action_encoder = Factory(ActionEncoder)
+    reward_encoder = Factory(RewardEncoder)
+    position_encoder = Factory(PositionEncoder)
+    optimizer = Factory(torch.optim.Adam, lr=1e-4)
 
-    trainer = df.Trainer(
+    agent = dt.Agent(
         state_encoder,
         action_encoder,
         reward_encoder,
-        postion_encoder,
+        position_encoder,
         transformer,
-        action_decoder,
-        *empty_embeddings,
-        environments.GymWrapper.Factory("CartPole-v0"),
-        df.exploration_strategies.Quantile(0.75),
-        config,
-        optimizer
+        action_decoder
     )
-    trainer.train()
+
+    trainer = dt.Trainer(
+        agent,
+        optimizer,
+        config,
+        environments.GymWrapper.get_factory("CartPole-v0"),
+        dt.exploration_strategies.Quantile(0.75)
+    )
+    trainer.train(3600)
 
 
 if __name__ == "__main__":
