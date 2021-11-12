@@ -25,6 +25,7 @@ class DataCollector(buffers.Uniform):
         self._sub = zmq.Context.instance().socket(zmq.SUB)
         self._sub.subscribe("")
         self._log_client = log_client
+        self._listeners: List[Callable[[Tuple[torch.Tensor, ...]], None]] = []
 
     def _run(self):
         step = 0
@@ -35,6 +36,9 @@ class DataCollector(buffers.Uniform):
             buffer = io.BytesIO(self._sub.recv())
             data = torch.load(buffer)
             self.add(data, 1.0, batch=False)
+
+            for listener in self._listeners:
+                listener(data)
 
             step += 1
             if step == 100:
@@ -50,3 +54,6 @@ class DataCollector(buffers.Uniform):
         
         self._thread.start()
         return self._port
+
+    def add_listener(self, fn: Callable[[Tuple[torch.Tensor, ...]], None]):
+        self._listeners.append(fn)

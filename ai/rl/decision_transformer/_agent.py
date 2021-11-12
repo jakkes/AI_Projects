@@ -50,7 +50,7 @@ class Model(nn.Module):
         lengths: torch.Tensor,
         loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
     ) -> torch.Tensor:
-        sequences = encode_and_interleave(
+        sequences = encode_and_interleave_full(
             self, states, actions, reward_to_gos, time_steps
         )
         transformer_output = evaluate_transformer(self.transformer, sequences)
@@ -123,6 +123,23 @@ def encode_and_interleave(
     actions = self.action_encoder(actions) + positions[:, :-1]
     reward_to_gos = self.reward_encoder(reward_to_gos.unsqueeze(-1)) + positions
     return interleave(reward_to_gos, states, actions)
+
+
+def encode_and_interleave_full(
+    self: "Model",
+    states: torch.Tensor,
+    actions: torch.Tensor,
+    reward_to_gos: torch.Tensor,
+    time_steps: torch.Tensor,
+) -> torch.Tensor:
+    positions = self.positional_encoder(time_steps.unsqueeze(-1))
+    states = self.state_encoder(states) + positions
+    actions = self.action_encoder(actions) + positions
+    reward_to_gos = self.reward_encoder(reward_to_gos.unsqueeze(-1)) + positions
+    stacked = torch.stack((reward_to_gos, states, actions), dim=2)
+
+    # view (batchsize, sequences, embeddingdim)
+    return stacked.view(states.shape[0], -1, states.shape[-1])[:, :-1, :]
 
 
 def evaluate_transformer(

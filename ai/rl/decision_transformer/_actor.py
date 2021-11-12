@@ -87,9 +87,6 @@ class ActorThread(threading.Thread):
 
         env = self._env()
         K = self._config.inference_sequence_length
-        action_dtype = (
-            torch.long if self._config.discrete_action_space else torch.float32
-        )
 
         state = None
         terminal = True
@@ -104,7 +101,7 @@ class ActorThread(threading.Thread):
         actions = torch.zeros(
             self._config.max_environment_steps,
             *self._config.action_shape,
-            dtype=action_dtype
+            dtype=torch.float32
         )
         rtgs = torch.zeros(self._config.max_environment_steps)
         time_steps = torch.arange(self._config.max_environment_steps).float()
@@ -127,7 +124,7 @@ class ActorThread(threading.Thread):
                 terminal = False
                 action = torch.as_tensor(
                     env.action_space.sample(),
-                    dtype=action_dtype,
+                    dtype=torch.float32,
                 )
                 states.fill_(0)
                 actions.fill_(0)

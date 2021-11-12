@@ -47,11 +47,20 @@ def inference_shapes(config: dt.TrainerConfig) -> Tuple[Tuple[int, ...], ...]:
 def inference_dtypes(config: dt.TrainerConfig) -> Tuple[torch.dtype, ...]:
     return (
         torch.float32,
-        torch.long if config.discrete_action_space else torch.float32,
+        torch.float32,
         torch.float32,
         torch.float32,
         torch.long,
     )
+
+def set_exploration_strategy_listener(
+    exploration_strategy: dt.exploration_strategies.Base,
+    data_collector: seed.DataCollector
+):
+    def listener(data: Tuple[torch.Tensor, ...]):
+        exploration_strategy.update(data[2][0], sequence=False)
+
+    data_collector.add_listener(listener)
 
 
 class Trainer:
@@ -81,8 +90,6 @@ class Trainer:
         loss_fn = torch.nn.MSELoss()
         while True:
             data, _, _ = data.sample(batchsize)
-            rtgs = data[2]
-            self._exploration_strategy.update(rtgs[:, 0], sequence=False)
 
             loss = agent.loss(*data, loss_fn=loss_fn)
             optimizer.zero_grad(set_to_none=True)
@@ -123,7 +130,6 @@ class Trainer:
         broadcaster = seed.Broadcaster(self._agent.model, self._config.broadcast_period)
         broadcaster_port = broadcaster.start()
 
-
         data_collector = seed.DataCollector(
             self._config.replay_capacity,
             (
@@ -138,6 +144,8 @@ class Trainer:
             log_client=log_client.clone()
         )
         data_port = data_collector.start()
+
+        set_exploration_strategy_listener(self._exploration_strategy, data_collector)
 
         inference_servers = [
             seed.InferenceServer(
