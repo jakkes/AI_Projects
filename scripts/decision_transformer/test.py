@@ -62,7 +62,8 @@ def main():
         state_shape=(4,),
         action_shape=(),
         discrete_action_space=True,
-        max_environment_steps=200
+        max_environment_steps=200,
+        min_replay_size=100
     )
     transformer = Factory(dt.TransformerEncoder, 8, 8, EMBED_SPACE, 8, 8, 1024)
     action_decoder = Factory(ActionDecoder)

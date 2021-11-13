@@ -1,6 +1,7 @@
 import io
 import struct
 import threading
+import random
 import multiprocessing as mp
 from typing import List
 
@@ -143,7 +144,9 @@ class ActorThread(threading.Thread):
                 time_steps[step - length : step + offset],
                 torch.tensor(length)
             )
-            if self._config.discrete_action_space:
+            if random.random() < 0.1:
+                action = torch.as_tensor(env.action_space.sample())
+            elif self._config.discrete_action_space:
                 action = int(
                     apply_action_mask(
                         action_output, env.action_space.as_discrete().action_mask

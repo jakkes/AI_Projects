@@ -84,17 +84,26 @@ class Trainer:
 
         print("Training started.")
 
+        K = self._config.inference_sequence_length
         agent = self._agent
         batchsize = self._config.batch_size
         optimizer = self._optimizer(agent.model.parameters())
         batchvec = torch.arange(batchsize, device=self._config.network_device)
+        batchvec_repeated = batchvec.view(-1, 1).expand(-1, K).reshape(-1)
+        seqvec = torch.arange(K) - K
         loss_fn = torch.nn.MSELoss()
         while True:
             (states, actions, rtgs, time_steps, lengths), _, _ = data.sample(batchsize)
+            end_indices = (torch.rand_like(lengths, dtype=torch.float32) * lengths).ceil_().long().clamp_min_(K)
+            lengths = lengths.clamp_max(K)
+            indices = (seqvec.view(1, -1) + end_indices.view(-1, 1)).view(-1)
 
-            indices = (torch.rand_like(lengths) * lengths).ceil_()
+            states = states[batchvec_repeated, indices].view(batchsize, K, -1)
+            actions = actions[batchvec_repeated, indices].view(batchsize, K, *actions.shape[2:])
+            rtgs = rtgs[batchvec_repeated, indices].view(batchsize, K)
+            time_steps = time_steps[batchvec_repeated, indices].view(batchsize, K)
 
-            loss = agent.loss(*data, loss_fn=loss_fn)
+            loss = agent.loss(states, actions, rtgs, time_steps, lengths, loss_fn=loss_fn)
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             optimizer.step()
