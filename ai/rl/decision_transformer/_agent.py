@@ -41,34 +41,6 @@ class Model(nn.Module):
         transformer_output = evaluate_transformer(self.transformer, sequences)
         return decode(self.action_decoder, transformer_output, lengths)
 
-    def loss(
-        self,
-        states: torch.Tensor,
-        actions: torch.Tensor,
-        reward_to_gos: torch.Tensor,
-        time_steps: torch.Tensor,
-        lengths: torch.Tensor,
-        loss_fn: Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
-    ) -> torch.Tensor:
-        sequences = encode_and_interleave_full(
-            self, states, actions, reward_to_gos, time_steps
-        )
-        transformer_output = evaluate_transformer(self.transformer, sequences)
-        max_length = lengths.max()
-        action_indices = torch.arange(
-            1, 3 * max_length - 1, step=3, device=lengths.device
-        )
-        hidden_states = transformer_output[:, action_indices]
-        target_actions = actions[:, :max_length]
-        action_mask = torch.arange(max_length, device=lengths.device).view(
-            1, -1
-        ) < lengths.view(-1, 1)
-
-        decoded_actions = self.action_decoder(hidden_states[action_mask])
-        target_actions = target_actions[action_mask]
-
-        return loss_fn(decoded_actions, target_actions)
-
 
 @dataclass
 class ModelFactory:
@@ -123,23 +95,6 @@ def encode_and_interleave(
     actions = self.action_encoder(actions) + positions[:, :-1]
     reward_to_gos = self.reward_encoder(reward_to_gos.unsqueeze(-1)) + positions
     return interleave(reward_to_gos, states, actions)
-
-
-def encode_and_interleave_full(
-    self: "Model",
-    states: torch.Tensor,
-    actions: torch.Tensor,
-    reward_to_gos: torch.Tensor,
-    time_steps: torch.Tensor,
-) -> torch.Tensor:
-    positions = self.positional_encoder(time_steps.unsqueeze(-1))
-    states = self.state_encoder(states) + positions
-    actions = self.action_encoder(actions) + positions
-    reward_to_gos = self.reward_encoder(reward_to_gos.unsqueeze(-1)) + positions
-    stacked = torch.stack((reward_to_gos, states, actions), dim=2)
-
-    # view (batchsize, sequences, embeddingdim)
-    return stacked.view(states.shape[0], -1, states.shape[-1])[:, :-1, :]
 
 
 def evaluate_transformer(
@@ -236,7 +191,9 @@ class Agent:
         Returns:
             torch.Tensor: Loss, output from `loss_fn`.
         """
-        return self._model.loss(states, actions, reward_to_gos, time_steps, lengths, loss_fn)
+        targets = actions[:, -1]
+        predictions = self._model(states, actions[:, :-1], reward_to_gos, time_steps, lengths)
+        return loss_fn(predictions, targets)
 
     def evaluate(
         self,

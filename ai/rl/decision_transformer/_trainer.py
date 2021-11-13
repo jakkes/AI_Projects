@@ -87,9 +87,12 @@ class Trainer:
         agent = self._agent
         batchsize = self._config.batch_size
         optimizer = self._optimizer(agent.model.parameters())
+        batchvec = torch.arange(batchsize, device=self._config.network_device)
         loss_fn = torch.nn.MSELoss()
         while True:
-            data, _, _ = data.sample(batchsize)
+            (states, actions, rtgs, time_steps, lengths), _, _ = data.sample(batchsize)
+
+            indices = (torch.rand_like(lengths) * lengths).ceil_()
 
             loss = agent.loss(*data, loss_fn=loss_fn)
             optimizer.zero_grad(set_to_none=True)
