@@ -7,7 +7,7 @@ from ai.rl import decision_transformer as dt
 from ai.utils import Factory
 
 
-EMBED_SPACE = 8
+EMBED_SPACE = 4
 
 
 class StateEncoder(nn.Module):
@@ -63,7 +63,7 @@ def main():
         action_shape=(),
         discrete_action_space=True,
         max_environment_steps=200,
-        min_replay_size=100
+        min_replay_size=1000
     )
     transformer = Factory(dt.TransformerEncoder, 8, 8, EMBED_SPACE, 8, 8, 1024)
     action_decoder = Factory(ActionDecoder)
@@ -87,7 +87,10 @@ def main():
         optimizer,
         config,
         environments.GymWrapper.get_factory("CartPole-v0"),
-        dt.exploration_strategies.Quantile(0.75)
+        dt.exploration_strategies.RoundRobin(
+            dt.exploration_strategies.MaxObserved(0.0),
+            dt.exploration_strategies.Quantile(0.75, 1, 0.99)
+        )
     )
     trainer.train(3600)
 
