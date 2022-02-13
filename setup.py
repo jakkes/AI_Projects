@@ -24,7 +24,8 @@ setuptools.setup(
         "gym~=0.18",
         "typed-argument-parser~=1.6",
         "python-linq~=2.0",
-        "pyzmq~=22.3"
+        "pyzmq~=22.3",
+        "setuptools==59.5.0"
     ],
     python_requires=">=3.8, <4",
 )
