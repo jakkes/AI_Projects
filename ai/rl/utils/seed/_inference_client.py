@@ -35,6 +35,7 @@ class InferenceClient:
         Returns:
             torch.Tensor: Inference result.
         """
+        device = data.device
         bytedata = io.BytesIO()
         torch.save(data, bytedata)
         self._socket.send(bytedata.getbuffer(), copy=False)
@@ -45,4 +46,4 @@ class InferenceClient:
                 self._create_socket()
                 return self.evaluate_model(data, attempts=attempts - 1)
         recvbytes = io.BytesIO(self._socket.recv(copy=False).buffer)
-        return torch.load(recvbytes)
+        return torch.load(recvbytes, map_location=device)
