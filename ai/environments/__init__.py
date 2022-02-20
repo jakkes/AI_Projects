@@ -2,7 +2,7 @@
 implementations of it."""
 
 from . import action_spaces
-from ._base import Base
+from ._base import Base, Observation
 from ._factory import Factory
 from ._simulator_wrapper import SimulatorWrapper
 from ._gym_wrapper import GymWrapper
