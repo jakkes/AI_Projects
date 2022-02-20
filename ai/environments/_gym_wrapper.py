@@ -1,6 +1,7 @@
 from typing import Tuple, Dict, Union
 
-import numpy as np
+import torch
+from torchaddons import distributions
 import gym
 from gym import spaces
 
@@ -10,24 +11,6 @@ import ai.environments as environments
 class GymWrapper(environments.Base):
     """Environment wrapper for openAI gym environments."""
 
-    class ActionSpace(environments.action_spaces.Discrete):
-        """Discrete action space that wraps a discrete openAI Gym action space."""
-
-        def __init__(self, space: spaces.Discrete):
-            """
-            Args:
-                space (spaces.Discrete): Space to wrap.
-            """
-            self._size = space.n
-
-        @property
-        def size(self) -> int:
-            return self._size
-
-        @property
-        def action_mask(self) -> np.ndarray:
-            return np.ones((self.size, ), dtype=np.bool_)
-
     def __init__(self, env: Union[gym.Env, str]):
         """
         Args:
@@ -35,12 +18,11 @@ class GymWrapper(environments.Base):
                 environment identifier..
         """
         super().__init__()
-        self._env = gym.make(env) if type(env) is str else env
-        self._action_space = GymWrapper.ActionSpace(self._env.action_space)
+        self._env: gym.Env = gym.make(env) if type(env) is str else env
+        self._constraint: distributions.constraints.Base = None
 
-    @property
-    def action_space(self) -> environments.action_spaces.Discrete:
-        return self._action_space
+        if isinstance(self._env.action_space, spaces.Discrete):
+            self._constraint = distributions.constraints.CategoricalMask(torch.ones(self._env.action_space.n, dtype=torch.bool))
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict]:
         return self._env.step(int(action))

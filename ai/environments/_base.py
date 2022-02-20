@@ -1,62 +1,66 @@
-from typing import Dict, Optional, Tuple
-from abc import ABC, abstractmethod
+from typing import Any, Dict, Mapping, Tuple, NamedTuple
+import abc
 
-import numpy as np
+import torch
+from torchaddons import distributions
 
 import ai.environments as environments
-import ai.utils.logging as logging
 
 
-class Base(ABC):
+Observation = NamedTuple(
+    "Observation",
+    [
+        ("state", torch.Tensor),
+        ("action_constraints", distributions.constraints.Base),
+        ("reward", float),
+        ("terminal", bool),
+        ("debug_info", Mapping[str, Any])
+    ]
+)
+
+
+class Base(abc.ABC):
     """Environment base class.
 
-    An environment is a stateful environment upon which action may be executed. It has
+    An environment is a stateful environment on which actions may be executed. It has
     an internal state that is modified by the action and (potentially only partially)
-    observable from the outside."""
+    observable."""
 
-    @property
-    @abstractmethod
-    def action_space(self) -> environments.action_spaces.Base:
-        """The action space instance used by the environment instance."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def reset(self) -> np.ndarray:
+    @abc.abstractmethod
+    def reset(self) -> torch.Tensor:
         """Resets the environment to a new initial state.
 
         Returns:
-            np.ndarray: Initial state.
+            torch.Tensor: Initial state.
         """
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict]:
+    @abc.abstractmethod
+    def step(self, action: torch.Tensor) -> Observation:
         """Executes an action in the environment.
 
         Args:
-            action (int): Action index
+            action (torch.Tensor): Action.
 
         Returns:
-            Tuple[np.ndarray, float, bool, Dict]: Tuple of next state, reward, terminal
-            flag, and debugging dictionary.
+            Observation: State transition
         """
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def close(self):
         """Disposes resources used by the environment."""
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def render(self):
         """Renders the environment in its current state."""
         raise NotImplementedError
 
     @classmethod
     def get_factory(cls, *args, **kwargs) -> "environments.Factory":
-        """Creates and returns a factory object that spawns simulators when called.
+        """Creates and returns a factory object that spawns environments when called.
 
         Args and kwargs are passed along to the class constructor. However, if other
-        behavior is required, feel free to override this method and return a factory
-        class of your choice."""
+        behavior is required, this method may be overridden."""
         return environments.Factory(cls, *args, **kwargs)

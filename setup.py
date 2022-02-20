@@ -18,7 +18,8 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ),
     install_requires=[
-        "torch~=1.9",
+        "torch~=1.10",
+        "torchaddons-jks",
         "scipy~=1.6",
         "tensorboard<3",
         "gym~=0.18",
