@@ -1,4 +1,4 @@
-from typing import Any, Mapping
+from typing import Any, Mapping, List
 from time import perf_counter, sleep
 
 from torch import nn, optim
