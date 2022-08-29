@@ -36,13 +36,14 @@ jobs:
           git push
           git tag v$(cat VERSION)
           git push origin v$(cat VERSION)
+          export should_publish=1
         else
-          [[ "a" == "b" ]]
+          export should_publish=0
         fi
 
   publish:
     needs: [ "tag" ]
-    if: ${{ success() }}
+    if: ${{ env.should_publish }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
