@@ -43,7 +43,7 @@ jobs:
 
   publish:
     needs: [ "tag" ]
-    if: ${{ env.should_publish == "1" }}
+    if: ${{ github.env.should_publish == "1" }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
