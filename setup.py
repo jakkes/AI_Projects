@@ -18,7 +18,7 @@ with open(HERE / "ai" / "__init__.py", "w") as f:
     )
 
 setuptools.setup(
-    name="ai",
+    name="ai-projects",
     version=version,
     author="Jakob Stigenberg",
     description="Collection of AI algorithms and agents.",
