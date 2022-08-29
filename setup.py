@@ -1,11 +1,25 @@
+import re
+import pathlib
 import setuptools
 
-with open("README.md", "r") as fh:
+HERE = pathlib.Path(__file__).parent
+
+with open(HERE / "README.md", "r") as fh:
     long_description = fh.read()
+
+with open(HERE / "VERSION", "r") as f:
+    version = f.read()
+
+with open(HERE / "pyplots" / "__init__.py", "r") as f:
+    init = f.read()
+with open(HERE / "pyplots" / "__init__.py", "w") as f:
+    f.write(
+        re.sub(r'\_\_version\_\_\s*=\s*"\d+\.\d+\.\d+"', f'__version__ = "{version}"', init)
+    )
 
 setuptools.setup(
     name="ai",
-    version="0.0.4",
+    version=version,
     author="Jakob Stigenberg",
     description="Collection of AI algorithms and agents.",
     long_description=long_description,
@@ -27,7 +41,7 @@ setuptools.setup(
         "pyzmq~=22.3",
         "setuptools==59.5.0"
     ],
-    python_requires=">=3.8, <4",
+    python_requires=">=3.8",
 )
 
 # Publish
