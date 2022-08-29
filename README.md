@@ -1,5 +1,5 @@
 # Artificial Intelligence
-[![Build Status](http://drone.jakke.se/api/badges/jakkes/AI_Projects/status.svg)](http://drone.jakke.se/jakkes/AI_Projects)
+[![Build status](https://github.com/jakkes/AI_Projects/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/jakkes/AI_Projects/actions/workflows/python-app.yml)
 
 A collection of AI algorithms, RL agents, and more.
 
@@ -10,11 +10,6 @@ https://jakkes.github.io/AI_Projects
 
 
 ## Installing
-Not yet available through `pip`. However, fear not, as building from source is super
-simple. Just copy paste below:
-
-```bash
-git clone https://github.com/jakkes/AI_Projects.git
-cd AI_Projects
-pip install --editable .
+```
+pip install ai-projects
 ```
