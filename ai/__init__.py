@@ -2,7 +2,7 @@ from . import environments, simulators, utils, rl, search
 
 
 __all__ = ["environments", "simulators", "utils", "rl", "search"]
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 
 def _fix_start_method():
