@@ -5,7 +5,7 @@ A collection of AI algorithms, RL agents, and more.
 
 
 ## Documentation
-https://jakkes.github.io/AI_Projects
+https://jakkes.github.io/AI_Projects/ai
 
 
 
