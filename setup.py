@@ -39,7 +39,7 @@ setuptools.setup(
         "typed-argument-parser~=1.6",
         "python-linq~=2.0",
         "pyzmq~=22.3",
-        "setuptools==59.5.0"
+        "setuptools==65.5.1"
     ],
     python_requires=">=3.8",
 )
