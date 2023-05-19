@@ -115,7 +115,7 @@ class ActorThread(threading.Thread):
                 if total_reward is not None and logging_client is not None:
                     logging_client.log("Environment/Reward", total_reward)
 
-                state = env.reset()
+                state, _ = env.reset()
                 steps = 0
                 total_reward = 0
                 terminal = False
@@ -134,7 +134,8 @@ class ActorThread(threading.Thread):
                 value = float(_get_values(mask.unsqueeze(0), model_output.unsqueeze(0), use_distributional, z)[0])
                 logging_client.log("Actor/Start value", value)
 
-            next_state, reward, terminal, _ = env.step(action)
+            next_state, reward, terminal, truncated, _ = env.step(action)
+            terminal = terminal or truncated
             total_reward += reward
             steps += 1
 
