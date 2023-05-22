@@ -26,7 +26,7 @@ class Net(nn.Module):
         )
 
     def forward(self, x):
-        return torch.softmax(self._seq(x).view(-1, 4, 101), dim=-1)
+        return torch.softmax(self._seq(x).view(-1, 4, 51), dim=-1)
 
 
 def main(args: Args):
