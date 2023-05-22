@@ -53,11 +53,11 @@ def main(args: Args):
     agent = rainbow.Agent(agent_config, Factory(Net), Factory(optim.Adam, lr=1e-4))
 
     trainer_config = rainbow.trainers.seed.Config()
-    trainer_config.actor_processes = 4
+    trainer_config.actor_processes = 10
     trainer_config.actor_threads = 16
     trainer_config.broadcast_period = 2.0
-    trainer_config.epsilon = 0.1
-    trainer_config.inference_batchsize = 32
+    trainer_config.epsilon = 0.01
+    trainer_config.inference_batchsize = 64
     trainer_config.inference_delay = 0.5
     trainer_config.inference_device = device
     trainer_config.inference_servers = 1
@@ -68,7 +68,7 @@ def main(args: Args):
     
     trainer = rainbow.trainers.seed.Trainer(agent, trainer_config, environments.GymWrapper.get_factory("LunarLander-v2"))
 
-    trainer.start(3600)
+    trainer.start(3600000)
 
 if __name__ == "__main__":
     main(Args(underscores_to_dashes=True).parse_args())
