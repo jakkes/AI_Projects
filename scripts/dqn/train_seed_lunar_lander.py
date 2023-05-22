@@ -22,7 +22,7 @@ class Net(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(64, 64),
             nn.ReLU(inplace=True),
-            nn.Linear(64, 4 * 101)
+            nn.Linear(64, 4 * 51)
         )
 
     def forward(self, x):
