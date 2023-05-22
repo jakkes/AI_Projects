@@ -39,7 +39,7 @@ def main(args: Args):
     agent_config.batch_size = 128
     agent_config.discount_factor = 0.99
     agent_config.gradient_norm = 20
-    agent_config.n_atoms = 101
+    agent_config.n_atoms = 51
     agent_config.network_device = device
     agent_config.replay_capacity = 1000000
     agent_config.replay_device = device
@@ -54,10 +54,10 @@ def main(args: Args):
 
     trainer_config = rainbow.trainers.seed.Config()
     trainer_config.actor_processes = 10
-    trainer_config.actor_threads = 16
+    trainer_config.actor_threads = 32
     trainer_config.broadcast_period = 2.0
     trainer_config.epsilon = 0.01
-    trainer_config.inference_batchsize = 64
+    trainer_config.inference_batchsize = 128
     trainer_config.inference_delay = 0.5
     trainer_config.inference_device = device
     trainer_config.inference_servers = 1
