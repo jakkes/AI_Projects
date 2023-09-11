@@ -217,7 +217,7 @@ class Agent:
             self._config.n_atoms,
             self._config.v_max,
             self._config.v_min,
-            self._config.discount_factor,
+            self.discount_factor,
         )
 
     def _get_td_loss(
@@ -245,7 +245,7 @@ class Agent:
             target_values = self._target_network(next_states).max(dim=1).values
         return self._td_loss(
             current_q_values,
-            rewards + ~terminals * self._config.discount_factor * target_values,
+            rewards + ~terminals * self.discount_factor* target_values,
         )
 
     @property
